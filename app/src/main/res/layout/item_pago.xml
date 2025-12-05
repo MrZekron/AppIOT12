@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:padding="12dp"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <!-- Descripción del pago -->
+    <TextView
+        android:id="@+id/tvDescripcionPago"
+        android:text="Plan mensual"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:textColor="#000"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+    <!-- Monto del pago -->
+    <TextView
+        android:id="@+id/tvMontoPago"
+        android:text="$5000"
+        android:textSize="15sp"
+        android:textColor="#333"
+        android:layout_marginTop="6dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/tvDescripcionPago"
+        app:layout_constraintStart_toStartOf="parent"/>
+
+    <!-- Fecha del pago -->
+    <TextView
+        android:id="@+id/tvFechaPago"
+        android:text="10/02/2025"
+        android:textSize="14sp"
+        android:textColor="#666"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/tvDescripcionPago"
+        android:layout_marginTop="6dp"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <!-- Estado del pago -->
+    <TextView
+        android:id="@+id/tvEstadoPago"
+        android:text="Pendiente ❌"
+        android:textSize="15sp"
+        android:textColor="#D32F2F"
+        android:layout_marginTop="6dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/tvMontoPago"
+        app:layout_constraintStart_toStartOf="parent"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="8dp">
+
+    <!-- Nombre del tanque -->
+    <TextView
+        android:id="@+id/tvNombreTanque"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Nombre del Tanque"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+    <!-- Resumen de datos del dispositivo (reducido) -->
+    <TextView
+        android:id="@+id/tvResumenDatos"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Estado: Sin datos"
+        android:textSize="14sp" />
+
+</LinearLayout>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="txtPh" type="id" />
+    <item name="txtConductividad" type="id" />
+    <item name="txtTurbidez" type="id" />
+    <item name="txtSonico" type="id" />
+    <item name="tvConductividad" type="id" />
+    <item name="tvTurbidez" type="id" />
+    <item name="tvUltrasonico" type="id" />
+    <item name="tvColor" type="id" />
+    <item name="tvCapacidad" type="id" />
+    <item name="tvNombre" type="id" />
+    <item name="tvPh" type="id" />
+    <item name="txtIdDispositivo" type="id" />
+</resources>

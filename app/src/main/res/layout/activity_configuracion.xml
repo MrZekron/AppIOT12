@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@mipmap/fondo"
+    tools:context=".Configuracion">
+
+    <!-- 🔧 TITULO -->
+    <TextView
+        android:id="@+id/tvTituloConfig"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Configuración"
+        android:textSize="36sp"
+        android:textColor="#000"
+        android:layout_marginTop="40dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- ✉️ CORREO DEL USUARIO -->
+    <TextView
+        android:id="@+id/tvCorreoConfig"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Correo: ---"
+        android:textColor="#000"
+        android:textSize="20sp"
+        android:layout_marginTop="20dp"
+        app:layout_constraintTop_toBottomOf="@id/tvTituloConfig"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- 🆔 UID -->
+    <TextView
+        android:id="@+id/tvUidConfig"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="UID: ---"
+        android:textColor="#444"
+        android:textSize="16sp"
+        android:layout_marginTop="10dp"
+        app:layout_constraintTop_toBottomOf="@id/tvCorreoConfig"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- ⚙️ BOTÓN EDITAR PERFIL -->
+    <Button
+        android:id="@+id/btnEditarPerfil"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Editar Perfil"
+        android:backgroundTint="#3F51B5"
+        android:textColor="#FFF"
+        android:layout_margin="20dp"
+        app:layout_constraintTop_toBottomOf="@id/tvUidConfig"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- 📜 BOTÓN HISTORIAL -->
+    <Button
+        android:id="@+id/btnHistorial"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Historial"
+        android:backgroundTint="#009688"
+        android:textColor="#FFF"
+        android:layout_marginHorizontal="20dp"
+        app:layout_constraintTop_toBottomOf="@id/btnEditarPerfil"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- ☠️ BOTÓN ELIMINAR CUENTA -->
+    <Button
+        android:id="@+id/btnEliminarCuenta"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Eliminar Cuenta"
+        android:backgroundTint="#D32F2F"
+        android:textColor="#FFF"
+        android:layout_marginHorizontal="20dp"
+        android:layout_marginTop="10dp"
+        app:layout_constraintTop_toBottomOf="@id/btnHistorial"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- 🔙 VOLVER -->
+    <Button
+        android:id="@+id/btnVolverMenu"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Volver"
+        android:backgroundTint="#AAAAAA"
+        android:textColor="#000"
+        android:layout_marginTop="30dp"
+        app:layout_constraintTop_toBottomOf="@id/btnEliminarCuenta"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
