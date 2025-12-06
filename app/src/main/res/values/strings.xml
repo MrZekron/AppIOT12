@@ -3,4 +3,13 @@
     <string name="descripción_salir" />
     <string name="editar" />
     <string name="borrar" />
+
+    <!-- ⭐ ARRAY PARA LAS CUOTAS (NECESARIO PARA COMPRAR DISPOSITIVO) ⭐ -->
+    <string-array name="cuotas_array">
+        <item>1 cuota (Pago completo)</item>
+        <item>3 cuotas</item>
+        <item>6 cuotas</item>
+        <item>12 cuotas</item>
+    </string-array>
+
 </resources>

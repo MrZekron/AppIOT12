@@ -1,102 +1,108 @@
-package com.example.appiot12; // 📦 paquete del proyecto
+package com.example.appiot12;
 
-import android.os.Bundle; // 🎒 estado de la Activity
-import android.widget.ListView; // 📜 lista donde veremos los pagos
-import android.widget.Toast; // 🍞 mensajitos
+import android.os.Bundle;
+import android.widget.ListView;
+import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge; // ↔️ diseño sin bordes
-import androidx.appcompat.app.AppCompatActivity; // 🏛 Activity base
+import androidx.activity.EdgeToEdge;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-import com.google.firebase.auth.FirebaseAuth; // 🔐 auth del usuario
-import com.google.firebase.database.DataSnapshot; // 📦 datos leídos
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference; // 📍 nodo de la DB
-import com.google.firebase.database.FirebaseDatabase; // ☁ base de datos
-import com.google.firebase.database.ValueEventListener; // 👂 escucha cambios
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
-import java.util.ArrayList; // 🗂 lista dinámica
+import java.util.ArrayList;
 
 public class HistorialCompra extends AppCompatActivity {
 
-    private ListView lvPagos; // 📜 listview donde mostraremos el historial
-    private ArrayList<Pago> pagosList = new ArrayList<>(); // 🗂 lista en memoria
-
-    private PagoAdapter pagoAdapter; // 🎨 adaptador que pintará cada pago
-    private DatabaseReference pagosRef; // 📌 referencia a usuarios/{uid}/pagos
+    private ListView lvPagos;
+    private ArrayList<Pago> pagosList = new ArrayList<>();
+    private PagoAdapter pagoAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_historial_compra);
 
-        // 🔧 Ajustar bordes de pantalla
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
 
-        // 📍 Referencia al ListView
         lvPagos = findViewById(R.id.lvPagos);
-
-        // 🎨 Creamos el adaptador pasando el contexto y la lista vacía
         pagoAdapter = new PagoAdapter(this, pagosList);
         lvPagos.setAdapter(pagoAdapter);
 
-        // 🔐 UID del usuario actual
-        String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        String uid = FirebaseAuth.getInstance().getCurrentUser() != null
+                ? FirebaseAuth.getInstance().getCurrentUser().getUid()
+                : null;
 
-        // 📌 Ruta clave: usuarios/{uid}/pagos
-        pagosRef = FirebaseDatabase.getInstance()
-                .getReference("usuarios")
-                .child(uid)
-                .child("pagos");
+        if (uid == null) {
+            Toast.makeText(this, "Error: usuario no autenticado", Toast.LENGTH_LONG).show();
+            finish();
+            return;
+        }
 
-        // 🚀 Cargar historial desde Firebase
-        cargarPagosUsuario();
+        cargarPagosCorrectamente(uid);
     }
 
-    // 📥 Leer pagos desde Firebase
-    private void cargarPagosUsuario() {
+    private void cargarPagosCorrectamente(String uid) {
 
-        pagosRef.addListenerForSingleValueEvent(new ValueEventListener() {
+        FirebaseDatabase.getInstance()
+                .getReference("usuarios")
+                .child(uid)
+                .child("tanques")
+                .addListenerForSingleValueEvent(new ValueEventListener() {
 
-            @Override
-            public void onDataChange(DataSnapshot snapshot) {
-                pagosList.clear(); // 🧹 limpiamos antes de llenar
+                    @Override
+                    public void onDataChange(DataSnapshot snapshot) {
 
-                if (!snapshot.exists()) {
-                    Toast.makeText(HistorialCompra.this,
-                            "No hay historial disponible",
-                            Toast.LENGTH_LONG).show();
-                    pagoAdapter.notifyDataSetChanged();
-                    return;
-                }
+                        pagosList.clear();
 
-                // 🎯 Recorremos cada "idPago"
-                for (DataSnapshot pagoSnap : snapshot.getChildren()) {
-                    Pago pago = pagoSnap.getValue(Pago.class);
+                        if (!snapshot.exists()) {
+                            Toast.makeText(HistorialCompra.this,
+                                    "No tienes tanques registrados.",
+                                    Toast.LENGTH_LONG).show();
+                            pagoAdapter.notifyDataSetChanged();
+                            return;
+                        }
 
-                    if (pago != null) {
-                        pagosList.add(pago);
+                        for (DataSnapshot tanqueSnap : snapshot.getChildren()) {
+
+                            DataSnapshot dispSnap = tanqueSnap.child("dispositivo");
+
+                            if (dispSnap.exists() && dispSnap.child("pago").exists()) {
+
+                                Pago pago = dispSnap.child("pago").getValue(Pago.class);
+
+                                if (pago != null) {
+                                    pagosList.add(pago);
+                                }
+                            }
+                        }
+
+                        if (pagosList.isEmpty()) {
+                            Toast.makeText(HistorialCompra.this,
+                                    "No tienes pagos registrados.",
+                                    Toast.LENGTH_LONG).show();
+                        }
+
+                        pagoAdapter.notifyDataSetChanged();
                     }
-                }
 
-                // 🔄 Recargamos la lista visual
-                pagoAdapter.notifyDataSetChanged();
-            }
-
-            @Override
-            public void onCancelled(DatabaseError error) {
-                Toast.makeText(HistorialCompra.this,
-                        "Error al cargar historial: " + error.getMessage(),
-                        Toast.LENGTH_LONG).show();
-            }
-        });
+                    @Override
+                    public void onCancelled(DatabaseError error) {
+                        Toast.makeText(HistorialCompra.this,
+                                "Error al leer pagos: " + error.getMessage(),
+                                Toast.LENGTH_LONG).show();
+                    }
+                });
     }
 }

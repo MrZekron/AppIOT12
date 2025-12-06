@@ -25,13 +25,12 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-
-    <ImageView
+        <ImageView
             android:id="@+id/ivUsuario"
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:src="@mipmap/ic_launcher"
-        android:contentDescription="Usuario" />
+            android:contentDescription="Usuario" />
 
         <TextView
             android:id="@+id/tvCorreoUsuario"
@@ -51,11 +50,11 @@
         android:text="Menu"
         android:textColor="#000000"
         android:textSize="48sp"
-        app:layout_constraintTop_toBottomOf="@+id/navCuenta"
+        app:layout_constraintTop_toBottomOf="@id/navCuenta"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498" />
+        app:layout_constraintEnd_toEndOf="parent" />
 
+    <!-- MENÚ PRINCIPAL ICONOS -->
     <LinearLayout
         android:id="@+id/menu1"
         android:layout_width="match_parent"
@@ -63,9 +62,9 @@
         android:layout_marginTop="60dp"
         android:gravity="center"
         android:orientation="horizontal"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvTitulo"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tvTitulo">
+        app:layout_constraintEnd_toEndOf="parent">
 
         <ImageButton
             android:id="@+id/imageButton5"
@@ -93,20 +92,51 @@
             app:srcCompat="@mipmap/agregaraachivo" />
     </LinearLayout>
 
+    <!-- ⭐ MIS PAGOS ⭐ -->
+    <Button
+        android:id="@+id/btnPagosUsuario"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Mis Pagos"
+        android:textColor="#FFFFFF"
+        android:textSize="16sp"
+        android:padding="10dp"
+        android:background="#00796B"
+        android:onClick="pagos"
+        android:layout_marginTop="24dp"
+        app:layout_constraintTop_toBottomOf="@id/menu1"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- ⭐ NUEVO: COMPRAR DISPOSITIVO ⭐ -->
+    <Button
+        android:id="@+id/btnComprarDispositivo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Comprar Dispositivo"
+        android:textColor="#FFFFFF"
+        android:textSize="16sp"
+        android:padding="10dp"
+        android:background="#303F9F"
+        android:onClick="comprarDispositivo"
+        android:layout_marginTop="16dp"
+        app:layout_constraintTop_toBottomOf="@id/btnPagosUsuario"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- BOTÓN SALIR -->
     <Button
         android:id="@+id/btnSalir"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="167dp"
+        android:layout_marginTop="24dp"
         android:background="#A33D60"
         android:onClick="salir"
         android:text="Salir"
         android:textColor="#FFFFFF"
         android:textSize="16sp"
-        app:layout_constraintTop_toBottomOf="@+id/menu1"
+        app:layout_constraintTop_toBottomOf="@id/btnComprarDispositivo"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
-        android:contentDescription="@string/descripción_salir" />
+        app:layout_constraintEnd_toEndOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

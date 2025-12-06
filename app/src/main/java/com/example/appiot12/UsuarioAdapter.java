@@ -14,6 +14,7 @@ import androidx.annotation.NonNull;
 import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.List;
+import java.util.Map;
 
 public class UsuarioAdapter extends ArrayAdapter<Usuario> {
 
@@ -37,8 +38,9 @@ public class UsuarioAdapter extends ArrayAdapter<Usuario> {
             row = LayoutInflater.from(context).inflate(R.layout.item_usuario, parent, false);
             holder = new ViewHolder();
 
-            holder.tvCorreo = row.findViewById(R.id.tvCorreoUsuario);
+            holder.tvCorreo = row.findViewById(R.id.tvCorreo);
             holder.tvEstadoCuenta = row.findViewById(R.id.tvEstadoCuenta);
+            holder.tvDeuda = row.findViewById(R.id.tvDeuda);
             holder.btnBloquear = row.findViewById(R.id.btnBloquear);
 
             row.setTag(holder);
@@ -51,7 +53,7 @@ public class UsuarioAdapter extends ArrayAdapter<Usuario> {
         // Mostrar correo
         holder.tvCorreo.setText(usuario.getCorreo());
 
-        // Mostrar estado CORRECTO
+        // Mostrar estado de bloqueo
         if (usuario.isBloqueado()) {
             holder.tvEstadoCuenta.setText("Cuenta bloqueada ❌");
             holder.tvEstadoCuenta.setTextColor(Color.RED);
@@ -62,7 +64,18 @@ public class UsuarioAdapter extends ArrayAdapter<Usuario> {
             holder.btnBloquear.setText("Bloquear");
         }
 
-        // Acción del botón Bloquear/Desbloquear
+        // ---------- NUEVO: ESTADO DE PAGO / DEUDA ----------
+
+        String estadoDeuda = obtenerEstadoDeDeuda(usuario);
+        holder.tvDeuda.setText(estadoDeuda);
+
+        if (estadoDeuda.contains("Debe")) {
+            holder.tvDeuda.setTextColor(Color.RED);
+        } else {
+            holder.tvDeuda.setTextColor(Color.GREEN);
+        }
+
+        // Botón bloquear / desbloquear
         holder.btnBloquear.setOnClickListener(v -> {
 
             boolean nuevoEstado = !usuario.isBloqueado();
@@ -74,15 +87,43 @@ public class UsuarioAdapter extends ArrayAdapter<Usuario> {
                     .child("bloqueado")
                     .setValue(nuevoEstado);
 
-            // Refrescar visual
             notifyDataSetChanged();
         });
 
         return row;
     }
 
+    // =====================================================
+    //   MÉTODO PARA CALCULAR LA DEUDA REAL DEL USUARIO
+    // =====================================================
+    private String obtenerEstadoDeDeuda(Usuario usuario) {
+
+        Map<String, TanqueAgua> tanques = usuario.getTanques();
+        if (tanques == null || tanques.isEmpty()) {
+            return "Sin dispositivos";
+        }
+
+        int deudaTotal = 0;
+
+        for (TanqueAgua tanque : tanques.values()) {
+
+            if (tanque.getDispositivo() == null) continue;
+            if (tanque.getDispositivo().getPago() == null) continue;
+
+            Pago pago = tanque.getDispositivo().getPago();
+
+            deudaTotal += pago.getSaldoPendiente();
+        }
+
+        if (deudaTotal == 0) {
+            return "Al día ✔";
+        }
+
+        return "Debe $" + deudaTotal;
+    }
+
     static class ViewHolder {
-        TextView tvCorreo, tvEstadoCuenta;
+        TextView tvCorreo, tvEstadoCuenta, tvDeuda;
         Button btnBloquear;
     }
 }

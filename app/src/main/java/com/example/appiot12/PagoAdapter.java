@@ -15,6 +15,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+/**
+ * 🎨 ADAPTADOR DE PAGOS
+ * Dibuja cada fila del historial de pagos y la formatea bonito.
+ */
 public class PagoAdapter extends ArrayAdapter<Pago> {
 
     private final Context context;
@@ -33,6 +37,7 @@ public class PagoAdapter extends ArrayAdapter<Pago> {
         View row = convertView;
         ViewHolder holder;
 
+        // 🧱 Optimizamos con ViewHolder
         if (row == null) {
             row = LayoutInflater.from(context).inflate(R.layout.item_pago, parent, false);
             holder = new ViewHolder();
@@ -47,24 +52,38 @@ public class PagoAdapter extends ArrayAdapter<Pago> {
             holder = (ViewHolder) row.getTag();
         }
 
+        // 🔍 Pago actual
         Pago pago = pagos.get(position);
 
-        // ✏️ DESCRIPCIÓN ARMADA AUTOMÁTICAMENTE
+        if (pago == null) {
+            holder.tvDescripcion.setText("Pago inválido");
+            holder.tvMonto.setText("-");
+            holder.tvFecha.setText("-");
+            holder.tvEstado.setText("-");
+            return row;
+        }
+
+        // ✏️ DESCRIPCIÓN AUTOMÁTICA DEL PAGO
+        // ejemplo: "Compra dispositivo (2/6 cuotas)"
         String descripcion = "Compra dispositivo (" +
                 pago.getCuotasPagadas() + "/" + pago.getCuotasTotales() + " cuotas)";
 
         holder.tvDescripcion.setText(descripcion);
 
-        // 💰 MONTO RESTANTE O TOTAL
-        holder.tvMonto.setText("$" + pago.getSaldoPendiente());
+        // 💰 MONTO ACTUAL A PAGAR (saldo restante)
+        String montoTexto = "$" + pago.getSaldoPendiente();
+        holder.tvMonto.setText(montoTexto);
 
-        // 📅 FECHA FORMATEADA
-        String fechaFormateada =
-                new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-                        .format(new Date(pago.getFechaCompra()));
-        holder.tvFecha.setText("Fecha: " + fechaFormateada);
+        // 📅 FECHA DE COMPRA FORMATEADA
+        try {
+            String fechaFormateada = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+                    .format(new Date(pago.getFechaCompra()));
+            holder.tvFecha.setText("Fecha: " + fechaFormateada);
+        } catch (Exception e) {
+            holder.tvFecha.setText("Fecha: -");
+        }
 
-        // 🟢 ESTADO DEL PAGO
+        // 🟢🔴 ESTADO DEL PAGO
         if (pago.isPagado()) {
             holder.tvEstado.setText("Pagado ✔");
             holder.tvEstado.setTextColor(0xFF388E3C); // verde
@@ -76,6 +95,7 @@ public class PagoAdapter extends ArrayAdapter<Pago> {
         return row;
     }
 
+    /** 🧱 Cache de vistas para rendimiento */
     private static class ViewHolder {
         TextView tvDescripcion, tvMonto, tvFecha, tvEstado;
     }

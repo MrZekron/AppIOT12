@@ -16,82 +16,82 @@ import com.google.firebase.auth.FirebaseAuth; // 🔐 Manejo de sesión del usua
 import com.google.firebase.auth.FirebaseUser; // 👤 Representa al usuario que está logueado
 
 // 🏠 Pantalla MENÚ PRINCIPAL de la app
-// Desde aquí el usuario puede ir a: ver lista de tanques, agregar tanque, configurar, etc.
+// Desde aquí el usuario puede ir a: ver lista de tanques, agregar tanque, pagos, compra, configuración, etc.
 public class Menu extends AppCompatActivity {
 
     private FirebaseAuth mAuth;        // 🔐 Controlador de la autenticación Firebase
     private TextView tvCorreoUsuario;  // ✉️ Texto donde mostramos el correo del usuario logueado
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) { // 🎬 Se ejecuta cuando abrimos el menú
+    protected void onCreate(Bundle savedInstanceState) { // 🎬 Se ejecuta al abrir el menú
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this); // 📱 Activa diseño que usa toda la pantalla
         setContentView(R.layout.activity_menu); // 🎨 Carga el diseño XML del menú
 
-        // 📐 Ajustamos los márgenes para que la UI no se esconda detrás de la barra de estado o navegación
+        // 📐 Ajustar márgenes para que nada quede escondido
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets bars = insets.getInsets(WindowInsetsCompat.Type.systemBars()); // 📏 Obtenemos tamaño de las barras
-            v.setPadding(bars.left, bars.top, bars.right, bars.bottom); // 🧱 Agregamos espacio para que todo se vea bien
+            Insets bars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(bars.left, bars.top, bars.right, bars.bottom);
             return insets;
         });
 
-        // 🔐 Obtenemos la instancia de FirebaseAuth para saber qué usuario está logueado
-        mAuth = FirebaseAuth.getInstance();
+        mAuth = FirebaseAuth.getInstance(); // 🔐 Instancia Firebase Auth
+        tvCorreoUsuario = findViewById(R.id.tvCorreoUsuario); // 📨 Mostrar correo
 
-        // 🔍 Buscamos el TextView en el layout donde mostraremos el correo
-        tvCorreoUsuario = findViewById(R.id.tvCorreoUsuario);
-
-        // 📩 Cargamos y mostramos el correo del usuario actual
-        cargarCorreoUsuario();
+        cargarCorreoUsuario(); // 📩 Mostrar correo en pantalla
     }
 
-    // 📩 Carga el correo del usuario autenticado y lo muestra en el nav del menú
+    // 📩 Carga el correo del usuario autenticado y lo muestra en el menú
     private void cargarCorreoUsuario() {
-        FirebaseUser user = mAuth.getCurrentUser(); // 👤 Obtenemos el usuario actual
+        FirebaseUser user = mAuth.getCurrentUser(); // 👤 Usuario actual
 
-        if (user != null) { // ✅ Si hay alguien logueado...
-            String correo = user.getEmail(); // ✉️ Obtenemos su correo
+        if (user != null) {
+            String correo = user.getEmail();
 
-            if (correo != null && !correo.isEmpty()) { // 📌 Si el correo no es vacío...
-                tvCorreoUsuario.setText(correo); // ✅ Lo mostramos tal cual
+            if (correo != null && !correo.isEmpty()) {
+                tvCorreoUsuario.setText(correo); // ✔ Muestra el correo real
             } else {
-                // 🤷‍♂️ Si no pudimos leer el correo, dejamos un mensaje genérico
                 tvCorreoUsuario.setText("Sesión activa");
             }
         } else {
-            // 😢 No hay sesión activa
             tvCorreoUsuario.setText("Sin sesión");
             Toast.makeText(this, "No hay usuario autenticado", Toast.LENGTH_SHORT).show();
         }
     }
 
-    // ⚙️ Abrir pantalla de Configuración cuando el usuario toca el NAV superior
+    // ⚙️ Abrir pantalla de Configuración al tocar el nav superior
     public void abrirConfiguracion(View v) {
-        Intent intent = new Intent(this, Configuracion.class); // 🚪 Queremos ir a Configuracion
-        startActivity(intent); // ▶ Iniciamos la nueva pantalla
+        startActivity(new Intent(this, Configuracion.class));
     }
 
-    // ➕ Botón para ir a la pantalla de AGREGAR un nuevo tanque
+    // ➕ Pantalla para agregar un tanque nuevo
     public void agregar(View v) {
-        startActivity(new Intent(this, Agregar.class)); // ▶ Abrimos la Activity Agregar
+        startActivity(new Intent(this, Agregar.class));
     }
 
-    // 📋 Botón para ver la LISTA de tanques registrados por el usuario
+    // 📋 Ver lista de tanques
     public void lista(View v) {
-        startActivity(new Intent(this, Lista.class)); // ▶ Abrimos la Activity Lista
+        startActivity(new Intent(this, Lista.class));
     }
 
-    // 🚪 Botón SALIR: cierra sesión y vuelve a la pantalla de inicio (MainActivity)
+    // 💸 ⭐ Abrir historial de pagos
+    public void pagos(View v) {
+        startActivity(new Intent(this, HistorialCompra.class));
+    }
+
+    // 🛒 ⭐ NUEVO: Comprar dispositivo
+    public void comprarDispositivo(View v) {
+        startActivity(new Intent(this, ComprarDispositivo.class));
+    }
+
+    // 🚪 Cerrar sesión y volver al login
     public void salir(View v) {
-        mAuth.signOut(); // 🔐 Cerramos la sesión del usuario en Firebase
+        mAuth.signOut();
 
-        // 🚀 Creamos un Intent para ir a la pantalla principal (login)
         Intent intent = new Intent(this, MainActivity.class);
-
-        // 🧹 Limpiamos el stack de Activities para que no pueda volver con "back"
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
 
-        startActivity(intent); // ▶ Abrimos la pantalla de login
-        finish(); // 🚪 Cerramos el menú para que no quede en segundo plano
+        startActivity(intent);
+        finish();
     }
 }

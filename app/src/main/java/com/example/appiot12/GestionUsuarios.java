@@ -28,6 +28,7 @@ public class GestionUsuarios extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_gestion_usuarios);
 
+        // Ajuste del borde superior/inferior
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
@@ -44,19 +45,28 @@ public class GestionUsuarios extends AppCompatActivity {
     }
 
     private void cargarUsuarios() {
-        FirebaseDatabase.getInstance().getReference("usuarios")
+
+        FirebaseDatabase.getInstance()
+                .getReference("usuarios")
                 .addValueEventListener(new ValueEventListener() {
+
                     @Override
                     public void onDataChange(DataSnapshot snapshot) {
+
                         usuariosList.clear();
 
                         for (DataSnapshot snap : snapshot.getChildren()) {
 
                             Usuario u = snap.getValue(Usuario.class);
 
-                            if (u != null) {
-                                // ASIGNAR UID (obligatorio para bloquear)
-                                u.setId(snap.getKey());
+                            if (u == null) continue;
+
+                            // Asignar UID manualmente (Firebase no lo asigna)
+                            u.setId(snap.getKey());
+
+                            // ⭐ MOSTRAR SOLO USUARIOS NORMALES (NO ADMIN)
+                            if (u.getRol() != null &&
+                                    u.getRol().equalsIgnoreCase("usuario")) {
 
                                 usuariosList.add(u);
                             }
@@ -66,7 +76,9 @@ public class GestionUsuarios extends AppCompatActivity {
                     }
 
                     @Override
-                    public void onCancelled(DatabaseError error) { }
+                    public void onCancelled(DatabaseError error) {
+
+                    }
                 });
     }
 }

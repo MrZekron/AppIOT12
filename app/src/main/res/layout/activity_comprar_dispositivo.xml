@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="24dp"
+    android:background="@mipmap/fondo"
+    tools:context=".ComprarDispositivo">
+
+    <!-- TÍTULO -->
+    <TextView
+        android:id="@+id/tvTituloCompra"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Comprar Dispositivo"
+        android:textStyle="bold"
+        android:textSize="28sp"
+        android:textColor="#000"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <!-- DESCRIPCIÓN -->
+    <TextView
+        android:id="@+id/tvDescripcion"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Selecciona tu método de pago:"
+        android:textColor="#333"
+        android:textSize="16sp"
+        android:layout_marginTop="20dp"
+        app:layout_constraintTop_toBottomOf="@id/tvTituloCompra"
+        app:layout_constraintStart_toStartOf="parent"/>
+
+    <!-- PRECIO DEL DISPOSITIVO -->
+    <TextView
+        android:id="@+id/tvPrecio"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Precio: $100.000 CLP"
+        android:textStyle="bold"
+        android:textColor="#1A237E"
+        android:textSize="18sp"
+        android:layout_marginTop="14dp"
+        app:layout_constraintTop_toBottomOf="@id/tvDescripcion"
+        app:layout_constraintStart_toStartOf="parent"/>
+
+    <!-- SELECCIÓN DE CUOTAS -->
+    <TextView
+        android:id="@+id/tvCuotas"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Pagar en cuotas:"
+        android:textColor="#333"
+        android:textSize="16sp"
+        android:layout_marginTop="24dp"
+        app:layout_constraintTop_toBottomOf="@id/tvPrecio"
+        app:layout_constraintStart_toStartOf="parent"/>
+
+    <Spinner
+        android:id="@+id/spnCuotas"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:entries="@array/cuotas_array"
+        app:layout_constraintTop_toBottomOf="@id/tvCuotas"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <!-- RESUMEN DE CUOTA -->
+    <TextView
+        android:id="@+id/tvResumenCuota"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Valor por cuota: $0"
+        android:textColor="#004D40"
+        android:textStyle="bold"
+        android:textSize="16sp"
+        android:layout_marginTop="20dp"
+        app:layout_constraintTop_toBottomOf="@+id/spnCuotas"
+        app:layout_constraintStart_toStartOf="parent"/>
+
+    <!-- BOTÓN COMPRAR -->
+    <Button
+        android:id="@+id/btnComprar"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Comprar dispositivo"
+        android:textSize="18sp"
+        android:textColor="#FFF"
+        android:background="#2E7D32"
+        android:padding="16dp"
+        android:layout_marginTop="36dp"
+        app:layout_constraintTop_toBottomOf="@+id/tvResumenCuota"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
