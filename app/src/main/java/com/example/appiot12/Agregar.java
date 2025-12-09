@@ -83,7 +83,7 @@ public class Agregar extends AppCompatActivity { // 🌟 Pantalla para agregar t
         tanque.setNombre(nombre);
         tanque.setCapacidad(capacidad);
         tanque.setColor(color);
-        tanque.setDispositivo(d1); // 🔌 Conectamos el dispositivo
+        tanque.setIdDispositivo(d1.getId());// 🔌 Conectamos el dispositivo
 
         // 🛣️ Ruta donde se guardará en Firebase:
         // usuarios/{uid}/tanques/{idTanque}

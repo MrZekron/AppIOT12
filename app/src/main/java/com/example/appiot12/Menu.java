@@ -16,40 +16,39 @@ import com.google.firebase.auth.FirebaseAuth; // 🔐 Manejo de sesión del usua
 import com.google.firebase.auth.FirebaseUser; // 👤 Representa al usuario que está logueado
 
 // 🏠 Pantalla MENÚ PRINCIPAL de la app
-// Desde aquí el usuario puede ir a: ver lista de tanques, agregar tanque, pagos, compra, configuración, etc.
 public class Menu extends AppCompatActivity {
 
     private FirebaseAuth mAuth;        // 🔐 Controlador de la autenticación Firebase
     private TextView tvCorreoUsuario;  // ✉️ Texto donde mostramos el correo del usuario logueado
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) { // 🎬 Se ejecuta al abrir el menú
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this); // 📱 Activa diseño que usa toda la pantalla
-        setContentView(R.layout.activity_menu); // 🎨 Carga el diseño XML del menú
+        EdgeToEdge.enable(this);
+        setContentView(R.layout.activity_menu);
 
-        // 📐 Ajustar márgenes para que nada quede escondido
+        // Ajustar márgenes
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets bars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(bars.left, bars.top, bars.right, bars.bottom);
             return insets;
         });
 
-        mAuth = FirebaseAuth.getInstance(); // 🔐 Instancia Firebase Auth
-        tvCorreoUsuario = findViewById(R.id.tvCorreoUsuario); // 📨 Mostrar correo
+        mAuth = FirebaseAuth.getInstance();
+        tvCorreoUsuario = findViewById(R.id.tvCorreoUsuario);
 
-        cargarCorreoUsuario(); // 📩 Mostrar correo en pantalla
+        cargarCorreoUsuario();
     }
 
-    // 📩 Carga el correo del usuario autenticado y lo muestra en el menú
+    // 📩 Mostrar correo
     private void cargarCorreoUsuario() {
-        FirebaseUser user = mAuth.getCurrentUser(); // 👤 Usuario actual
+        FirebaseUser user = mAuth.getCurrentUser();
 
         if (user != null) {
             String correo = user.getEmail();
 
             if (correo != null && !correo.isEmpty()) {
-                tvCorreoUsuario.setText(correo); // ✔ Muestra el correo real
+                tvCorreoUsuario.setText(correo);
             } else {
                 tvCorreoUsuario.setText("Sesión activa");
             }
@@ -59,32 +58,37 @@ public class Menu extends AppCompatActivity {
         }
     }
 
-    // ⚙️ Abrir pantalla de Configuración al tocar el nav superior
+    // ⚙ Configuración
     public void abrirConfiguracion(View v) {
         startActivity(new Intent(this, Configuracion.class));
     }
 
-    // ➕ Pantalla para agregar un tanque nuevo
+    // ➕ Agregar tanque
     public void agregar(View v) {
         startActivity(new Intent(this, Agregar.class));
     }
 
-    // 📋 Ver lista de tanques
+    // 📋 Lista de tanques
     public void lista(View v) {
         startActivity(new Intent(this, Lista.class));
     }
 
-    // 💸 ⭐ Abrir historial de pagos
+    // 💸 Mis pagos
     public void pagos(View v) {
         startActivity(new Intent(this, HistorialCompra.class));
     }
 
-    // 🛒 ⭐ NUEVO: Comprar dispositivo
+    // 🛒 Comprar dispositivo
     public void comprarDispositivo(View v) {
         startActivity(new Intent(this, ComprarDispositivo.class));
     }
 
-    // 🚪 Cerrar sesión y volver al login
+    // ⭐ NUEVO: Asociar dispositivo a tanque ⭐
+    public void asociarDispositivo(View v) {
+        startActivity(new Intent(this, AsociarDispositivoATanque.class));
+    }
+
+    // 🚪 Cerrar sesión
     public void salir(View v) {
         mAuth.signOut();
 

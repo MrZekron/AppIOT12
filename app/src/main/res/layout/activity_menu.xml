@@ -108,7 +108,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- ⭐ NUEVO: COMPRAR DISPOSITIVO ⭐ -->
+    <!-- ⭐ COMPRAR DISPOSITIVO ⭐ -->
     <Button
         android:id="@+id/btnComprarDispositivo"
         android:layout_width="wrap_content"
@@ -124,6 +124,22 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
+    <!-- ⭐ NUEVO: ASOCIAR DISPOSITIVO A TANQUE ⭐ -->
+    <Button
+        android:id="@+id/btnAsociarDispositivo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Asociar Dispositivo"
+        android:textColor="#FFFFFF"
+        android:textSize="16sp"
+        android:padding="10dp"
+        android:background="#6A1B9A"
+        android:onClick="asociarDispositivo"
+        android:layout_marginTop="16dp"
+        app:layout_constraintTop_toBottomOf="@id/btnComprarDispositivo"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
     <!-- BOTÓN SALIR -->
     <Button
         android:id="@+id/btnSalir"
@@ -135,7 +151,7 @@
         android:text="Salir"
         android:textColor="#FFFFFF"
         android:textSize="16sp"
-        app:layout_constraintTop_toBottomOf="@id/btnComprarDispositivo"
+        app:layout_constraintTop_toBottomOf="@id/btnAsociarDispositivo"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 

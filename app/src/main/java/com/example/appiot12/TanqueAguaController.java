@@ -11,6 +11,7 @@ public class TanqueAguaController {
 
     private static ArrayList<TanqueAgua> listaTanques = new ArrayList<>();
 
+    // ⭐ TANQUES DEL USUARIO ACTUAL
     private static DatabaseReference getUserTanquesRef() {
         String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
         return FirebaseDatabase.getInstance()
@@ -19,66 +20,60 @@ public class TanqueAguaController {
                 .child("tanques");
     }
 
-    private static DatabaseReference getUserDispositivosRef() {
-        String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+    // ⭐ DISPOSITIVOS GLOBALES
+    private static DatabaseReference getDispositivosRef() {
         return FirebaseDatabase.getInstance()
-                .getReference("usuarios")
-                .child(uid)
-                .child("dispositivos");
+                .getReference("dispositivos");
     }
 
-    // 🔥 NUEVO: agregar tanque con idDispositivo
+    // ============================================================
+    //    AGREGAR TANQUE CON DISPOSITIVO ASOCIADO
+    // ============================================================
     public static String addTanque(String nombre,
                                    String capacidad,
                                    String color,
                                    String idDispositivo) {
 
-        // verificar nombre repetido
+        // Validar nombre duplicado
         for (TanqueAgua tanque : listaTanques) {
             if (tanque.getNombre().equalsIgnoreCase(nombre)) {
                 return "Error: Ya existe un tanque con ese nombre.";
             }
         }
 
-        // verificar dispositivo existe
-        Dispositivo dispositivo = DispositivoController.findDispositivo(idDispositivo);
-        if (dispositivo == null) {
-            return "Error: Dispositivo no encontrado.";
+        // Validar que el dispositivo exista
+        DatabaseReference dispRef = getDispositivosRef().child(idDispositivo);
+
+        // No podemos acceder sincrónicamente a Firebase,
+        // así que solo verificamos que el ID no esté vacío:
+        if (idDispositivo == null || idDispositivo.trim().isEmpty()) {
+            return "Error: ID de dispositivo inválido.";
         }
 
-        // verificar que el dispositivo esté libre
-        if (dispositivo.getIdTanque() != null) {
-            return "Error: Este dispositivo ya está asociado a un tanque.";
-        }
-
-        // crear tanque
+        // Crear tanque
         TanqueAgua t = new TanqueAgua();
         t.setNombre(nombre);
         t.setCapacidad(capacidad);
         t.setColor(color);
-        t.setIdDispositivo(idDispositivo); // ⭐ ahora solo el ID
+        t.setIdDispositivo(idDispositivo);
 
-        // crear ID en Firebase
+        // Generar ID
         DatabaseReference ref = getUserTanquesRef();
         String idTanque = ref.push().getKey();
         t.setIdTanque(idTanque);
 
-        // guardar tanque
+        // Guardar tanque
         ref.child(idTanque).setValue(t);
 
-        // 🔥 asociar tanque → dispositivo
-        dispositivo.setIdTanque(idTanque);
-        getUserDispositivosRef()
-                .child(idDispositivo)
-                .child("idTanque")
-                .setValue(idTanque);
-
-        // agregar local
+        // Agregar a memoria
         listaTanques.add(t);
 
         return "Tanque agregado exitosamente: " + nombre;
     }
 
+    // ============================================================
+    //    BUSCAR TANQUE POR NOMBRE
+    // ============================================================
     public static TanqueAgua findTanque(String nombre) {
         for (TanqueAgua t : listaTanques) {
             if (t.getNombre().equalsIgnoreCase(nombre)) {
@@ -88,6 +83,9 @@ public class TanqueAguaController {
         return null;
     }
 
+    // ============================================================
+    //    EDITAR TANQUE
+    // ============================================================
     public static String updateTanque(String idTanque,
                                       String nombre,
                                       String capacidad,
@@ -115,7 +113,9 @@ public class TanqueAguaController {
         return "Tanque actualizado: " + nombre;
     }
 
-    // 🔥 NUEVO: liberar dispositivo al borrar tanque
+    // ============================================================
+    //    ELIMINAR TANQUE
+    // ============================================================
     public static void eliminarTanque(String idTanque) {
 
         TanqueAgua eliminar = null;
@@ -128,23 +128,16 @@ public class TanqueAguaController {
         }
 
         if (eliminar != null) {
-            String idDispositivo = eliminar.getIdDispositivo();
-
-            // liberar dispositivo
-            if (idDispositivo != null) {
-                getUserDispositivosRef()
-                        .child(idDispositivo)
-                        .child("idTanque")
-                        .setValue(null);
-            }
-
             listaTanques.remove(eliminar);
         }
 
-        // eliminar tanque en firebase
+        // Eliminar en Firebase
         getUserTanquesRef().child(idTanque).removeValue();
     }
 
+    // ============================================================
+    //    LISTA LOCAL DE TANQUES
+    // ============================================================
     public static List<TanqueAgua> getListaTanques() {
         return listaTanques;
     }

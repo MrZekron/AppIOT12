@@ -1,81 +1,76 @@
-package com.example.appiot12; // 📦 Este archivo vive dentro del paquete de la app
+package com.example.appiot12;
 
-import android.content.Intent; // 🚪 Para recibir datos de la otra pantalla
-import android.graphics.Color; // 🎨 Para colores en textos y gráficos
-import android.os.Bundle; // 🎒 Estado al iniciar pantalla
-import android.view.View; // 👆 Para detectar clics
-import android.widget.TextView; // 📝 Para mostrar texto al usuario
-import android.widget.Toast; // 🍞 Mensajes cortitos emergentes
+import android.content.Intent;
+import android.graphics.Color;
+import android.os.Bundle;
+import android.widget.TextView;
+import android.widget.Toast;
+import android.view.View;
 
-import androidx.activity.EdgeToEdge; // 📱 Pantalla completa sin bordes
+import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog; // ⚠️ Cuadros de diálogo
-import androidx.appcompat.app.AppCompatActivity; // 🏛️ Clasica Activity
-import androidx.core.graphics.Insets; // 📐 Márgenes de pantalla
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-import com.github.mikephil.charting.charts.LineChart; // 📊 Gráfico de líneas
-import com.github.mikephil.charting.components.Legend; // 🏷 Leyenda del gráfico
-import com.github.mikephil.charting.components.XAxis; // 📏 Eje X
-import com.github.mikephil.charting.data.Entry; // 🔹 Un puntito del gráfico
-import com.github.mikephil.charting.data.LineData; // 📈 Conjunto de datos
-import com.github.mikephil.charting.data.LineDataSet; // 📈 Serie de datos
-import com.google.firebase.database.DataSnapshot; // 📦 Datos extraídos de Firebase
-import com.google.firebase.database.DatabaseError; // 🚫 Error en Firebase
-import com.google.firebase.database.DatabaseReference; // 📍 Ruta en Firebase
-import com.google.firebase.database.FirebaseDatabase; // 🌐 Base de datos
-import com.google.firebase.database.ValueEventListener; // 👂 Escucha datos en tiempo real
+import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.components.Legend;
+import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.data.LineData;
+import com.github.mikephil.charting.data.LineDataSet;
 
-import java.util.ArrayList; // 📚 Para listas dinámicas
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
-// ⭐⭐⭐ PANTALLA DE INFORMACIÓN DEL TANQUE ⭐⭐⭐
-// Aquí mostramos los datos del tanque, sus sensores y un gráfico en tiempo real 💧📊⚡
+import java.util.ArrayList;
+
 public class Informacion extends AppCompatActivity {
 
-    // 📝 Textos para mostrar información del tanque
+    // Información del tanque
     private TextView txtNombre, txtCapasidad, txtColor;
+
+    // Sensores
     private TextView txtPh, txtConductividad, txtTurbidez, txtUltrasonico;
 
-    // 🛑 Estados de los sensores
+    // Estados
     private TextView txtPhEstado, txtCondEstado, txtTurbEstado, txtUltraEstado;
 
-    // 📊 El gráfico de los sensores
+    // Gráfico
     private LineChart sensorChart;
-
-    // 🆔 El ID del tanque a mostrar
-    private String tanqueId;
-
-    // 🔗 Referencia a Firebase
-    private DatabaseReference tanqueRef;
-
-    // 🎧 Escuchadores en tiempo real
-    private ValueEventListener dispositivoListener;
-    private ValueEventListener tanqueMetaListener;
-
-    // 📊 Datos del gráfico
     private LineData lineData;
     private LineDataSet setPH, setCond, setTurb;
-
-    // 📏 Máximo de puntos antes de ir borrando
     private static final int MAX_POINTS_PER_SET = 300;
     private int sampleIndex = 0;
 
+    // Firebase
+    private String tanqueId;
+    private String idDispositivo;
+
+    private DatabaseReference tanqueRef;
+    private DatabaseReference dispositivoRef;
+
+    private ValueEventListener tanqueListener;
+    private ValueEventListener dispositivoListener;
+
     @Override
-    protected void onCreate(Bundle savedInstanceState) { // 🎬 Se ejecuta al abrir esta pantalla
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_informacion); // 🎨 Dibujamos la interfaz
+        setContentView(R.layout.activity_informacion);
 
-        // 📱 Ajustar pantalla para que no choquen las barras del sistema
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets sb = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(sb.left, sb.top, sb.right, sb.bottom); // 🧱 Ponemos márgenes
+            v.setPadding(sb.left, sb.top, sb.right, sb.bottom);
             return insets;
         });
 
-        // 🔍 Conectamos variables con los campos XML
+        // Enlazar vistas
         txtNombre = findViewById(R.id.txtNombre);
         txtCapasidad = findViewById(R.id.txtCapasidad);
         txtColor = findViewById(R.id.txtColor);
@@ -92,106 +87,145 @@ public class Informacion extends AppCompatActivity {
 
         sensorChart = findViewById(R.id.sensorChart);
 
-        // 📦 Recibimos los datos del Intent (la otra pantalla nos los envió)
+        // Recibir datos del Intent
         Intent intent = getIntent();
 
-        // 🆔 El ID puede venir con distintos nombres, revisamos cuál está presente
         tanqueId = firstNonNull(
                 intent.getStringExtra("TANQUE_ID"),
                 intent.getStringExtra("tanqueId"),
                 intent.getStringExtra("tanque_id")
         );
 
-        // Datos del tanque (nombre, capacidad, color)
-        String nombreExtra = firstNonNull(
-                intent.getStringExtra("tanqueNombre"),
-                intent.getStringExtra("nombres"),
-                intent.getStringExtra("nombre"));
+        idDispositivo = intent.getStringExtra("idDispositivo");
 
-        String capacidadExtra = firstNonNull(
-                intent.getStringExtra("tanqueCapacidad"),
-                intent.getStringExtra("capasidad"),
-                intent.getStringExtra("capacidad"));
+        String nombreExtra = firstNonNull(intent.getStringExtra("tanqueNombre"));
+        String capacidadExtra = firstNonNull(intent.getStringExtra("tanqueCapacidad"));
+        String colorExtra = firstNonNull(intent.getStringExtra("tanqueColor"));
 
-        String colorExtra = firstNonNull(
-                intent.getStringExtra("tanqueColor"),
-                intent.getStringExtra("color"));
-
-        // ✍️ Mostramos los datos en pantalla
         if (nombreExtra != null) txtNombre.setText(nombreExtra);
         if (capacidadExtra != null) txtCapasidad.setText(capacidadExtra);
         if (colorExtra != null) txtColor.setText(colorExtra);
 
-        // 📊 Configuramos el gráfico
+        // Configurar gráfica
         setupChart();
 
-        // 🚀 Si tenemos un ID, podemos leer datos en tiempo real
-        if (tanqueId != null && !tanqueId.isEmpty()) {
-
-            tanqueRef = FirebaseDatabase.getInstance()
-                    .getReference("TanquesDeAgua") // ⚠️ OJO: esta es la ruta antigua
-                    .child(tanqueId);
-
-            subscribeTanqueMetaRealtime();   // 📡 Escuchar nombre/capacidad/color
-            subscribeDispositivoRealtime();  // 📡 Escuchar sensores
-
-        } else {
-            Toast.makeText(this, "No se encontró ID de tanque", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    // ---------------------- BOTÓN EDITAR 🔧----------------------
-    public void editarTanque(View view) {
-
+        // Validar tanqueId
         if (tanqueId == null || tanqueId.isEmpty()) {
-            Toast.makeText(this, "No se puede editar: falta ID del tanque", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "No se encontró ID del tanque.", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        Intent i = new Intent(Informacion.this, Editor.class);
+        // Rutas reales de Firebase (nuevo modelo)
+        String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
-        // ✉️ Mandamos los datos actuales para prellenar el editor
-        i.putExtra("tanqueId", tanqueId);
-        i.putExtra("tanqueNombre", txtNombre.getText().toString());
-        i.putExtra("tanqueCapacidad", txtCapasidad.getText().toString());
-        i.putExtra("tanqueColor", txtColor.getText().toString());
+        tanqueRef = FirebaseDatabase.getInstance()
+                .getReference("usuarios")
+                .child(uid)
+                .child("tanques")
+                .child(tanqueId);
 
-        startActivity(i);
+        if (idDispositivo != null && !idDispositivo.isEmpty()) {
+            dispositivoRef = FirebaseDatabase.getInstance()
+                    .getReference("usuarios")
+                    .child(uid)
+                    .child("dispositivos")
+                    .child(idDispositivo);
+
+            subscribeDispositivoRealtime();
+        } else {
+            Toast.makeText(this, "Este tanque no tiene dispositivo asociado.", Toast.LENGTH_SHORT).show();
+        }
+
+        subscribeTanqueMetaRealtime();
     }
 
-    // ---------------------- CONFIGURAR GRÁFICO 📊 ----------------------
+    // ===================== META DEL TANQUE =======================
+    private void subscribeTanqueMetaRealtime() {
+
+        tanqueListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snap) {
+
+                if (snap.child("nombre").exists())
+                    txtNombre.setText(snap.child("nombre").getValue(String.class));
+
+                if (snap.child("capacidad").exists())
+                    txtCapasidad.setText(snap.child("capacidad").getValue(String.class));
+
+                if (snap.child("color").exists())
+                    txtColor.setText(snap.child("color").getValue(String.class));
+            }
+
+            @Override public void onCancelled(@NonNull DatabaseError error) {}
+        };
+
+        tanqueRef.addValueEventListener(tanqueListener);
+    }
+
+
+    // ===================== SENSORES EN TIEMPO REAL =======================
+    private void subscribeDispositivoRealtime() {
+
+        dispositivoListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snap) {
+
+                double ph = readDouble(snap, "ph");
+                double cond = readDouble(snap, "conductividad");
+                double turb = readDouble(snap, "turbidez");
+                double ultra = readDouble(snap, "ultrasonico");
+
+                txtPh.setText("pH: " + ph);
+                txtConductividad.setText("Conductividad: " + cond);
+                txtTurbidez.setText("Turbidez: " + turb);
+                txtUltrasonico.setText("Ultrasonico: " + ultra);
+
+                updateSensorColors(ph, cond, turb, ultra);
+
+                // Agregar al gráfico
+                float y = sampleIndex++;
+
+                safeAddEntry(lineData, 0, new Entry(scalePh(ph), y));
+                safeAddEntry(lineData, 1, new Entry(scaleCond(cond), y));
+                safeAddEntry(lineData, 2, new Entry(scaleTurb(turb), y));
+
+                prune(setPH);
+                prune(setCond);
+                prune(setTurb);
+
+                lineData.notifyDataChanged();
+                sensorChart.notifyDataSetChanged();
+                sensorChart.invalidate();
+            }
+
+            @Override public void onCancelled(@NonNull DatabaseError error) {}
+        };
+
+        dispositivoRef.addValueEventListener(dispositivoListener);
+    }
+
+
+    // ===================== GRÁFICO =======================
     private void setupChart() {
 
-        sensorChart.setNoDataText("Aún no hay lecturas 💤");
+        sensorChart.setNoDataText("Aún no hay lecturas");
         sensorChart.getDescription().setEnabled(false);
-        sensorChart.setTouchEnabled(true);
-        sensorChart.setDragEnabled(true);
-        sensorChart.setScaleEnabled(true);
-        sensorChart.setPinchZoom(true);
 
-        // 📏 EJE X
         XAxis x = sensorChart.getXAxis();
         x.setPosition(XAxis.XAxisPosition.BOTTOM);
-        x.setAxisMinimum(0f);
-        x.setAxisMaximum(100f);
         x.setGranularity(5f);
-        x.setLabelCount(21, true);
+        x.setLabelCount(20, true);
 
-        // 🚫 Ocultamos ejes Y porque no los necesitamos
         sensorChart.getAxisLeft().setEnabled(false);
         sensorChart.getAxisRight().setEnabled(false);
 
-        // 🏷 Leyendas
         Legend legend = sensorChart.getLegend();
         legend.setForm(Legend.LegendForm.LINE);
-        legend.setTextSize(12f);
 
-        // 🎨 Creamos datasets vacíos
         setPH = new LineDataSet(new ArrayList<>(), "pH");
         setCond = new LineDataSet(new ArrayList<>(), "Conductividad");
         setTurb = new LineDataSet(new ArrayList<>(), "Turbidez");
 
-        // 🎨 Configuramos cómo se verán esas líneas
         configureDataSet(setPH);
         configureDataSet(setCond);
         configureDataSet(setTurb);
@@ -209,31 +243,17 @@ public class Informacion extends AppCompatActivity {
         set.setDrawCircles(true);
         set.setCircleRadius(3f);
         set.setDrawValues(false);
-        set.setMode(LineDataSet.Mode.CUBIC_BEZIER); // Curvitas suaves 😎
         set.setColor(Color.GRAY);
         set.setCircleColor(Color.GRAY);
     }
 
-    // ---------------------- COLORES Y ESTADOS 🔵🟡🔴 ----------------------
-    private int getColorStatus(double value, double goodMin, double goodMax, double warnMin, double warnMax) {
-        if (value >= goodMin && value <= goodMax) return Color.GREEN;  // 🟢 Perfecto
-        if (value >= warnMin && value <= warnMax) return Color.YELLOW; // 🟡 Advertencia
-        return Color.RED; // 🔴 Problema
+    private void prune(LineDataSet set) {
+        while (set.getEntryCount() > MAX_POINTS_PER_SET)
+            set.removeFirst();
     }
 
-    private void applyColorStatus(TextView txt, int color) {
-        txt.setTextColor(color);
-    }
 
-    private String getEstadoTexto(String sensor, int color) {
-        if (color == Color.GREEN)
-            return sensor + ": en nivel óptimo. Parámetros estables 🌱";
-        if (color == Color.YELLOW)
-            return sensor + ": en advertencia. Revisar pronto ⚠️";
-        return sensor + ": en estado crítico. Riesgo alto detectado 🚨";
-    }
-
-    // 🔄 Actualizar los colores según los valores
+    // ===================== ESTADOS DE COLOR =======================
     private void updateSensorColors(double ph, double cond, double turb, double ultra) {
 
         int colorPh = getColorStatus(ph, 6.5, 8.5, 5.0, 9.0);
@@ -241,13 +261,11 @@ public class Informacion extends AppCompatActivity {
         int colorTurb = getColorStatus(turb, 0, 5, 6, 50);
         int colorUltra = getColorStatus(ultra, 60, 100, 30, 59);
 
-        // 🌈 Aplicamos color a los números
-        applyColorStatus(txtPh, colorPh);
-        applyColorStatus(txtConductividad, colorCond);
-        applyColorStatus(txtTurbidez, colorTurb);
-        applyColorStatus(txtUltrasonico, colorUltra);
+        txtPh.setTextColor(colorPh);
+        txtConductividad.setTextColor(colorCond);
+        txtTurbidez.setTextColor(colorTurb);
+        txtUltrasonico.setTextColor(colorUltra);
 
-        // 📄 Y colocamos textos explicativos
         txtPhEstado.setText(getEstadoTexto("pH", colorPh));
         txtPhEstado.setTextColor(colorPh);
 
@@ -261,83 +279,20 @@ public class Informacion extends AppCompatActivity {
         txtUltraEstado.setTextColor(colorUltra);
     }
 
-    // ---------------------- LEER METADATOS DEL TANQUE 🔍 ----------------------
-    private void subscribeTanqueMetaRealtime() {
-        if (tanqueRef == null) return;
-
-        tanqueMetaListener = new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-
-                String nombre = snapshot.child("nombre").getValue(String.class);
-                String capacidad = snapshot.child("capacidad").getValue(String.class);
-                String color = snapshot.child("color").getValue(String.class);
-
-                if (nombre != null) txtNombre.setText(nombre);
-                if (capacidad != null) txtCapasidad.setText(capacidad);
-                if (color != null) txtColor.setText(color);
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) { }
-        };
-
-        // 🎧 Escuchamos cambios en tiempo real
-        tanqueRef.addValueEventListener(tanqueMetaListener);
+    private int getColorStatus(double v, double goodMin, double goodMax, double warnMin, double warnMax) {
+        if (v >= goodMin && v <= goodMax) return Color.GREEN;
+        if (v >= warnMin && v <= warnMax) return Color.YELLOW;
+        return Color.RED;
     }
 
-    // ---------------------- LEER SENSORES EN TIEMPO REAL 📡 ----------------------
-    private void subscribeDispositivoRealtime() {
-        if (tanqueRef == null) return;
-
-        DatabaseReference dispositivoRef = tanqueRef.child("dispositivo");
-
-        dispositivoListener = new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-
-                double ph = readDouble(snapshot, "ph");
-                double cond = readDouble(snapshot, "conductividad");
-                double turb = readDouble(snapshot, "turbidez");
-                double ultra = readDouble(snapshot, "ultrasonico");
-
-                // 📄 Mostramos valores
-                txtPh.setText("pH: " + ph);
-                txtConductividad.setText("Conductividad: " + cond);
-                txtTurbidez.setText("Turbidez: " + turb);
-                txtUltrasonico.setText("Ultrasonico: " + ultra);
-
-                updateSensorColors(ph, cond, turb, ultra);
-
-                // 📊 Añadir al gráfico
-                float y = sampleIndex++;
-
-                safeAddEntry(lineData, 0, new Entry(scalePh(ph), y));
-                safeAddEntry(lineData, 1, new Entry(scaleCond(cond), y));
-                safeAddEntry(lineData, 2, new Entry(scaleTurb(turb), y));
-
-                prune(setPH);
-                prune(setCond);
-                prune(setTurb);
-
-                lineData.notifyDataChanged();
-                sensorChart.notifyDataSetChanged();
-                sensorChart.invalidate();
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) { }
-        };
-
-        dispositivoRef.addValueEventListener(dispositivoListener);
+    private String getEstadoTexto(String sensor, int color) {
+        if (color == Color.GREEN) return sensor + " en nivel óptimo";
+        if (color == Color.YELLOW) return sensor + " en advertencia";
+        return sensor + " en nivel crítico";
     }
 
-    // ---------------------- HELPERS 🧰 ----------------------
-    private String firstNonNull(String... arr) {
-        for (String s : arr) if (s != null && !s.isEmpty()) return s;
-        return null;
-    }
 
+    // ===================== HELPERS =======================
     private double readDouble(DataSnapshot snap, String key) {
         if (!snap.hasChild(key)) return Double.NaN;
         try {
@@ -352,36 +307,25 @@ public class Informacion extends AppCompatActivity {
         data.addEntry(e, index);
     }
 
-    private void prune(LineDataSet set) {
-        while (set.getEntryCount() > MAX_POINTS_PER_SET) {
-            set.removeFirst();
-        }
+    private String firstNonNull(String... arr) {
+        for (String s : arr)
+            if (s != null && !s.isEmpty())
+                return s;
+        return null;
     }
 
-    private float scalePh(double v) {
-        return Float.isNaN((float) v) ? Float.NaN : (float) Math.min(100, (v / 14.0) * 100);
-    }
-
-    private float scaleCond(double v) {
-        return Float.isNaN((float) v) ? Float.NaN : (float) Math.min(100, (v / 2000.0) * 100);
-    }
-
-    private float scaleTurb(double v) {
-        return Float.isNaN((float) v) ? Float.NaN : (float) Math.min(100, (v / 100.0) * 100);
-    }
+    private float scalePh(double v) { return Float.isNaN((float)v) ? Float.NaN : (float)((v / 14.0) * 100); }
+    private float scaleCond(double v) { return Float.isNaN((float)v) ? Float.NaN : (float)((v / 2000.0) * 100); }
+    private float scaleTurb(double v) { return Float.isNaN((float)v) ? Float.NaN : (float)((v / 100.0) * 100); }
 
     @Override
-    protected void onDestroy() { // 🧹 Cuando se cierra la pantalla…
+    protected void onDestroy() {
         super.onDestroy();
 
-        // 🧽 Eliminamos escuchadores para no dejar procesos colgando
-        if (tanqueRef != null) {
-            if (dispositivoListener != null) {
-                tanqueRef.child("dispositivo").removeEventListener(dispositivoListener);
-            }
-            if (tanqueMetaListener != null) {
-                tanqueRef.removeEventListener(tanqueMetaListener);
-            }
-        }
+        if (tanqueRef != null && tanqueListener != null)
+            tanqueRef.removeEventListener(tanqueListener);
+
+        if (dispositivoRef != null && dispositivoListener != null)
+            dispositivoRef.removeEventListener(dispositivoListener);
     }
 }

@@ -11,10 +11,12 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.List;
-import java.util.Map;
 
 public class UsuarioAdapter extends ArrayAdapter<Usuario> {
 
@@ -50,10 +52,14 @@ public class UsuarioAdapter extends ArrayAdapter<Usuario> {
 
         Usuario usuario = usuarios.get(position);
 
-        // Mostrar correo
+        // ===============================
+        //  MOSTRAR CORREO
+        // ===============================
         holder.tvCorreo.setText(usuario.getCorreo());
 
-        // Mostrar estado de bloqueo
+        // ===============================
+        //  ESTADO DE BLOQUEO
+        // ===============================
         if (usuario.isBloqueado()) {
             holder.tvEstadoCuenta.setText("Cuenta bloqueada ❌");
             holder.tvEstadoCuenta.setTextColor(Color.RED);
@@ -64,18 +70,18 @@ public class UsuarioAdapter extends ArrayAdapter<Usuario> {
             holder.btnBloquear.setText("Bloquear");
         }
 
-        // ---------- NUEVO: ESTADO DE PAGO / DEUDA ----------
+        // ===============================
+        //   ESTADO DE DEUDA (CORREGIDO)
+        // ===============================
 
-        String estadoDeuda = obtenerEstadoDeDeuda(usuario);
-        holder.tvDeuda.setText(estadoDeuda);
+        holder.tvDeuda.setText("Cargando...");
+        holder.tvDeuda.setTextColor(Color.GRAY);
 
-        if (estadoDeuda.contains("Debe")) {
-            holder.tvDeuda.setTextColor(Color.RED);
-        } else {
-            holder.tvDeuda.setTextColor(Color.GREEN);
-        }
+        cargarDeudaUsuario(usuario, holder.tvDeuda);
 
-        // Botón bloquear / desbloquear
+        // ===============================
+        //  BOTÓN BLOQUEAR / DESBLOQUEAR
+        // ===============================
         holder.btnBloquear.setOnClickListener(v -> {
 
             boolean nuevoEstado = !usuario.isBloqueado();
@@ -93,35 +99,56 @@ public class UsuarioAdapter extends ArrayAdapter<Usuario> {
         return row;
     }
 
-    // =====================================================
-    //   MÉTODO PARA CALCULAR LA DEUDA REAL DEL USUARIO
-    // =====================================================
-    private String obtenerEstadoDeDeuda(Usuario usuario) {
+    // ============================================================
+    //      CARGA REAL DE PAGOS DESDE FIREBASE
+    //      NUEVO (CORRECTO, YA NO DEPENDE DE TANQUES)
+    // ============================================================
+    private void cargarDeudaUsuario(Usuario usuario, TextView tvDeuda) {
 
-        Map<String, TanqueAgua> tanques = usuario.getTanques();
-        if (tanques == null || tanques.isEmpty()) {
-            return "Sin dispositivos";
-        }
+        FirebaseDatabase.getInstance()
+                .getReference("usuarios")
+                .child(usuario.getId())
+                .child("pagos")
+                .addListenerForSingleValueEvent(new ValueEventListener() {
 
-        int deudaTotal = 0;
+                    @Override
+                    public void onDataChange(DataSnapshot snapshot) {
 
-        for (TanqueAgua tanque : tanques.values()) {
+                        if (!snapshot.exists()) {
+                            tvDeuda.setText("Sin compras");
+                            tvDeuda.setTextColor(Color.GRAY);
+                            return;
+                        }
 
-            if (tanque.getDispositivo() == null) continue;
-            if (tanque.getDispositivo().getPago() == null) continue;
+                        int deudaTotal = 0;
 
-            Pago pago = tanque.getDispositivo().getPago();
+                        for (DataSnapshot pagoSnap : snapshot.getChildren()) {
+                            Pago pago = pagoSnap.getValue(Pago.class);
+                            if (pago == null) continue;
 
-            deudaTotal += pago.getSaldoPendiente();
-        }
+                            deudaTotal += pago.getSaldoPendiente();
+                        }
 
-        if (deudaTotal == 0) {
-            return "Al día ✔";
-        }
+                        if (deudaTotal == 0) {
+                            tvDeuda.setText("Al día ✔");
+                            tvDeuda.setTextColor(Color.GREEN);
+                        } else {
+                            tvDeuda.setText("Debe $" + deudaTotal);
+                            tvDeuda.setTextColor(Color.RED);
+                        }
+                    }
 
-        return "Debe $" + deudaTotal;
+                    @Override
+                    public void onCancelled(DatabaseError error) {
+                        tvDeuda.setText("Error");
+                        tvDeuda.setTextColor(Color.RED);
+                    }
+                });
     }
 
+    // ============================================================
+    //      HOLDER DE VISTAS
+    // ============================================================
     static class ViewHolder {
         TextView tvCorreo, tvEstadoCuenta, tvDeuda;
         Button btnBloquear;
