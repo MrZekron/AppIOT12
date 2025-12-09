@@ -1,63 +1,176 @@
-package com.example.appiot12; // 📦 Aquí vive este archivo dentro del proyecto
+package com.example.appiot12;
 
-import java.util.ArrayList; // 📚 Lista dinámica para guardar objetos
+import androidx.annotation.NonNull;
 
-// 🧠 Este controlador es como el "jefe de los dispositivos" 🤖💼
-// Guarda, busca y crea dispositivos con sensores.
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.*;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
+/**
+ * 🚀 DISPOSITIVO CONTROLLER CLOUD v2.0
+ *
+ * Este módulo es ahora totalmente Firebase-native.
+ * Maneja:
+ *  - Creación de dispositivos al comprar uno
+ *  - Asociación dispositivo → tanque (1:1)
+ *  - Liberar dispositivos cuando se elimina el tanque
+ *  - Listar dispositivos disponibles
+ *  - Encontrar dispositivos por ID directamente en Firebase
+ *
+ * Este archivo reemplaza completamente cualquier controller anterior.
+ */
 public class DispositivoController {
 
-    // 🗃️ Aquí guardamos TODOS los dispositivos que existen.
-    // Es como una caja llena de sensores mágicos ✨🤖
-    private static ArrayList<Dispositivo> listDispositivos = new ArrayList<>();
-
-    // ➕ Método para agregar un dispositivo a la lista
-    // Recibe datos en modo "listo para cocinar": id, pH, conductividad, turbidez, ultrasonido.
-    public static void addDispositivo(String id, int ph, int conductividad, int turbidez, int ultrasonido) {
-
-        // 🍳 Creamos un nuevo dispositivo con los ingredientes enviados
-        Dispositivo dispositivo = new Dispositivo(id, ph, conductividad, turbidez, ultrasonido);
-
-        // 📥 Lo metemos dentro de la caja de dispositivos
-        listDispositivos.add(dispositivo);
+    private static DatabaseReference getUserDispositivosRef() {
+        String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        return FirebaseDatabase.getInstance()
+                .getReference("usuarios")
+                .child(uid)
+                .child("dispositivos");
     }
 
-    // 🔍 Método para encontrar un dispositivo por su ID
-    // Es como decir: "¡Oye jefe! ¿Dónde está el dispositivo #3?"
-    public static Dispositivo findDispositivo(String id) {
+    // ==========================================================
+    // ✅ CREAR DISPOSITIVO (cuando el usuario lo compra)
+    // ==========================================================
+    public static void crearDispositivoComprado(int montoTotal, int cuotas, FirebaseCallback callback) {
 
-        // 🚶‍♂️ Recorremos la lista de uno en uno
-        for (Dispositivo dispositivo : listDispositivos) {
+        String uidDispositivo = UUID.randomUUID().toString();
 
-            // 👀 Si encontramos uno cuyo ID coincide…
-            if (dispositivo.getId().equals(id)) {
-                return dispositivo; // 🎉 ¡Lo encontramos!
-            }
-        }
+        // Crear dispositivo vacío con sensores base
+        Dispositivo dispositivo = new Dispositivo(
+                uidDispositivo,
+                7.0,     // ph inicial
+                500.0,   // conductividad
+                1.0,     // turbidez
+                100.0    // ultrasonico
+        );
 
-        // 😢 Si llegamos aquí, significa que NO estaba en la lista
-        return null;
+        // Aún no está asociado a ningún tanque
+        // Puedes agregar un campo en Dispositivo si lo deseas: idTanque = null
+
+        // Guardar en Firebase
+        getUserDispositivosRef()
+                .child(uidDispositivo)
+                .setValue(dispositivo)
+                .addOnSuccessListener(aVoid -> callback.onSuccess(uidDispositivo))
+                .addOnFailureListener(e -> callback.onError(e.getMessage()));
     }
 
-    // 🌱 Método para llenar la lista con datos iniciales (dispositivos de muestra)
-    // Ideal para pruebas, como decir: "¡Traigan varios sensores para jugar!"
-    public static void fillDispositivo() {
 
-        // 🛑 Solo rellenamos si está vacía (para no duplicar)
-        if (listDispositivos.isEmpty()) {
+    // ==========================================================
+    // ✅ LISTAR DISPOSITIVOS DISPONIBLES (no asociados a tanque)
+    // ==========================================================
+    public static void obtenerDispositivosLibres(FirebaseListCallback<Dispositivo> callback) {
 
-            // 🧪🔥 Creamos varios dispositivos de prueba
-            listDispositivos.add(new Dispositivo("1", 7, 500, 1, 50));
-            listDispositivos.add(new Dispositivo("2", 6, 450, 15, 650));
-            listDispositivos.add(new Dispositivo("3", 10, 550, 5, 1000));
-            listDispositivos.add(new Dispositivo("4", 7, 520, 8, 90));
-            listDispositivos.add(new Dispositivo("5", 6, 490, 11, 85));
-            listDispositivos.add(new Dispositivo("6", 7, 470, 14, 75));
-            listDispositivos.add(new Dispositivo("7", 10, 480, 13, 65));
-            listDispositivos.add(new Dispositivo("8", 7, 530, 9, 95));
-            listDispositivos.add(new Dispositivo("9", 6, 460, 16, 55));
-            listDispositivos.add(new Dispositivo("10", 7, 500, 10, 100));
+        getUserDispositivosRef()
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
 
-            // 🎉 Ahora tenemos 10 dispositivos listos para trabajar
-        }
+                        List<Dispositivo> libres = new ArrayList<>();
+
+                        for (DataSnapshot snap : snapshot.getChildren()) {
+
+                            Dispositivo d = snap.getValue(Dispositivo.class);
+
+                            if (d == null) continue;
+
+                            // Si quieres agregar idTanque al dispositivo, aquí lo evaluamos
+                            // if (d.getIdTanque() == null)
+
+                            libres.add(d);
+                        }
+
+                        callback.onSuccess(libres);
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        callback.onError(error.getMessage());
+                    }
+                });
+    }
+
+
+    // ==========================================================
+    // ✅ BUSCAR DISPOSITIVO POR ID (Firebase)
+    // ==========================================================
+    public static void findDispositivo(String id, FirebaseObjectCallback<Dispositivo> callback) {
+
+        getUserDispositivosRef()
+                .child(id)
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+
+                        Dispositivo dispositivo = snapshot.getValue(Dispositivo.class);
+
+                        if (dispositivo == null) {
+                            callback.onError("Dispositivo no encontrado");
+                            return;
+                        }
+
+                        callback.onSuccess(dispositivo);
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        callback.onError(error.getMessage());
+                    }
+                });
+    }
+
+
+    // ==========================================================
+    // ✅ ASOCIAR DISPOSITIVO A TANQUE
+    // ==========================================================
+    public static void asociarDispositivoATanque(String idDispositivo,
+                                                 String idTanque,
+                                                 FirebaseCallback callback) {
+
+        // Guardamos en Firebase dentro del dispositivo:
+        // dispositivo/idTanque = "xxx"
+        getUserDispositivosRef()
+                .child(idDispositivo)
+                .child("idTanque")
+                .setValue(idTanque)
+                .addOnSuccessListener(aVoid -> callback.onSuccess(idDispositivo))
+                .addOnFailureListener(e -> callback.onError(e.getMessage()));
+    }
+
+
+    // ==========================================================
+    // ✅ DESASOCIAR DISPOSITIVO (cuando se elimina un tanque)
+    // ==========================================================
+    public static void liberarDispositivo(String idDispositivo, FirebaseCallback callback) {
+        getUserDispositivosRef()
+                .child(idDispositivo)
+                .child("idTanque")
+                .setValue(null)
+                .addOnSuccessListener(aVoid -> callback.onSuccess(idDispositivo))
+                .addOnFailureListener(e -> callback.onError(e.getMessage()));
+    }
+
+
+
+    // ==========================================================
+    // 🔧 CALLBACKS ESTÁNDARES
+    // ==========================================================
+    public interface FirebaseCallback {
+        void onSuccess(String idResult);
+        void onError(String error);
+    }
+
+    public interface FirebaseObjectCallback<T> {
+        void onSuccess(T object);
+        void onError(String error);
+    }
+
+    public interface FirebaseListCallback<T> {
+        void onSuccess(List<T> lista);
+        void onError(String error);
     }
 }

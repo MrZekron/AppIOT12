@@ -14,6 +14,11 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.FirebaseDatabase;
+
+import java.util.UUID;
+
 public class ComprarDispositivo extends AppCompatActivity {
 
     private TextView tvPrecio, tvResumenCuota;
@@ -21,6 +26,7 @@ public class ComprarDispositivo extends AppCompatActivity {
     private Button btnComprar;
 
     private final int PRECIO_DISPOSITIVO = 100000; // CLP
+    private int cuotasSeleccionadas = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,7 +47,6 @@ public class ComprarDispositivo extends AppCompatActivity {
         spnCuotas = findViewById(R.id.spnCuotas);
         btnComprar = findViewById(R.id.btnComprar);
 
-        // Inicializar precio
         tvPrecio.setText("Precio: $" + PRECIO_DISPOSITIVO + " CLP");
 
         inicializarSpinner();
@@ -49,6 +54,7 @@ public class ComprarDispositivo extends AppCompatActivity {
     }
 
     private void inicializarSpinner() {
+
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
                 this,
                 R.array.cuotas_array,
@@ -60,33 +66,88 @@ public class ComprarDispositivo extends AppCompatActivity {
 
         spnCuotas.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
             @Override
-            public void onItemSelected(android.widget.AdapterView<?> adapterView, View view, int i, long l) {
-                calcularCuota(i);
+            public void onItemSelected(android.widget.AdapterView<?> adapterView, View view, int pos, long id) {
+
+                switch (pos) {
+                    case 0: cuotasSeleccionadas = 1; break;
+                    case 1: cuotasSeleccionadas = 3; break;
+                    case 2: cuotasSeleccionadas = 6; break;
+                    case 3: cuotasSeleccionadas = 12; break;
+                }
+
+                int valorCuota = PRECIO_DISPOSITIVO / cuotasSeleccionadas;
+                tvResumenCuota.setText("Valor por cuota: $" + valorCuota);
             }
 
             @Override
-            public void onNothingSelected(android.widget.AdapterView<?> adapterView) {}
+            public void onNothingSelected(android.widget.AdapterView<?> adapterView) { }
         });
     }
 
-    private void calcularCuota(int indice) {
-        int cuotas = 1;
 
-        switch (indice) {
-            case 0: cuotas = 1; break;   // Pago completo
-            case 1: cuotas = 3; break;
-            case 2: cuotas = 6; break;
-            case 3: cuotas = 12; break;
+    // =============================================================
+    // 🟢 BOTÓN COMPRAR — CREA DISPOSITIVO + CREA PAGO EN FIREBASE
+    // =============================================================
+    private void configurarBotonCompra() {
+
+        btnComprar.setOnClickListener(v -> procesarCompra());
+    }
+
+
+    private void procesarCompra() {
+
+        String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
+        if (uid == null) {
+            Toast.makeText(this, "Error: usuario no autenticado", Toast.LENGTH_LONG).show();
+            return;
         }
 
-        int valorCuota = PRECIO_DISPOSITIVO / cuotas;
-        tvResumenCuota.setText("Valor por cuota: $" + valorCuota);
-    }
+        // 🆔 IDs únicos
+        String idDispositivo = UUID.randomUUID().toString();
+        String idPago = UUID.randomUUID().toString();
 
-    private void configurarBotonCompra() {
-        btnComprar.setOnClickListener(v -> {
-            Toast.makeText(this, "Compra realizada con éxito", Toast.LENGTH_LONG).show();
-            // Aquí se debería registrar el pago en Firebase
-        });
+        // =============================================================
+        // 1) Crear DISPOSITIVO (sin tanque asignado)
+        // =============================================================
+        Dispositivo dispositivo = new Dispositivo(
+                idDispositivo,
+                7.0,
+                500.0,
+                1.0,
+                100.0
+        );
+
+        // =============================================================
+        // 2) Crear PAGO asociado EXTERNAMENTE
+        // =============================================================
+        Pago pago = new Pago(PRECIO_DISPOSITIVO, cuotasSeleccionadas, idDispositivo);
+
+        // Le agrego manualmente el idDispositivo:
+        //  🔥 MODIFICACIÓN NECESARIA EN Pago.java:
+        //     agregar: private String idDispositivo;
+        //     + getter/setter
+        pago.setIdDispositivo(idDispositivo);
+
+        // Guardar DISPOSITIVO
+        FirebaseDatabase.getInstance()
+                .getReference("usuarios")
+                .child(uid)
+                .child("dispositivos")
+                .child(idDispositivo)
+                .setValue(dispositivo);
+
+        // Guardar PAGO
+        FirebaseDatabase.getInstance()
+                .getReference("usuarios")
+                .child(uid)
+                .child("pagos")
+                .child(idPago)
+                .setValue(pago)
+                .addOnSuccessListener(a -> {
+                    Toast.makeText(this, "Dispositivo comprado y pago registrado", Toast.LENGTH_LONG).show();
+                    finish(); // cerrar pantalla
+                })
+                .addOnFailureListener(e -> Toast.makeText(this, "Error al registrar pago: " + e.getMessage(), Toast.LENGTH_LONG).show());
     }
 }

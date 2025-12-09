@@ -1,16 +1,14 @@
-package com.example.appiot12; // 📦 Este archivo pertenece al paquete principal
+package com.example.appiot12;
 
 /**
  * 🌟 CLASE DISPOSITIVO 🌟
  *
- * Representa el "corazón tecnológico" del tanque 🧠💧.
+ * Representa el corazón tecnológico del tanque 🧠💧.
  *
- * Aquí se guardan:
- * - Datos reales de sensores
- * - Estados calculados
- * - Información del PAGO del dispositivo 💰 (nuevo)
- *
- * El dispositivo ahora sabe cuánto cuesta, si está pagado, cuántas cuotas quedan, etc.
+ * IMPORTANTE:
+ * - NO guarda pagos (los maneja usuarios/{id}/pagos).
+ * - Cada dispositivo puede estar asociado solo a 1 tanque.
+ * - Si idTanque = null → el dispositivo está libre.
  */
 
 public class Dispositivo {
@@ -18,20 +16,19 @@ public class Dispositivo {
     // 🆔 Identificador único del dispositivo
     private String id;
 
+    // ⭐ Nuevo! Tanque al que pertenece (o null)
+    private String idTanque;
+
     // === SENSORES REALES ===
-    private double ph;              // 🧪 Sensor de pH
-    private double conductividad;   // ⚡ Sensor de conductividad
-    private double turbidez;        // 🌫 Sensor de turbidez
-    private double ultrasonico;     // 📏 Nivel de agua
+    private double ph;
+    private double conductividad;
+    private double turbidez;
+    private double ultrasonico;
 
     // === ESTADOS CALCULADOS ===
     private String estadoPH;
     private String estadoConductividad;
     private String estadoTurbidez;
-
-    // === 💸 PAGO DEL DISPOSITIVO ===
-    // NUEVO: cada dispositivo tiene su propio pago
-    private Pago pago;
 
     // === CONSTRUCTOR VACÍO (Firebase lo necesita) ===
     public Dispositivo() {}
@@ -44,19 +41,20 @@ public class Dispositivo {
         this.turbidez = turbidez;
         this.ultrasonico = ultrasonico;
 
-        // Estados iniciales
         this.estadoPH = "N/A";
         this.estadoConductividad = "N/A";
         this.estadoTurbidez = "N/A";
 
-        // Pago aún no asignado
-        this.pago = null;
+        this.idTanque = null;  // ⭐ dispositivo libre al crearse
     }
 
     // === GETTERS & SETTERS ===
 
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
+
+    public String getIdTanque() { return idTanque; }
+    public void setIdTanque(String idTanque) { this.idTanque = idTanque; }
 
     public double getPh() { return ph; }
     public void setPh(double ph) { this.ph = ph; }
@@ -70,7 +68,6 @@ public class Dispositivo {
     public double getUltrasonico() { return ultrasonico; }
     public void setUltrasonico(double ultrasonico) { this.ultrasonico = ultrasonico; }
 
-    // === ESTADOS ===
     public String getEstadoPH() { return estadoPH; }
     public void setEstadoPH(String estadoPH) { this.estadoPH = estadoPH; }
 
@@ -79,8 +76,4 @@ public class Dispositivo {
 
     public String getEstadoTurbidez() { return estadoTurbidez; }
     public void setEstadoTurbidez(String estadoTurbidez) { this.estadoTurbidez = estadoTurbidez; }
-
-    // === 💸 PAGO (NUEVO) ===
-    public Pago getPago() { return pago; }
-    public void setPago(Pago pago) { this.pago = pago; }
 }

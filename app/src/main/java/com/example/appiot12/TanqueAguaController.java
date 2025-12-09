@@ -19,13 +19,19 @@ public class TanqueAguaController {
                 .child("tanques");
     }
 
+    private static DatabaseReference getUserDispositivosRef() {
+        String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        return FirebaseDatabase.getInstance()
+                .getReference("usuarios")
+                .child(uid)
+                .child("dispositivos");
+    }
+
+    // 🔥 NUEVO: agregar tanque con idDispositivo
     public static String addTanque(String nombre,
                                    String capacidad,
                                    String color,
-                                   String idDispositivo,
-                                   String estadoPH,
-                                   String estadoConductividad,
-                                   String estadoTurbidez) {
+                                   String idDispositivo) {
 
         // verificar nombre repetido
         for (TanqueAgua tanque : listaTanques) {
@@ -34,33 +40,40 @@ public class TanqueAguaController {
             }
         }
 
-        // buscar dispositivo real
+        // verificar dispositivo existe
         Dispositivo dispositivo = DispositivoController.findDispositivo(idDispositivo);
         if (dispositivo == null) {
             return "Error: Dispositivo no encontrado.";
         }
 
-        // ahora los estados se guardan en el dispositivo, no en el tanque
-        dispositivo.setEstadoPH(estadoPH);
-        dispositivo.setEstadoConductividad(estadoConductividad);
-        dispositivo.setEstadoTurbidez(estadoTurbidez);
+        // verificar que el dispositivo esté libre
+        if (dispositivo.getIdTanque() != null) {
+            return "Error: Este dispositivo ya está asociado a un tanque.";
+        }
 
         // crear tanque
         TanqueAgua t = new TanqueAgua();
         t.setNombre(nombre);
         t.setCapacidad(capacidad);
         t.setColor(color);
-        t.setDispositivo(dispositivo);
+        t.setIdDispositivo(idDispositivo); // ⭐ ahora solo el ID
 
-        // guardar ID
+        // crear ID en Firebase
         DatabaseReference ref = getUserTanquesRef();
         String idTanque = ref.push().getKey();
         t.setIdTanque(idTanque);
 
-        // guardar en firebase
+        // guardar tanque
         ref.child(idTanque).setValue(t);
 
-        // guardar local
+        // 🔥 asociar tanque → dispositivo
+        dispositivo.setIdTanque(idTanque);
+        getUserDispositivosRef()
+                .child(idDispositivo)
+                .child("idTanque")
+                .setValue(idTanque);
+
+        // agregar local
         listaTanques.add(t);
 
         return "Tanque agregado exitosamente: " + nombre;
@@ -95,7 +108,6 @@ public class TanqueAguaController {
         tanque.setCapacidad(capacidad);
         tanque.setColor(color);
 
-        // solo actualiza datos del tanque, no del dispositivo
         getUserTanquesRef()
                 .child(idTanque)
                 .setValue(tanque);
@@ -103,9 +115,34 @@ public class TanqueAguaController {
         return "Tanque actualizado: " + nombre;
     }
 
+    // 🔥 NUEVO: liberar dispositivo al borrar tanque
     public static void eliminarTanque(String idTanque) {
+
+        TanqueAgua eliminar = null;
+
+        for (TanqueAgua t : listaTanques) {
+            if (t.getIdTanque().equals(idTanque)) {
+                eliminar = t;
+                break;
+            }
+        }
+
+        if (eliminar != null) {
+            String idDispositivo = eliminar.getIdDispositivo();
+
+            // liberar dispositivo
+            if (idDispositivo != null) {
+                getUserDispositivosRef()
+                        .child(idDispositivo)
+                        .child("idTanque")
+                        .setValue(null);
+            }
+
+            listaTanques.remove(eliminar);
+        }
+
+        // eliminar tanque en firebase
         getUserTanquesRef().child(idTanque).removeValue();
-        listaTanques.removeIf(t -> t.getIdTanque().equals(idTanque));
     }
 
     public static List<TanqueAgua> getListaTanques() {
