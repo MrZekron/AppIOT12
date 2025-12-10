@@ -1,115 +1,117 @@
-package com.example.appiot12; // 📦 Aquí guardamos este archivo dentro del paquete de la app
+package com.example.appiot12;
 
-import android.content.Intent; // 🚪 Para movernos entre pantallas (Activities)
-import android.os.Bundle; // 🎒 Para recibir datos del sistema cuando la pantalla inicia
-import android.view.View; // 👆 Para detectar clics
-import android.widget.EditText; // 📝 Para leer texto que escribe el usuario
-import android.widget.Toast; // 🍞 Mensajes cortos que aparecen en pantalla "toastiados"
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.EditText;
+import android.widget.Toast;
 
-import androidx.appcompat.app.AppCompatActivity; // 🏛️ Clase base para pantallas modernas
+import androidx.appcompat.app.AppCompatActivity;
 
-import com.google.firebase.FirebaseApp; // 🚀 Para usar Firebase
-import com.google.firebase.auth.FirebaseAuth; // 🔐 Para saber qué usuario está conectado
-import com.google.firebase.database.DatabaseReference; // 🗂️ Para apuntar a un nodo de la DB
-import com.google.firebase.database.FirebaseDatabase; // 🛢️ Base de datos completa
+import com.google.firebase.FirebaseApp;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
-import java.util.UUID; // 🆔 Para crear códigos únicos mágicos ✨
+import java.util.UUID;
 
-public class Agregar extends AppCompatActivity { // 🌟 Pantalla para agregar tanques
+public class Agregar extends AppCompatActivity {
 
-    // 🔌 Variables para conectar a Firebase Realtime Database
-    private FirebaseDatabase fdbd; // 🛢️ Base de datos
-    private DatabaseReference dbrf; // 🗃️ Un "puntero" a un lugar dentro de la base
+    private FirebaseDatabase fdbd;
+    private DatabaseReference dbrf;
 
-    // 📝 Cajas de texto donde el usuario escribe información
     private EditText txtNombre, txtCapasidad, txtColor, txtDireccion;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) { // 🎬 Esto se ejecuta al abrir la pantalla
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_agregar); // 🎨 Ponemos el diseño
+        setContentView(R.layout.activity_agregar);
 
-        // 🔍 Buscamos los elementos del diseño y los conectamos con las variables
-        txtNombre = findViewById(R.id.txtNombre); // 📝 Nombre del tanque
-        txtCapasidad = findViewById(R.id.txtCapasidad); // 💧 Capacidad
-        txtColor = findViewById(R.id.txtColor); // 🎨 Color
-        txtDireccion = findViewById(R.id.txtDireccion); // 📍 Dirección opcional
+        txtNombre = findViewById(R.id.txtNombre);
+        txtCapasidad = findViewById(R.id.txtCapasidad);
+        txtColor = findViewById(R.id.txtColor);
+        txtDireccion = findViewById(R.id.txtDireccion);
 
-        iniciarFirebase(); // 🚀 Arrancamos Firebase
+        iniciarFirebase();
     }
 
-    private void iniciarFirebase() { // 🔧 Activamos Firebase
-        FirebaseApp.initializeApp(this); // 🎛️ Configura Firebase en la app
-        fdbd = FirebaseDatabase.getInstance(); // 🛢️ Obtenemos la base de datos completa
-        dbrf = fdbd.getReference(); // 🗺️ Apuntamos a la raíz de la base
+    private void iniciarFirebase() {
+        FirebaseApp.initializeApp(this);
+        fdbd = FirebaseDatabase.getInstance();
+        dbrf = fdbd.getReference();
     }
 
-    public void enviarDatosUsuario(View view) { // 📤 Se ejecuta cuando el niño oprime el botón "Agregar"
+    public void enviarDatosUsuario(View view) {
 
-        // 📌 Leemos lo que escribió el usuario
-        String nombre = txtNombre.getText().toString().trim(); // ✍️
-        String color = txtColor.getText().toString().trim(); // 🎨
-        String capacidad = txtCapasidad.getText().toString().trim(); // 💧
-        String direccion = txtDireccion.getText().toString().trim(); // 📍
+        String nombre = txtNombre.getText().toString().trim();
+        String color = txtColor.getText().toString().trim();
+        String capacidad = txtCapasidad.getText().toString().trim();
+        String direccion = txtDireccion.getText().toString().trim();
 
-        // 🚨 Revisamos que no falten datos
         if (nombre.isEmpty() || color.isEmpty() || capacidad.isEmpty()) {
-            Toast.makeText(this, "Por favor, complete todos los campos obligatorios.", Toast.LENGTH_SHORT).show();
-            return; // 🛑 Detenemos todo
+            Toast.makeText(this, "Completa todos los campos obligatorios.", Toast.LENGTH_SHORT).show();
+            return;
         }
 
-        // 🔐 Obtenemos el UID del usuario actual (su "cédula digital")
         String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
-        if (uid == null) { // 😱 Si no hay usuario logueado
+        if (uid == null) {
             Toast.makeText(this, "Error: usuario no autenticado.", Toast.LENGTH_SHORT).show();
-            return; // 🛑
+            return;
         }
 
-        // 🆔 Creamos un ID único para el tanque (así no se repite con otros tanques)
+        // === 1️⃣ Crear ID único para tanque
         String idTanque = UUID.randomUUID().toString();
 
-        // 🧪 Creamos un dispositivo con valores iniciales
-        Dispositivo d1 = new Dispositivo(); // 🔧 Nuevo dispositivo
-        d1.setId(UUID.randomUUID().toString()); // 🆔 ID único del dispositivo
-        d1.setPh(7.0); // ⚗️ pH inicial "perfectito"
-        d1.setConductividad(500.0); // ⚡ Valor normal
-        d1.setTurbidez(1.0); // 🌫️ Agua clarita
-        d1.setUltrasonico(150.0); // 📏 Nivel de agua inicial
+        // === 2️⃣ Crear un dispositivo inicial
+        String idDispositivo = UUID.randomUUID().toString();
 
-        // 🧱 Creamos un tanque y le metemos todos los datos
+        Dispositivo d1 = new Dispositivo(idDispositivo, 7.0, 500.0, 1.0, 150.0);
+
+        // === 3️⃣ Guardar dispositivo en Firebase
+        dbrf.child("usuarios")
+                .child(uid)
+                .child("dispositivos")
+                .child(idDispositivo)
+                .setValue(d1);
+
+        // === 4️⃣ Crear objeto TANQUE
         TanqueAgua tanque = new TanqueAgua();
         tanque.setIdTanque(idTanque);
         tanque.setNombre(nombre);
         tanque.setCapacidad(capacidad);
         tanque.setColor(color);
-        tanque.setIdDispositivo(d1.getId());// 🔌 Conectamos el dispositivo
+        tanque.setIdDispositivo(idDispositivo);
 
-        // 🛣️ Ruta donde se guardará en Firebase:
-        // usuarios/{uid}/tanques/{idTanque}
-        DatabaseReference ref = dbrf.child("usuarios")
+        // === 5️⃣ Guardar tanque en Firebase
+        dbrf.child("usuarios")
                 .child(uid)
                 .child("tanques")
-                .child(idTanque);
+                .child(idTanque)
+                .setValue(tanque)
+                .addOnSuccessListener(aVoid -> {
 
-        // 🎉 Guardamos el tanque en Firebase
-        ref.setValue(tanque)
-                .addOnSuccessListener(aVoid -> { // ✔️ Si todo salió bien:
-                    Toast.makeText(Agregar.this, "Tanque agregado correctamente.", Toast.LENGTH_SHORT).show();
-                    startActivity(new Intent(Agregar.this, Lista.class)); // 📋 Vamos a la pantalla de lista
-                    finish(); // 🚪 Cerramos esta pantalla
+                    // === 6️⃣ Registrar acción en HISTORIAL
+                    HistorialLogger.registrarAccion(
+                            "crear",
+                            "Se creó el tanque: " + nombre
+                    );
+
+                    Toast.makeText(Agregar.this, "Tanque creado correctamente.", Toast.LENGTH_SHORT).show();
+                    startActivity(new Intent(Agregar.this, Lista.class));
+                    finish();
                 })
-                .addOnFailureListener(e -> // ❌ Si hubo un error:
+                .addOnFailureListener(e ->
                         Toast.makeText(Agregar.this, "Error al enviar datos: " + e.getMessage(), Toast.LENGTH_SHORT).show()
                 );
     }
 
-    public void verLista(View v) { // 📋 Botón "Ver lista"
-        startActivity(new Intent(this, Lista.class)); // 📲 Abrimos la pantalla Lista
+    public void verLista(View v) {
+        startActivity(new Intent(this, Lista.class));
     }
 
-    public void cancelar(View view) { // ❌ Botón cancelar
-        startActivity(new Intent(this, Menu.class)); // 🏠 Volvemos al menú
-        finish(); // 🚪 Cerramos esta pantalla
+    public void cancelar(View view) {
+        startActivity(new Intent(this, Menu.class));
+        finish();
     }
 }

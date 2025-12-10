@@ -59,8 +59,8 @@ public class Configuracion extends AppCompatActivity {
 
         // 📜 HISTORIAL
         btnHistorial.setOnClickListener(v -> {
-            Toast.makeText(this, "Abrir Historial 📜", Toast.LENGTH_SHORT).show();
-            // Aquí deberás crear tu HistorialActivity
+            Intent i = new Intent(this, HistorialAcciones.class);
+            startActivity(i);
         });
 
         // ☠️ ELIMINAR CUENTA
