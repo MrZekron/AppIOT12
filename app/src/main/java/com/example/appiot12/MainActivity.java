@@ -1,36 +1,60 @@
-package com.example.appiot12; // 📦 paquete del proyecto
+package com.example.appiot12;
+// 📦 Paquete principal donde vive la Activity “lobby” del sistema AguaSegura
 
-import android.content.Intent; // 🔁 crea Intents para navegar entre Activities
-import android.os.Bundle; // 🗂️ Bundle para estado guardado de la Activity
-import android.view.View; // 👆 View usada en onClick y listeners
+// === IMPORTS ANDROID / UI ===
+import android.content.Intent; // 🚪 Permite saltar a otras pantallas
+import android.os.Bundle; // 🎒 Estado de la Activity al crearse
+import android.view.View; // 👆 Para manejar clics
 
-import androidx.activity.EdgeToEdge; // ↔️ helper para UI edge-to-edge
-import androidx.appcompat.app.AppCompatActivity; // 🧭 Activity con compatibilidad
-import androidx.core.graphics.Insets; // 📐 representación de insets (márgenes del sistema)
-import androidx.core.view.ViewCompat; // 🛠️ utilidades compatibles para Views
-import androidx.core.view.WindowInsetsCompat; // 🪟 manejo compatible de WindowInsets
+// === LIBRERÍAS DE UI MODERNAS ===
+import androidx.activity.EdgeToEdge; // ↔️ Permite UI a pantalla completa estilo moderno
+import androidx.appcompat.app.AppCompatActivity; // 🏛 Activity con compatibilidad extendida
+import androidx.core.graphics.Insets; // 📐 Márgenes de sistema
+import androidx.core.view.ViewCompat; // 🛠 Utilidades para Views
+import androidx.core.view.WindowInsetsCompat; // 🪟 Manejo de insets del sistema (notch / barra)
 
-public class MainActivity extends AppCompatActivity { // 🧩 Activity principal
+// 🎯 Esta es la Activity inicial del proyecto (la pantalla de bienvenida).
+public class MainActivity extends AppCompatActivity {
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) { // ▶️ punto de entrada al crear la Activity
-        super.onCreate(savedInstanceState); // ☑️ llama al onCreate de la superclase
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
 
-        EdgeToEdge.enable(this); // ↗️ habilita que la UI use todo el área de pantalla (edge-to-edge) 📱
+        EdgeToEdge.enable(this);
+        // ↗️ Activa el modo “edge-to-edge”: la UI puede usar toda la pantalla,
+        // respetando notch, barras y curvas del teléfono 😎📱
 
-        setContentView(R.layout.activity_main); // 🖼️ infla el layout activity_main.xml
+        setContentView(R.layout.activity_main);
+        // 🖼️ Infla el layout XML que define la pantalla principal
 
-        // 🔧 Ajusta el padding para respetar status bar y navigation bar
+        // 🔧 Ajustar automáticamente padding para evitar que la UI
+        // quede debajo de la barra de estado o la barra de navegación
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets sb = insets.getInsets(WindowInsetsCompat.Type.systemBars()); // 📏 obtiene insets de systemBars
-            v.setPadding(sb.left, sb.top, sb.right, sb.bottom); // ↔️ aplica padding para evitar solapamientos
-            return insets; // 🔁 devuelve insets sin consumir (otros pueden usarlo)
-        });
-    } // 🛑 fin onCreate
 
-    // 🔐 Método ligado a android:onClick="iniciar" en el layout
-    public void iniciar(View view) {
-        startActivity(new Intent(this, IniciarSesion.class)); // ▶️ abre IniciarSesion (login) 🔒
+            Insets sb = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            // 📏 Obtenemos los márgenes reales del sistema (status bar, nav bar)
+
+            v.setPadding(sb.left, sb.top, sb.right, sb.bottom);
+            // ↔️ Aplicamos esos márgenes al contenedor principal
+
+            return insets;
+            // 🔁 Devolvemos insets sin consumirlos (para que otros listeners puedan usarlos)
+        });
     }
 
-} // ✅ fin clase MainActivity
+    /**
+     * 🔐 MÉTODO iniciar()
+     * Este método está vinculado al botón en el layout via:
+     *      android:onClick="iniciar"
+     *
+     * Su misión:
+     * 👉 Enviar al usuario a la pantalla de login (IniciarSesion)
+     *    donde validará su identidad.
+     */
+    public void iniciar(View view) {
+        startActivity(new Intent(this, IniciarSesion.class));
+        // ▶️ Lanzamos la Activity de inicio de sesión
+        // y dejamos esta como “pantalla de bienvenida”.
+    }
+
+}

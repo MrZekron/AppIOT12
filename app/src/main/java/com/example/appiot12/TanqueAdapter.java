@@ -1,4 +1,6 @@
 package com.example.appiot12;
+// 📦 Adaptador encargado de transformar objetos TanqueAgua → filas del ListView.
+// Es la tarjeta de presentación de cada tanque en el “Dashboard del Usuario”.
 
 import android.content.Context;
 import android.graphics.Color;
@@ -10,6 +12,7 @@ import android.widget.ArrayAdapter;
 
 import androidx.annotation.NonNull;
 
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
@@ -17,6 +20,17 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.List;
 
+/**
+ * ⭐ ADAPTADOR DE TANQUES ⭐
+ *
+ * Muestra:
+ *   ✔ Nombre del tanque
+ *   ✔ Estado del dispositivo asociado
+ *   ✔ Sensores clave (pH, turbidez, conductividad, nivel)
+ *   ✔ Color de alerta dinámico
+ *
+ * Funciona como una MARRAQUETA caliente: carga rápido + datos en vivo 🔥.
+ */
 public class TanqueAdapter extends ArrayAdapter<TanqueAgua> {
 
     private final Context context;
@@ -35,10 +49,13 @@ public class TanqueAdapter extends ArrayAdapter<TanqueAgua> {
         View row = convertView;
         ViewHolder holder;
 
+        // ======================================================
+        // 🧠 PATRÓN VIEWHOLDER → optimiza scrolling masivo
+        // ======================================================
         if (row == null) {
             row = LayoutInflater.from(context).inflate(R.layout.item_tanque, parent, false);
-            holder = new ViewHolder();
 
+            holder = new ViewHolder();
             holder.tvNombreTanque = row.findViewById(R.id.tvNombreTanque);
             holder.tvResumenDatos = row.findViewById(R.id.tvResumenDatos);
 
@@ -49,37 +66,56 @@ public class TanqueAdapter extends ArrayAdapter<TanqueAgua> {
 
         TanqueAgua tanque = tanques.get(position);
 
+        // ======================================================
+        // 📝 NOMBRE DEL TANQUE
+        // ======================================================
         holder.tvNombreTanque.setText("Nombre: " + tanque.getNombre());
 
-        // =============================
-        //   SIN DISPOSITIVO ASIGNADO
-        // =============================
+        // ======================================================
+        // ❌ SIN DISPOSITIVO ASOCIADO
+        // ======================================================
         if (tanque.getIdDispositivo() == null || tanque.getIdDispositivo().isEmpty()) {
+
             holder.tvResumenDatos.setText("Estado: SIN DISPOSITIVO");
             holder.tvResumenDatos.setTextColor(Color.GRAY);
-            return row;
+
+            return row; // Nada más que hacer
         }
 
-        // =============================
-        //   CARGANDO DATOS DEL DISPOSITIVO
-        // =============================
+        // ======================================================
+        // 🔄 MOSTRAR "CARGANDO..." mientras vienen sensores
+        // ======================================================
         holder.tvResumenDatos.setText("Cargando sensores...");
         holder.tvResumenDatos.setTextColor(Color.GRAY);
 
+        // ======================================================
+        // ✔ RUTA CORRECTA PARA DISPOSITIVOS
+        //
+        //   usuarios/{uid}/dispositivos/{idDispositivo}
+        //
+        // ANTES estaba mal apuntado → no cargaba NUNCA el resumen
+        // ======================================================
+
+        String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
         FirebaseDatabase.getInstance()
-                .getReference("dispositivos")
+                .getReference("usuarios")
+                .child(uid)
+                .child("dispositivos")
                 .child(tanque.getIdDispositivo())
                 .addListenerForSingleValueEvent(new ValueEventListener() {
 
                     @Override
                     public void onDataChange(DataSnapshot snapshot) {
 
+                        // ⚠ NO EXISTE EL DISPOSITIVO → error de integridad
                         if (!snapshot.exists()) {
                             holder.tvResumenDatos.setText("DISPOSITIVO NO ENCONTRADO");
                             holder.tvResumenDatos.setTextColor(Color.RED);
                             return;
                         }
 
+                        // Intentamos convertir JSON → objeto
                         Dispositivo dispositivo = snapshot.getValue(Dispositivo.class);
 
                         if (dispositivo == null) {
@@ -88,18 +124,21 @@ public class TanqueAdapter extends ArrayAdapter<TanqueAgua> {
                             return;
                         }
 
-                        // =============================
-                        //     PROCESAR SENSORES
-                        // =============================
-                        String estadoPH = evaluarRango(dispositivo.getPh(), 0, 14);
-                        String estadoConductividad = evaluarRango(dispositivo.getConductividad(), 400, 800);
-                        String estadoTurbidez = evaluarRango(dispositivo.getTurbidez(), 1, 5);
+                        // ======================================================
+                        // 🧪 PROCESAR SENSORES (pH / Conductividad / Turbidez)
+                        // ======================================================
+                        String estadoPH = evaluarRango(dispositivo.getPh(), 6.5, 8.5);
+                        String estadoConductividad = evaluarRango(dispositivo.getConductividad(), 0, 700);
+                        String estadoTurbidez = evaluarRango(dispositivo.getTurbidez(), 0, 5);
 
+                        // ======================================================
+                        // 💧 CALCULAR NIVEL DEL TANQUE
+                        // ======================================================
                         double capacidad;
                         try {
                             capacidad = Double.parseDouble(tanque.getCapacidad());
                         } catch (Exception e) {
-                            capacidad = 0;
+                            capacidad = 0; // fallback seguro
                         }
 
                         double nivel = dispositivo.getUltrasonico();
@@ -111,26 +150,26 @@ public class TanqueAdapter extends ArrayAdapter<TanqueAgua> {
                             else estadoNivel = "LLENO";
                         }
 
-                        // =============================
-                        //   ARMAR RESUMEN DE SENSORES
-                        // =============================
+                        // ======================================================
+                        // 📊 RESUMEN FORMATEADO TIPO "DASHBOARD"
+                        // ======================================================
                         String resumen = String.format(
                                 "pH %.1f (%s) | Cond %.0f (%s) | Turb %.1f (%s) | Agua %.0f L (%s)",
-                                dispositivo.getPh(), estadoCorto(estadoPH),
-                                dispositivo.getConductividad(), estadoCorto(estadoConductividad),
-                                dispositivo.getTurbidez(), estadoCorto(estadoTurbidez),
+                                dispositivo.getPh(), estadoPH,
+                                dispositivo.getConductividad(), estadoConductividad,
+                                dispositivo.getTurbidez(), estadoTurbidez,
                                 nivel, estadoNivel
                         );
 
                         holder.tvResumenDatos.setText(resumen);
 
-                        // =============================
-                        //    COLORES DEPENDIENDO ALERTA
-                        // =============================
+                        // ======================================================
+                        // 🎨 COLOR DEPENDIENDO DEL ESTADO DEL TANQUE
+                        // ======================================================
                         boolean alerta =
-                                !"OK".equals(estadoCorto(estadoPH)) ||
-                                        !"OK".equals(estadoCorto(estadoConductividad)) ||
-                                        !"OK".equals(estadoCorto(estadoTurbidez)) ||
+                                !"OK".equals(estadoPH) ||
+                                        !"OK".equals(estadoConductividad) ||
+                                        !"OK".equals(estadoTurbidez) ||
                                         "BAJO".equals(estadoNivel);
 
                         int verde = Color.parseColor("#006400");
@@ -149,23 +188,20 @@ public class TanqueAdapter extends ArrayAdapter<TanqueAgua> {
         return row;
     }
 
+    // ======================================================
+    // 📦 HOLDER para reutilizar vistas
+    // ======================================================
     private static class ViewHolder {
         TextView tvNombreTanque;
         TextView tvResumenDatos;
     }
 
+    // ======================================================
+    // 🎯 EVALUAR SENSOR (OK / BAJO / ALTO)
+    // ======================================================
     private String evaluarRango(double v, double min, double max) {
         if (v < min) return "BAJO";
         if (v > max) return "ALTO";
         return "OK";
-    }
-
-    private String estadoCorto(String e) {
-        switch (e) {
-            case "OK": return "OK";
-            case "BAJO": return "BAJO";
-            case "ALTO": return "ALTO";
-            default: return "--";
-        }
     }
 }

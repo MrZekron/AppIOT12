@@ -1,4 +1,6 @@
 package com.example.appiot12;
+// 📦 Pantalla de información del tanque en tiempo real.
+// Dashboard IoT donde los sensores hablan y la app escucha 📡💧
 
 import android.content.Intent;
 import android.graphics.Color;
@@ -14,6 +16,7 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+// 📊 Librería MPAndroidChart: para graficar sensores en tiempo real
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.components.XAxis;
@@ -21,34 +24,32 @@ import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 
+// ☁️ Firebase
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.database.*;
 
 import java.util.ArrayList;
 
 public class Informacion extends AppCompatActivity {
 
-    // Información del tanque
+    // ==================== DATOS DEL TANQUE ====================
     private TextView txtNombre, txtCapasidad, txtColor;
 
-    // Sensores
+    // ==================== VALORES DE SENSORES ====================
     private TextView txtPh, txtConductividad, txtTurbidez, txtUltrasonico;
 
-    // Estados
+    // ==================== ESTADOS DEL SISTEMA ====================
     private TextView txtPhEstado, txtCondEstado, txtTurbEstado, txtUltraEstado;
 
-    // Gráfico
+    // ==================== GRÁFICO DINÁMICO ====================
     private LineChart sensorChart;
     private LineData lineData;
     private LineDataSet setPH, setCond, setTurb;
-    private static final int MAX_POINTS_PER_SET = 300;
-    private int sampleIndex = 0;
 
-    // Firebase
+    private static final int MAX_POINTS_PER_SET = 300; // KPI máximo permitido en memoria
+    private int sampleIndex = 0; // Simula eje X incremental en tiempo real
+
+    // ==================== FIREBASE ====================
     private String tanqueId;
     private String idDispositivo;
 
@@ -61,16 +62,17 @@ public class Informacion extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
+        EdgeToEdge.enable(this); // Pantalla moderna sin bordes
         setContentView(R.layout.activity_informacion);
 
+        // Ajuste UI según barras del sistema
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets sb = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(sb.left, sb.top, sb.right, sb.bottom);
             return insets;
         });
 
-        // Enlazar vistas
+        // ==================== VINCULAR XML ====================
         txtNombre = findViewById(R.id.txtNombre);
         txtCapasidad = findViewById(R.id.txtCapasidad);
         txtColor = findViewById(R.id.txtColor);
@@ -87,9 +89,10 @@ public class Informacion extends AppCompatActivity {
 
         sensorChart = findViewById(R.id.sensorChart);
 
-        // Recibir datos del Intent
+        // ==================== RECIBIR INTENT ====================
         Intent intent = getIntent();
 
+        // Se aceptan 3 posibles nombres de clave → robustez contra Activities antiguas 😉
         tanqueId = firstNonNull(
                 intent.getStringExtra("TANQUE_ID"),
                 intent.getStringExtra("tanqueId"),
@@ -98,24 +101,26 @@ public class Informacion extends AppCompatActivity {
 
         idDispositivo = intent.getStringExtra("idDispositivo");
 
-        String nombreExtra = firstNonNull(intent.getStringExtra("tanqueNombre"));
-        String capacidadExtra = firstNonNull(intent.getStringExtra("tanqueCapacidad"));
-        String colorExtra = firstNonNull(intent.getStringExtra("tanqueColor"));
+        // Extras opcionales visuales
+        String nombreExtra     = firstNonNull(intent.getStringExtra("tanqueNombre"));
+        String capacidadExtra  = firstNonNull(intent.getStringExtra("tanqueCapacidad"));
+        String colorExtra      = firstNonNull(intent.getStringExtra("tanqueColor"));
 
+        // Mostrar valores iniciales
         if (nombreExtra != null) txtNombre.setText(nombreExtra);
         if (capacidadExtra != null) txtCapasidad.setText(capacidadExtra);
         if (colorExtra != null) txtColor.setText(colorExtra);
 
-        // Configurar gráfica
+        // ==================== CONFIGURAR GRÁFICO ====================
         setupChart();
 
-        // Validar tanqueId
+        // ==================== VALIDACIÓN DE ID ====================
         if (tanqueId == null || tanqueId.isEmpty()) {
             Toast.makeText(this, "No se encontró ID del tanque.", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // Rutas reales de Firebase (nuevo modelo)
+        // ==================== REFERENCIAS FIREBASE ====================
         String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
         tanqueRef = FirebaseDatabase.getInstance()
@@ -125,24 +130,28 @@ public class Informacion extends AppCompatActivity {
                 .child(tanqueId);
 
         if (idDispositivo != null && !idDispositivo.isEmpty()) {
+
             dispositivoRef = FirebaseDatabase.getInstance()
                     .getReference("usuarios")
                     .child(uid)
                     .child("dispositivos")
                     .child(idDispositivo);
 
-            subscribeDispositivoRealtime();
+            subscribeDispositivoRealtime(); // Sensores en vivo
         } else {
             Toast.makeText(this, "Este tanque no tiene dispositivo asociado.", Toast.LENGTH_SHORT).show();
         }
 
-        subscribeTanqueMetaRealtime();
+        subscribeTanqueMetaRealtime(); // Nombre, color, capacidad
     }
 
-    // ===================== META DEL TANQUE =======================
+    // ============================================================
+    // 👍 ESCUCHAR CAMBIOS EN METADATOS DEL TANQUE
+    // ============================================================
     private void subscribeTanqueMetaRealtime() {
 
         tanqueListener = new ValueEventListener() {
+
             @Override
             public void onDataChange(@NonNull DataSnapshot snap) {
 
@@ -162,40 +171,44 @@ public class Informacion extends AppCompatActivity {
         tanqueRef.addValueEventListener(tanqueListener);
     }
 
-
-    // ===================== SENSORES EN TIEMPO REAL =======================
+    // ============================================================
+    // ⚡ ESCUCHAR SENSORES EN TIEMPO REAL
+    // ============================================================
     private void subscribeDispositivoRealtime() {
 
         dispositivoListener = new ValueEventListener() {
+
             @Override
             public void onDataChange(@NonNull DataSnapshot snap) {
 
-                double ph = readDouble(snap, "ph");
-                double cond = readDouble(snap, "conductividad");
-                double turb = readDouble(snap, "turbidez");
+                double ph    = readDouble(snap, "ph");
+                double cond  = readDouble(snap, "conductividad");
+                double turb  = readDouble(snap, "turbidez");
                 double ultra = readDouble(snap, "ultrasonico");
 
+                // Mostrar valores en pantalla
                 txtPh.setText("pH: " + ph);
                 txtConductividad.setText("Conductividad: " + cond);
                 txtTurbidez.setText("Turbidez: " + turb);
                 txtUltrasonico.setText("Ultrasonico: " + ultra);
 
+                // Cambiar colores según valores (estilo semáforo)
                 updateSensorColors(ph, cond, turb, ultra);
 
-                // Agregar al gráfico
+                // 📈 Agregar valores al gráfico
                 float y = sampleIndex++;
 
                 safeAddEntry(lineData, 0, new Entry(scalePh(ph), y));
                 safeAddEntry(lineData, 1, new Entry(scaleCond(cond), y));
                 safeAddEntry(lineData, 2, new Entry(scaleTurb(turb), y));
 
-                prune(setPH);
+                prune(setPH);   // Evitar crecimiento infinito
                 prune(setCond);
                 prune(setTurb);
 
                 lineData.notifyDataChanged();
                 sensorChart.notifyDataSetChanged();
-                sensorChart.invalidate();
+                sensorChart.invalidate(); // Refrescar vista
             }
 
             @Override public void onCancelled(@NonNull DatabaseError error) {}
@@ -204,8 +217,9 @@ public class Informacion extends AppCompatActivity {
         dispositivoRef.addValueEventListener(dispositivoListener);
     }
 
-
-    // ===================== GRÁFICO =======================
+    // ============================================================
+    // 🎨 CONFIGURACIÓN DE GRÁFICO
+    // ============================================================
     private void setupChart() {
 
         sensorChart.setNoDataText("Aún no hay lecturas");
@@ -213,19 +227,22 @@ public class Informacion extends AppCompatActivity {
 
         XAxis x = sensorChart.getXAxis();
         x.setPosition(XAxis.XAxisPosition.BOTTOM);
-        x.setGranularity(5f);
+        x.setGranularity(5f); // Eje X cada 5 puntos
         x.setLabelCount(20, true);
 
+        // Apagamos ejes Y para gráfico minimalista futurista ✨
         sensorChart.getAxisLeft().setEnabled(false);
         sensorChart.getAxisRight().setEnabled(false);
 
         Legend legend = sensorChart.getLegend();
         legend.setForm(Legend.LegendForm.LINE);
 
+        // Crear líneas vacías
         setPH = new LineDataSet(new ArrayList<>(), "pH");
         setCond = new LineDataSet(new ArrayList<>(), "Conductividad");
         setTurb = new LineDataSet(new ArrayList<>(), "Turbidez");
 
+        // Uniformar estilo
         configureDataSet(setPH);
         configureDataSet(setCond);
         configureDataSet(setTurb);
@@ -243,29 +260,32 @@ public class Informacion extends AppCompatActivity {
         set.setDrawCircles(true);
         set.setCircleRadius(3f);
         set.setDrawValues(false);
-        set.setColor(Color.GRAY);
+        set.setColor(Color.GRAY);        // Color base
         set.setCircleColor(Color.GRAY);
     }
 
     private void prune(LineDataSet set) {
         while (set.getEntryCount() > MAX_POINTS_PER_SET)
-            set.removeFirst();
+            set.removeFirst(); // Eliminamos puntos antiguos
     }
 
-
-    // ===================== ESTADOS DE COLOR =======================
+    // ============================================================
+    // 🚦 SEMÁFORO DE CALIDAD DEL AGUA
+    // ============================================================
     private void updateSensorColors(double ph, double cond, double turb, double ultra) {
 
-        int colorPh = getColorStatus(ph, 6.5, 8.5, 5.0, 9.0);
-        int colorCond = getColorStatus(cond, 0, 700, 701, 1500);
-        int colorTurb = getColorStatus(turb, 0, 5, 6, 50);
-        int colorUltra = getColorStatus(ultra, 60, 100, 30, 59);
+        int colorPh   = getColorStatus(ph,   6.5,  8.5,  5.0,  9.0);
+        int colorCond = getColorStatus(cond, 0,    700, 701, 1500);
+        int colorTurb = getColorStatus(turb, 0,    5,   6,    50);
+        int colorUltra= getColorStatus(ultra,60,   100, 30,   59);
 
+        // Cambiar colores de valores
         txtPh.setTextColor(colorPh);
         txtConductividad.setTextColor(colorCond);
         txtTurbidez.setTextColor(colorTurb);
         txtUltrasonico.setTextColor(colorUltra);
 
+        // Actualizar textos de estado del sensor
         txtPhEstado.setText(getEstadoTexto("pH", colorPh));
         txtPhEstado.setTextColor(colorPh);
 
@@ -286,20 +306,18 @@ public class Informacion extends AppCompatActivity {
     }
 
     private String getEstadoTexto(String sensor, int color) {
-        if (color == Color.GREEN) return sensor + " en nivel óptimo";
-        if (color == Color.YELLOW) return sensor + " en advertencia";
-        return sensor + " en nivel crítico";
+        if (color == Color.GREEN) return sensor + " en nivel óptimo 😎";
+        if (color == Color.YELLOW) return sensor + " en advertencia ⚠️";
+        return sensor + " en nivel crítico 🔥";
     }
 
-
-    // ===================== HELPERS =======================
+    // ============================================================
+    // 🔧 HELPERS VARIOS
+    // ============================================================
     private double readDouble(DataSnapshot snap, String key) {
         if (!snap.hasChild(key)) return Double.NaN;
-        try {
-            return Double.parseDouble(String.valueOf(snap.child(key).getValue()));
-        } catch (Exception e) {
-            return Double.NaN;
-        }
+        try { return Double.parseDouble(String.valueOf(snap.child(key).getValue())); }
+        catch (Exception e) { return Double.NaN; }
     }
 
     private void safeAddEntry(LineData data, int index, Entry e) {
@@ -318,6 +336,9 @@ public class Informacion extends AppCompatActivity {
     private float scaleCond(double v) { return Float.isNaN((float)v) ? Float.NaN : (float)((v / 2000.0) * 100); }
     private float scaleTurb(double v) { return Float.isNaN((float)v) ? Float.NaN : (float)((v / 100.0) * 100); }
 
+    // ============================================================
+    // 🧹 LIMPIAR LISTENERS (Memoria segura)
+    // ============================================================
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -329,3 +350,4 @@ public class Informacion extends AppCompatActivity {
             dispositivoRef.removeEventListener(dispositivoListener);
     }
 }
+

@@ -1,54 +1,68 @@
 package com.example.appiot12;
+// 📦 Clase dentro del ecosistema AguaSegura: el “cerebro digital” de cada tanque 💧🤖
 
 /**
  * 🌟 CLASE DISPOSITIVO 🌟
  *
- * Representa el corazón tecnológico del tanque 🧠💧.
+ * Representa el módulo IoT que envía mediciones desde el tanque hacia Firebase.
+ * Podríamos decir que es el "sensor multipropósito premium" del sistema 😎📡.
  *
- * IMPORTANTE:
- * - NO guarda pagos (los maneja usuarios/{id}/pagos).
- * - Cada dispositivo puede estar asociado solo a 1 tanque.
- * - Si idTanque = null → el dispositivo está libre.
+ * REGLAS CORPORATIVAS:
+ * - No maneja pagos (solo sensores, estado y asociación).
+ * - Cada dispositivo puede pertenecer a *un* solo tanque.
+ * - Si idTanque = null → dispositivo libre, listo para ser asignado.
  */
 
 public class Dispositivo {
 
-    // 🆔 Identificador único del dispositivo
+    // 🆔 Identificador único del dispositivo (UUID generado al comprarlo)
     private String id;
 
-    // ⭐ Nuevo! Tanque al que pertenece (o null)
+    // ⭐ Identificador del tanque al que pertenece este dispositivo.
+    //    Si es null, significa que el dispositivo aún no está asignado.
     private String idTanque;
 
-    // === SENSORES REALES ===
-    private double ph;
-    private double conductividad;
-    private double turbidez;
-    private double ultrasonico;
+    // === SENSORES REALES DEL ESP32 ===
+    // Estos valores llegan desde el módulo IoT: mediciones del agua en tiempo real.
+    private double ph;            // 🧪 Nivel de acidez
+    private double conductividad; // ⚡ Sales disueltas
+    private double turbidez;      // 🌫 Claridad del agua
+    private double ultrasonico;   // 📡 Nivel del tanque (distancia medida)
 
     // === ESTADOS CALCULADOS ===
-    private String estadoPH;
-    private String estadoConductividad;
-    private String estadoTurbidez;
+    // Basados en rangos configurados por la OMS / normas chilenas.
+    private String estadoPH;            // 👍 Normal | ⚠️ Alerta | 🔥 Peligro
+    private String estadoConductividad; // Idem pero con sales
+    private String estadoTurbidez;      // Idem pero con turbidez
 
-    // === CONSTRUCTOR VACÍO (Firebase lo necesita) ===
+    // =========================================================
+    // CONSTRUCTOR VACÍO → NECESARIO PARA FIREBASE
+    // =========================================================
     public Dispositivo() {}
 
-    // === CONSTRUCTOR COMPLETO ===
+    // =========================================================
+    // CONSTRUCTOR COMPLETO → Inicializa un dispositivo nuevo
+    // =========================================================
     public Dispositivo(String id, double ph, double conductividad, double turbidez, double ultrasonico) {
-        this.id = id;
-        this.ph = ph;
+
+        this.id = id;                   // ID único del dispositivo
+        this.ph = ph;                   // Valor inicial (placeholder)
         this.conductividad = conductividad;
         this.turbidez = turbidez;
         this.ultrasonico = ultrasonico;
 
+        // Estados no evaluados aún
         this.estadoPH = "N/A";
         this.estadoConductividad = "N/A";
         this.estadoTurbidez = "N/A";
 
-        this.idTanque = null;  // ⭐ dispositivo libre al crearse
+        // Nuevo dispositivo → sin tanque asignado
+        this.idTanque = null;
     }
 
-    // === GETTERS & SETTERS ===
+    // =========================================================
+    // GETTERS & SETTERS — Acceso total estilo empresa ordenada
+    // =========================================================
 
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }

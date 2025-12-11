@@ -1,106 +1,138 @@
-package com.example.appiot12; // 📦 Este archivo pertenece al paquete principal de la app
+package com.example.appiot12;
+// 📦 Clase ubicada en el paquete central del proyecto AguaSegura
 
-import android.content.Intent; // 🚪 Para cambiar de pantalla (Activities)
-import android.os.Bundle; // 🎒 Información al crear la Activity
-import android.view.View; // 👆 Para manejar clics en botones o vistas
-import android.widget.TextView; // 📝 Para mostrar el correo del usuario en pantalla
-import android.widget.Toast; // 🍞 Mensajes cortos
+// === IMPORTS ANDROID ===
+import android.content.Intent; // 🚪 Permite navegar entre Activities
+import android.os.Bundle; // 🎒 Estado y datos enviados a la Activity
+import android.view.View; // 👆 Detectar clics
+import android.widget.TextView; // 📝 Mostrar correo del usuario
+import android.widget.Toast; // 🍞 Mensajes cortos informativos
 
-import androidx.activity.EdgeToEdge; // 📱 Para usar el diseño de borde a borde
-import androidx.appcompat.app.AppCompatActivity; // 🏛️ Clase base Activity
-import androidx.core.graphics.Insets; // 📐 Márgenes
+// === UI MODERNA ===
+import androidx.activity.EdgeToEdge; // 📱 Modo pantalla completa moderno
+import androidx.appcompat.app.AppCompatActivity; // 🏛 Clase base
+import androidx.core.graphics.Insets; // 📐 Márgenes del sistema
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-import com.google.firebase.auth.FirebaseAuth; // 🔐 Autenticación Firebase
+// === FIREBASE ===
+import com.google.firebase.auth.FirebaseAuth; // 🔐 Control de autenticación
 import com.google.firebase.auth.FirebaseUser; // 👤 Usuario logueado
 
-// 🏠 Pantalla MENÚ PRINCIPAL de la app
+/**
+ * 🏠 MENU PRINCIPAL DEL USUARIO
+ *
+ * Esta pantalla funciona como el "Dashboard" inicial del cliente.
+ * Desde aquí puede:
+ *   ✔ Gestionar tanques
+ *   ✔ Ver sensores en tiempo real
+ *   ✔ Agregar dispositivos
+ *   ✔ Revisar pagos
+ *   ✔ Configurar su cuenta
+ *
+ * Es el hub central del ecosistema AguaSegura 💧🚀.
+ */
 public class Menu extends AppCompatActivity {
 
-    private FirebaseAuth mAuth;        // 🔐 Controlador de autenticación
-    private TextView tvCorreoUsuario;  // ✉️ Mostrar correo
+    private FirebaseAuth mAuth;           // 🔐 Controlador de sesión Firebase
+    private TextView tvCorreoUsuario;     // ✉️ Zona para mostrar quién está conectado
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
+        EdgeToEdge.enable(this);          // 📱 Activa modo moderno del layout
         setContentView(R.layout.activity_menu);
 
-        // Ajustar márgenes
+        // Ajuste automático según barras del sistema (notch-friendly)
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets bars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(bars.left, bars.top, bars.right, bars.bottom);
             return insets;
         });
 
+        // === VINCULAR VARIABLES ===
         mAuth = FirebaseAuth.getInstance();
         tvCorreoUsuario = findViewById(R.id.tvCorreoUsuario);
 
-        cargarCorreoUsuario();
+        cargarCorreoUsuario(); // Mostrar correo en la parte superior 🎯
     }
 
-    // 📩 Mostrar correo del usuario
+    // ============================================================================
+    // 📌 Mostrar correo del usuario logueado en la UI
+    // ============================================================================
     private void cargarCorreoUsuario() {
+
         FirebaseUser user = mAuth.getCurrentUser();
 
         if (user != null) {
+
             String correo = user.getEmail();
 
+            // Si existe correo → lo mostramos. Si no → "Sesión activa".
             if (correo != null && !correo.isEmpty()) {
                 tvCorreoUsuario.setText(correo);
             } else {
                 tvCorreoUsuario.setText("Sesión activa");
             }
+
         } else {
+            // No debería pasar normalmente
             tvCorreoUsuario.setText("Sin sesión");
             Toast.makeText(this, "No hay usuario autenticado", Toast.LENGTH_SHORT).show();
         }
     }
 
-    // ⚙ Configuración
+    // ============================================================================
+    // 🚀 NAVEGACIÓN A TODAS LAS FUNCIONES PRINCIPALES
+    // ============================================================================
+
+    // ⚙ CONFIGURACIÓN DE CUENTA
     public void abrirConfiguracion(View v) {
         startActivity(new Intent(this, Configuracion.class));
     }
 
-    // ➕ Agregar tanque
+    // ➕ REGISTRAR UN NUEVO TANQUE
     public void agregar(View v) {
         startActivity(new Intent(this, Agregar.class));
     }
 
-    // 📋 Lista de tanques
+    // 📋 LISTA DE TANQUES DEL USUARIO
     public void lista(View v) {
         startActivity(new Intent(this, Lista.class));
     }
 
-    // 💸 Mis pagos
+    // 💸 HISTORIAL DE COMPRAS DEL USUARIO
     public void pagos(View v) {
         startActivity(new Intent(this, HistorialCompra.class));
     }
 
-    // 🛒 Comprar dispositivo
+    // 🛒 COMPRAR DISPOSITIVO NUEVO
     public void comprarDispositivo(View v) {
         startActivity(new Intent(this, ComprarDispositivo.class));
     }
 
-    // ⭐ Asociar dispositivo a tanque
+    // 🔗 ASOCIAR DISPOSITIVO A UN TANQUE
     public void asociarDispositivo(View v) {
         startActivity(new Intent(this, AsociarDispositivoATanque.class));
     }
 
-    // ⭐ NUEVO: Centro de Pagos (pagar cuotas o total)
+    // 🧾 CENTRO DE PAGOS (Pagar cuotas / total)
     public void centroPagos(View v) {
         startActivity(new Intent(this, CentroPagos.class));
     }
 
-    // 🚪 Cerrar sesión
+    // ============================================================================
+    // 🚪 CERRAR SESIÓN
+    // ============================================================================
     public void salir(View v) {
-        mAuth.signOut();
 
+        mAuth.signOut();  // 🔐 Cerramos sesión Firebase
+
+        // Redirigimos a la pantalla inicial limpiando el stack
         Intent intent = new Intent(this, MainActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
 
         startActivity(intent);
-        finish();
+        finish(); // Cerrar menú para evitar regresar con BACK
     }
 }

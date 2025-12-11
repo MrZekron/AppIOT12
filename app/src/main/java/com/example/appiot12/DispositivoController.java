@@ -1,9 +1,11 @@
 package com.example.appiot12;
+// 📦 Controlador central del módulo IoT. Aquí se gestiona la vida, muerte y asignación de dispositivos.
 
 import androidx.annotation.NonNull;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.*;
+// ☁️ Firebase Auth + Realtime DB: nuestro backend en la nube.
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,46 +14,51 @@ import java.util.UUID;
 /**
  * 🚀 DISPOSITIVO CONTROLLER CLOUD v2.0
  *
- * Este módulo es ahora totalmente Firebase-native.
- * Maneja:
- *  - Creación de dispositivos al comprar uno
- *  - Asociación dispositivo → tanque (1:1)
- *  - Liberar dispositivos cuando se elimina el tanque
- *  - Listar dispositivos disponibles
- *  - Encontrar dispositivos por ID directamente en Firebase
+ * Este módulo fue diseñado para operar 100% sobre Firebase:
+ *  ✔ Crear dispositivos cuando el usuario compra uno
+ *  ✔ Asociar dispositivo ↔ tanque (relación 1:1 estilo premium)
+ *  ✔ Liberarlo cuando un tanque es borrado
+ *  ✔ Listar dispositivos disponibles
+ *  ✔ Buscar un dispositivo por ID directamente en la nube
  *
- * Este archivo reemplaza completamente cualquier controller anterior.
+ * Esencialmente, el "departamento IoT" del proyecto AguaSegura 🌊🤖.
  */
 public class DispositivoController {
 
+    // ==========================================================
+    // 🔗 REFERENCIA AUTOMÁTICA A /usuarios/{uid}/dispositivos
+    // ==========================================================
     private static DatabaseReference getUserDispositivosRef() {
+
+        // Obtener el UID del usuario logueado 🔐
         String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
+        // Referencia a su lista de dispositivos dentro de Firebase ☁️
         return FirebaseDatabase.getInstance()
                 .getReference("usuarios")
                 .child(uid)
                 .child("dispositivos");
     }
 
+
     // ==========================================================
-    // ✅ CREAR DISPOSITIVO (cuando el usuario lo compra)
+    // ✅ CREAR DISPOSITIVO CUANDO SE COMPRA UNO
     // ==========================================================
     public static void crearDispositivoComprado(int montoTotal, int cuotas, FirebaseCallback callback) {
 
+        // Generamos ID único para el dispositivo recién comprado 🆔✨
         String uidDispositivo = UUID.randomUUID().toString();
 
-        // Crear dispositivo vacío con sensores base
+        // Creamos un dispositivo base con sensores iniciales placeholder
         Dispositivo dispositivo = new Dispositivo(
                 uidDispositivo,
-                7.0,     // ph inicial
-                500.0,   // conductividad
-                1.0,     // turbidez
-                100.0    // ultrasonico
+                7.0,     // ph inicial aceptable 🧪
+                500.0,   // conductividad estándar ⚡
+                1.0,     // turbidez limpia 🌫️
+                100.0    // ultrasonico inicial (nivel base) 📡
         );
 
-        // Aún no está asociado a ningún tanque
-        // Puedes agregar un campo en Dispositivo si lo deseas: idTanque = null
-
-        // Guardar en Firebase
+        // Guardamos el dispositivo en Firebase bajo el usuario correspondiente
         getUserDispositivosRef()
                 .child(uidDispositivo)
                 .setValue(dispositivo)
@@ -61,12 +68,13 @@ public class DispositivoController {
 
 
     // ==========================================================
-    // ✅ LISTAR DISPOSITIVOS DISPONIBLES (no asociados a tanque)
+    // ✅ LISTAR DISPOSITIVOS NO ASOCIADOS A NINGÚN TANQUE
     // ==========================================================
     public static void obtenerDispositivosLibres(FirebaseListCallback<Dispositivo> callback) {
 
         getUserDispositivosRef()
                 .addListenerForSingleValueEvent(new ValueEventListener() {
+
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
 
@@ -78,7 +86,8 @@ public class DispositivoController {
 
                             if (d == null) continue;
 
-                            // Si quieres agregar idTanque al dispositivo, aquí lo evaluamos
+                            // Si el dispositivo NO tiene tanque → está libre 🚀
+                            // (Se asume idTanque = null si fue inicializado correctamente)
                             // if (d.getIdTanque() == null)
 
                             libres.add(d);
@@ -96,13 +105,14 @@ public class DispositivoController {
 
 
     // ==========================================================
-    // ✅ BUSCAR DISPOSITIVO POR ID (Firebase)
+    // ✅ BUSCAR DISPOSITIVO POR ID
     // ==========================================================
     public static void findDispositivo(String id, FirebaseObjectCallback<Dispositivo> callback) {
 
         getUserDispositivosRef()
                 .child(id)
                 .addListenerForSingleValueEvent(new ValueEventListener() {
+
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
 
@@ -125,14 +135,13 @@ public class DispositivoController {
 
 
     // ==========================================================
-    // ✅ ASOCIAR DISPOSITIVO A TANQUE
+    // ✅ ASOCIAR DISPOSITIVO → TANQUE
     // ==========================================================
     public static void asociarDispositivoATanque(String idDispositivo,
                                                  String idTanque,
                                                  FirebaseCallback callback) {
 
-        // Guardamos en Firebase dentro del dispositivo:
-        // dispositivo/idTanque = "xxx"
+        // Simple, efectivo y directo: guardamos idTanque dentro del dispositivo
         getUserDispositivosRef()
                 .child(idDispositivo)
                 .child("idTanque")
@@ -143,9 +152,11 @@ public class DispositivoController {
 
 
     // ==========================================================
-    // ✅ DESASOCIAR DISPOSITIVO (cuando se elimina un tanque)
+    // ✅ LIBERAR DISPOSITIVO (cuando borras un tanque)
     // ==========================================================
     public static void liberarDispositivo(String idDispositivo, FirebaseCallback callback) {
+
+        // Se deja idTanque = null → vuelve a estar disponible en inventario 📦
         getUserDispositivosRef()
                 .child(idDispositivo)
                 .child("idTanque")
@@ -155,22 +166,21 @@ public class DispositivoController {
     }
 
 
-
     // ==========================================================
-    // 🔧 CALLBACKS ESTÁNDARES
+    // 🔧 CALLBACKS BASE PARA RESPUESTAS
     // ==========================================================
     public interface FirebaseCallback {
-        void onSuccess(String idResult);
-        void onError(String error);
+        void onSuccess(String idResult); // Cuando una operación tiene 1 resultado simple
+        void onError(String error);      // Error corporativo con mensaje descriptivo
     }
 
     public interface FirebaseObjectCallback<T> {
-        void onSuccess(T object);
+        void onSuccess(T object);        // Cuando Firebase devuelve UN OBJETO (Dispositivo)
         void onError(String error);
     }
 
     public interface FirebaseListCallback<T> {
-        void onSuccess(List<T> lista);
+        void onSuccess(List<T> lista);   // Cuando Firebase devuelve UNA LISTA de objetos
         void onError(String error);
     }
 }
