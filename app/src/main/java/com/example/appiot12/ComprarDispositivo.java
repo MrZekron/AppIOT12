@@ -115,7 +115,7 @@ public class ComprarDispositivo extends AppCompatActivity {
                 7.0,
                 500.0,
                 1.0,
-                100.0
+                1000.0
         );
 
         // =============================================================

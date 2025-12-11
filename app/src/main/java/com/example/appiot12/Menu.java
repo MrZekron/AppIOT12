@@ -4,22 +4,22 @@ import android.content.Intent; // 🚪 Para cambiar de pantalla (Activities)
 import android.os.Bundle; // 🎒 Información al crear la Activity
 import android.view.View; // 👆 Para manejar clics en botones o vistas
 import android.widget.TextView; // 📝 Para mostrar el correo del usuario en pantalla
-import android.widget.Toast; // 🍞 Mensajes cortos que aparecen abajo
+import android.widget.Toast; // 🍞 Mensajes cortos
 
 import androidx.activity.EdgeToEdge; // 📱 Para usar el diseño de borde a borde
-import androidx.appcompat.app.AppCompatActivity; // 🏛️ Clase base de una Activity moderna
-import androidx.core.graphics.Insets; // 📐 Márgenes de barras del sistema
+import androidx.appcompat.app.AppCompatActivity; // 🏛️ Clase base Activity
+import androidx.core.graphics.Insets; // 📐 Márgenes
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-import com.google.firebase.auth.FirebaseAuth; // 🔐 Manejo de sesión del usuario en Firebase
-import com.google.firebase.auth.FirebaseUser; // 👤 Representa al usuario que está logueado
+import com.google.firebase.auth.FirebaseAuth; // 🔐 Autenticación Firebase
+import com.google.firebase.auth.FirebaseUser; // 👤 Usuario logueado
 
 // 🏠 Pantalla MENÚ PRINCIPAL de la app
 public class Menu extends AppCompatActivity {
 
-    private FirebaseAuth mAuth;        // 🔐 Controlador de la autenticación Firebase
-    private TextView tvCorreoUsuario;  // ✉️ Texto donde mostramos el correo del usuario logueado
+    private FirebaseAuth mAuth;        // 🔐 Controlador de autenticación
+    private TextView tvCorreoUsuario;  // ✉️ Mostrar correo
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,7 +40,7 @@ public class Menu extends AppCompatActivity {
         cargarCorreoUsuario();
     }
 
-    // 📩 Mostrar correo
+    // 📩 Mostrar correo del usuario
     private void cargarCorreoUsuario() {
         FirebaseUser user = mAuth.getCurrentUser();
 
@@ -83,9 +83,14 @@ public class Menu extends AppCompatActivity {
         startActivity(new Intent(this, ComprarDispositivo.class));
     }
 
-    // ⭐ NUEVO: Asociar dispositivo a tanque ⭐
+    // ⭐ Asociar dispositivo a tanque
     public void asociarDispositivo(View v) {
         startActivity(new Intent(this, AsociarDispositivoATanque.class));
+    }
+
+    // ⭐ NUEVO: Centro de Pagos (pagar cuotas o total)
+    public void centroPagos(View v) {
+        startActivity(new Intent(this, CentroPagos.class));
     }
 
     // 🚪 Cerrar sesión
