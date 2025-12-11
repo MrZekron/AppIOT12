@@ -9,7 +9,7 @@
     android:background="@mipmap/fondo"
     tools:context=".GestionUsuarios">
 
-    <!-- Título de la pantalla -->
+    <!-- Título -->
     <TextView
         android:id="@+id/tvTituloUsuarios"
         android:layout_width="wrap_content"
@@ -33,6 +33,22 @@
         app:layout_constraintTop_toBottomOf="@id/tvTituloUsuarios"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent" />
+        app:layout_constraintBottom_toTopOf="@id/btnVolver" />
+
+    <!-- ⭐ BOTÓN VOLVER ⭐ -->
+    <Button
+        android:id="@+id/btnVolver"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Volver"
+        android:textSize="18sp"
+        android:textColor="#FFFFFF"
+        android:padding="10dp"
+        android:background="#A33D60"
+        android:onClick="volver"
+        android:layout_marginBottom="24dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

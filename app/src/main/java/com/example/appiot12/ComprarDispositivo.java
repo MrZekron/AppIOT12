@@ -119,15 +119,17 @@ public class ComprarDispositivo extends AppCompatActivity {
         );
 
         // =============================================================
-        // 2) Crear PAGO asociado EXTERNAMENTE
+        // 2) Crear PAGO (USANDO EL CONSTRUCTOR CORRECTO)
         // =============================================================
-        Pago pago = new Pago(PRECIO_DISPOSITIVO, cuotasSeleccionadas, idDispositivo);
+        long timestamp = System.currentTimeMillis();
 
-        // Le agrego manualmente el idDispositivo:
-        //  🔥 MODIFICACIÓN NECESARIA EN Pago.java:
-        //     agregar: private String idDispositivo;
-        //     + getter/setter
-        pago.setIdDispositivo(idDispositivo);
+        Pago pago = new Pago(
+                idPago,                // idPago
+                PRECIO_DISPOSITIVO,    // precio total
+                cuotasSeleccionadas,   // cuotas
+                timestamp,             // fecha
+                idDispositivo          // idDispositivo
+        );
 
         // Guardar DISPOSITIVO
         FirebaseDatabase.getInstance()

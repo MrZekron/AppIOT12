@@ -1,6 +1,7 @@
 package com.example.appiot12;
 
 import android.os.Bundle;
+import android.view.View;
 import android.widget.ListView;
 
 import androidx.activity.EdgeToEdge;
@@ -81,4 +82,8 @@ public class GestionUsuarios extends AppCompatActivity {
                     }
                 });
     }
+    public void volver(View v) {
+        finish();
+    }
+
 }

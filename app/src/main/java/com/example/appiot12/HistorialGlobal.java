@@ -1,5 +1,6 @@
 package com.example.appiot12;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -10,16 +11,18 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
+import com.github.mikephil.charting.charts.PieChart;
+import com.github.mikephil.charting.data.PieData;
+import com.github.mikephil.charting.data.PieDataSet;
+import com.github.mikephil.charting.data.PieEntry;
+import com.google.firebase.database.*;
+
+import java.util.ArrayList;
 
 public class HistorialGlobal extends AppCompatActivity {
 
-    // 🔢 Etiquetas donde mostraremos los números importantes del sistema
     private TextView txtUsuariosTotal, txtTanquesTotal, txtDispositivosTotal;
+    private PieChart pieChartUsuarios;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,18 +36,18 @@ public class HistorialGlobal extends AppCompatActivity {
             return insets;
         });
 
-        // 📌 Conectamos los TextView del XML
         txtUsuariosTotal = findViewById(R.id.txtUsuariosTotal);
         txtTanquesTotal = findViewById(R.id.txtTanquesTotal);
         txtDispositivosTotal = findViewById(R.id.txtDispositivosTotal);
+        pieChartUsuarios = findViewById(R.id.pieChartUsuarios);
 
-        // 🚀 Llamamos al método que lee Firebase
         cargarHistorialGlobal();
     }
 
     private void cargarHistorialGlobal() {
 
-        DatabaseReference refUsuarios = FirebaseDatabase.getInstance().getReference("usuarios");
+        DatabaseReference refUsuarios =
+                FirebaseDatabase.getInstance().getReference("usuarios");
 
         refUsuarios.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -54,31 +57,42 @@ public class HistorialGlobal extends AppCompatActivity {
                 int totalTanques = 0;
                 int totalDispositivos = 0;
 
-                // 👑 Recorremos todos los usuarios del sistema
+                // 🔍 Recorremos TODOS los usuarios
                 for (DataSnapshot usuarioSnap : snapshot.getChildren()) {
 
-                    totalUsuarios++; // ✨ Contamos al usuario
+                    // ============================
+                    //    🔥 FILTRO POR ROL AQUÍ
+                    // ============================
+                    String rol = usuarioSnap.child("rol").getValue(String.class);
 
-                    // Verificamos si tiene tanques
+                    if (rol == null || !rol.equalsIgnoreCase("usuario")) {
+                        continue; // ❌ Saltamos admins y otros
+                    }
+
+                    totalUsuarios++; // Contamos usuarios válidos
+
+                    // ---------- TANQUES ----------
                     if (usuarioSnap.child("tanques").exists()) {
 
-                        // Recorremos sus tanques
                         for (DataSnapshot tanqueSnap : usuarioSnap.child("tanques").getChildren()) {
 
-                            totalTanques++; // 🏺 Sumamos el tanque
+                            totalTanques++;
 
-                            // Cada tanque tiene EXACTAMENTE un dispositivo
-                            if (tanqueSnap.child("dispositivo").exists()) {
-                                totalDispositivos++; // 🔌 Sumamos el dispositivo
+                            // contamos dispositivos SOLO si existe idDispositivo
+                            if (tanqueSnap.child("idDispositivo").exists()) {
+                                totalDispositivos++;
                             }
                         }
                     }
                 }
 
-                // 📊 Mostramos los resultados
+                // ---------- MOSTRAR RESULTADOS ----------
                 txtUsuariosTotal.setText("Usuarios totales: " + totalUsuarios);
                 txtTanquesTotal.setText("Tanques totales: " + totalTanques);
                 txtDispositivosTotal.setText("Dispositivos totales: " + totalDispositivos);
+
+                // ---------- ACTUALIZAR GRÁFICO ----------
+                actualizarGrafico(totalUsuarios, totalDispositivos);
             }
 
             @Override
@@ -88,5 +102,39 @@ public class HistorialGlobal extends AppCompatActivity {
                         Toast.LENGTH_LONG).show();
             }
         });
+    }
+
+    // ======================================================
+    //          ⭐ GRÁFICO PIECHART DINÁMICO ⭐
+    // ======================================================
+    private void actualizarGrafico(int usuarios, int dispositivos) {
+
+        ArrayList<PieEntry> entries = new ArrayList<>();
+        entries.add(new PieEntry(usuarios, "Usuarios"));
+        entries.add(new PieEntry(dispositivos, "Dispositivos"));
+
+        PieDataSet dataSet = new PieDataSet(entries, "Distribución");
+        dataSet.setSliceSpace(3f);
+        dataSet.setSelectionShift(6f);
+
+        // Colores corporativos
+        ArrayList<Integer> colors = new ArrayList<>();
+        colors.add(Color.parseColor("#4CAF50")); // verde usuarios
+        colors.add(Color.parseColor("#303F9F")); // azul dispositivos
+        dataSet.setColors(colors);
+
+        PieData data = new PieData(dataSet);
+        data.setValueTextSize(14f);
+        data.setValueTextColor(Color.WHITE);
+
+        pieChartUsuarios.setUsePercentValues(true);
+        pieChartUsuarios.setDrawHoleEnabled(true);
+        pieChartUsuarios.setHoleColor(Color.TRANSPARENT);
+
+        pieChartUsuarios.getDescription().setEnabled(false);
+        pieChartUsuarios.getLegend().setEnabled(true);
+
+        pieChartUsuarios.setData(data);
+        pieChartUsuarios.invalidate(); // refrescar
     }
 }

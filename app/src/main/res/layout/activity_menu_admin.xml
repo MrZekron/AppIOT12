@@ -37,6 +37,21 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
+    <!-- ⭐ NUEVO BOTÓN: Historial Global -->
+    <Button
+        android:id="@+id/btnHistorialGlobal"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Historial Global"
+        android:textColor="@android:color/white"
+        android:background="#512DA8"
+        android:padding="12dp"
+        android:layout_marginTop="20dp"
+        android:onClick="abrirHistorialGlobal"
+        app:layout_constraintTop_toBottomOf="@+id/btnGestionUsuarios"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
     <!-- BOTÓN: Configuración -->
     <Button
         android:id="@+id/btnConfigAdmin"
@@ -47,7 +62,7 @@
         android:background="#0097A7"
         android:padding="12dp"
         android:layout_marginTop="20dp"
-        app:layout_constraintTop_toBottomOf="@+id/btnGestionUsuarios"
+        app:layout_constraintTop_toBottomOf="@+id/btnHistorialGlobal"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 

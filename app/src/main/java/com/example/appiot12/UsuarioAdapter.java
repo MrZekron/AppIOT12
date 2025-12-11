@@ -43,6 +43,7 @@ public class UsuarioAdapter extends ArrayAdapter<Usuario> {
             holder.tvCorreo = row.findViewById(R.id.tvCorreo);
             holder.tvEstadoCuenta = row.findViewById(R.id.tvEstadoCuenta);
             holder.tvDeuda = row.findViewById(R.id.tvDeuda);
+            holder.tvTiempoAtraso = row.findViewById(R.id.tvTiempoAtraso);
             holder.btnBloquear = row.findViewById(R.id.btnBloquear);
 
             row.setTag(holder);
@@ -71,13 +72,14 @@ public class UsuarioAdapter extends ArrayAdapter<Usuario> {
         }
 
         // ===============================
-        //   ESTADO DE DEUDA (CORREGIDO)
+        //   DEUDA
         // ===============================
-
         holder.tvDeuda.setText("Cargando...");
+        holder.tvTiempoAtraso.setText("Calculando...");
         holder.tvDeuda.setTextColor(Color.GRAY);
+        holder.tvTiempoAtraso.setTextColor(Color.GRAY);
 
-        cargarDeudaUsuario(usuario, holder.tvDeuda);
+        cargarDeudaUsuario(usuario, holder.tvDeuda, holder.tvTiempoAtraso);
 
         // ===============================
         //  BOTÓN BLOQUEAR / DESBLOQUEAR
@@ -100,10 +102,9 @@ public class UsuarioAdapter extends ArrayAdapter<Usuario> {
     }
 
     // ============================================================
-    //      CARGA REAL DE PAGOS DESDE FIREBASE
-    //      NUEVO (CORRECTO, YA NO DEPENDE DE TANQUES)
+    //      CARGA REAL DE PAGOS + CÁLCULO DE ATRASO
     // ============================================================
-    private void cargarDeudaUsuario(Usuario usuario, TextView tvDeuda) {
+    private void cargarDeudaUsuario(Usuario usuario, TextView tvDeuda, TextView tvAtraso) {
 
         FirebaseDatabase.getInstance()
                 .getReference("usuarios")
@@ -117,18 +118,30 @@ public class UsuarioAdapter extends ArrayAdapter<Usuario> {
                         if (!snapshot.exists()) {
                             tvDeuda.setText("Sin compras");
                             tvDeuda.setTextColor(Color.GRAY);
+                            tvAtraso.setText("Atrasado: 0 días");
+                            tvAtraso.setTextColor(Color.GREEN);
                             return;
                         }
 
                         int deudaTotal = 0;
+                        long ultimoPago = 0;
 
                         for (DataSnapshot pagoSnap : snapshot.getChildren()) {
+
                             Pago pago = pagoSnap.getValue(Pago.class);
                             if (pago == null) continue;
 
                             deudaTotal += pago.getSaldoPendiente();
+
+                            // Último pago registrado
+                            if (pago.getFechaPago() > ultimoPago) {
+                                ultimoPago = pago.getFechaPago();
+                            }
                         }
 
+                        // -------------------------
+                        //  MOSTRAR DEUDA
+                        // -------------------------
                         if (deudaTotal == 0) {
                             tvDeuda.setText("Al día ✔");
                             tvDeuda.setTextColor(Color.GREEN);
@@ -136,12 +149,41 @@ public class UsuarioAdapter extends ArrayAdapter<Usuario> {
                             tvDeuda.setText("Debe $" + deudaTotal);
                             tvDeuda.setTextColor(Color.RED);
                         }
+
+                        // -------------------------
+                        //  CALCULAR ATRASO EN DÍAS
+                        // -------------------------
+                        if (ultimoPago == 0) {
+                            tvAtraso.setText("Atrasado: 0 días");
+                            tvAtraso.setTextColor(Color.GREEN);
+                            return;
+                        }
+
+                        long hoy = System.currentTimeMillis();
+                        long diff = hoy - ultimoPago;
+                        long diasAtraso = diff / (1000 * 60 * 60 * 24);
+
+                        tvAtraso.setText("Atrasado: " + diasAtraso + " días");
+
+                        // -------------------------
+                        //  SEMÁFORO CORPORATIVO
+                        // -------------------------
+                        if (diasAtraso == 0) {
+                            tvAtraso.setTextColor(Color.GREEN);
+                        } else if (diasAtraso <= 15) {
+                            tvAtraso.setTextColor(Color.parseColor("#FBC02D")); // amarillo
+                        } else {
+                            tvAtraso.setTextColor(Color.RED);
+                        }
                     }
 
                     @Override
                     public void onCancelled(DatabaseError error) {
                         tvDeuda.setText("Error");
                         tvDeuda.setTextColor(Color.RED);
+
+                        tvAtraso.setText("Error");
+                        tvAtraso.setTextColor(Color.RED);
                     }
                 });
     }
@@ -150,7 +192,7 @@ public class UsuarioAdapter extends ArrayAdapter<Usuario> {
     //      HOLDER DE VISTAS
     // ============================================================
     static class ViewHolder {
-        TextView tvCorreo, tvEstadoCuenta, tvDeuda;
+        TextView tvCorreo, tvEstadoCuenta, tvDeuda, tvTiempoAtraso;
         Button btnBloquear;
     }
 }

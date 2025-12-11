@@ -1,64 +1,77 @@
 package com.example.appiot12;
 
-import java.io.Serializable;
-import java.util.UUID;
+public class Pago {
 
-public class Pago implements Serializable {
+    private String idPago;
+    private String idDispositivo;
 
-    private String idPago;            // ID único del pago
-    private String idDispositivo;     // ID del dispositivo asociado
+    private int precioTotal;
+    private int cuotasTotales;
+    private int cuotasPagadas;
 
-    private int montoTotal;           // Precio total
-    private int cuotasTotales;        // Número total de cuotas
-    private int cuotasPagadas;        // Cuántas cuotas se han pagado
-    private int saldoPendiente;       // Cuánto falta por pagar
-    private boolean pagado;           // True si ya se completó el pago
-    private long fechaCompra;         // Timestamp
+    private int saldoPendiente;
 
-    // CONSTRUCTOR VACÍO requerido por Firebase
+    private long fechaPago;   // fecha de compra (timestamp)
+
+    private boolean pagado;   // ← ESTE FLAG FALTABA
+
     public Pago() {}
 
-    // CONSTRUCTOR QUE USA LA APP
-    public Pago(int montoTotal, int cuotasTotales, String idDispositivo) {
-        this.idPago = UUID.randomUUID().toString();
-        this.idDispositivo = idDispositivo;
-        this.montoTotal = montoTotal;
+    // Constructor oficial
+    public Pago(String idPago, int precioTotal, int cuotasTotales, long fechaPago, String idDispositivo) {
+        this.idPago = idPago;
+        this.precioTotal = precioTotal;
         this.cuotasTotales = cuotasTotales;
+        this.fechaPago = fechaPago;
         this.cuotasPagadas = 0;
-        this.saldoPendiente = montoTotal;
+        this.saldoPendiente = precioTotal;
+        this.idDispositivo = idDispositivo;
         this.pagado = false;
-        this.fechaCompra = System.currentTimeMillis();
     }
 
-    // MÉTODO PARA PAGAR UNA CUOTA
-    public void pagarCuota(int montoCuota) {
-        if (pagado) return;
-
-        cuotasPagadas++;
-        saldoPendiente -= montoCuota;
-
-        if (saldoPendiente <= 0) {
-            saldoPendiente = 0;
-            pagado = true;
-        }
-    }
-
+    // ================================
     // GETTERS & SETTERS
+    // ================================
+
     public String getIdPago() { return idPago; }
+    public void setIdPago(String idPago) { this.idPago = idPago; }
 
     public String getIdDispositivo() { return idDispositivo; }
-    public void setIdDispositivo(String idDispositivo) {
-        this.idDispositivo = idDispositivo;
+    public void setIdDispositivo(String idDispositivo) { this.idDispositivo = idDispositivo; }
+
+    public int getPrecioTotal() { return precioTotal; }
+    public void setPrecioTotal(int precioTotal) { this.precioTotal = precioTotal; }
+
+    public int getCuotasTotales() { return cuotasTotales; }
+    public void setCuotasTotales(int cuotasTotales) { this.cuotasTotales = cuotasTotales; }
+
+    public int getCuotasPagadas() { return cuotasPagadas; }
+    public void setCuotasPagadas(int cuotasPagadas) {
+        this.cuotasPagadas = cuotasPagadas;
+        actualizarEstadoPago();
     }
 
-    public int getMontoTotal() { return montoTotal; }
-    public int getCuotasTotales() { return cuotasTotales; }
-    public int getCuotasPagadas() { return cuotasPagadas; }
     public int getSaldoPendiente() { return saldoPendiente; }
-    public boolean isPagado() { return pagado; }
-    public long getFechaCompra() { return fechaCompra; }
+    public void setSaldoPendiente(int saldoPendiente) {
+        this.saldoPendiente = saldoPendiente;
+        actualizarEstadoPago();
+    }
 
-    public void setCuotasPagadas(int cuotasPagadas) { this.cuotasPagadas = cuotasPagadas; }
-    public void setSaldoPendiente(int saldoPendiente) { this.saldoPendiente = saldoPendiente; }
+    public long getFechaPago() { return fechaPago; }
+    public void setFechaPago(long fechaPago) { this.fechaPago = fechaPago; }
+
+    public boolean isPagado() { return pagado; }
     public void setPagado(boolean pagado) { this.pagado = pagado; }
+
+    // ================================
+    // LÓGICA DE NEGOCIO
+    // ================================
+    private void actualizarEstadoPago() {
+        if (saldoPendiente <= 0 || cuotasPagadas >= cuotasTotales) {
+            pagado = true;
+            saldoPendiente = 0;
+        } else {
+            pagado = false;
+        }
+    }
 }

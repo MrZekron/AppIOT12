@@ -27,10 +27,11 @@
         android:text="Estado: activa"
         android:textSize="14sp"
         android:textColor="@android:color/darker_gray"
+        android:layout_marginTop="2dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tvCorreo" />
 
-    <!-- Estado financiero del usuario -->
+    <!-- Estado financiero -->
     <TextView
         android:id="@+id/tvDeuda"
         android:layout_width="wrap_content"
@@ -41,6 +42,18 @@
         android:layout_marginTop="4dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tvEstadoCuenta"/>
+
+    <!-- 🔥 NUEVO: tiempo atrasado de pago -->
+    <TextView
+        android:id="@+id/tvTiempoAtraso"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Atrasado: 0 días"
+        android:textSize="14sp"
+        android:textColor="#D32F2F"
+        android:layout_marginTop="4dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvDeuda"/>
 
     <!-- Botón bloquear/desbloquear -->
     <Button

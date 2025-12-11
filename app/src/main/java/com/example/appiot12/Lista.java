@@ -25,8 +25,6 @@ public class Lista extends AppCompatActivity {
 
     private ListView listView;
     private ArrayList<TanqueAgua> listaTanques;
-
-    // ⭐ AHORA usamos TanqueAdapter (el que muestra sensores y colores)
     private TanqueAdapter adapter;
 
     private FirebaseAuth mAuth;
@@ -47,11 +45,9 @@ public class Lista extends AppCompatActivity {
         listView = findViewById(R.id.listaTanques);
         listaTanques = new ArrayList<>();
 
-        // ⭐ USAR EL ADAPTADOR PERSONALIZADO
         adapter = new TanqueAdapter(this, listaTanques);
         listView.setAdapter(adapter);
 
-        // Firebase
         mAuth = FirebaseAuth.getInstance();
         String uid = mAuth.getCurrentUser().getUid();
 
@@ -71,7 +67,6 @@ public class Lista extends AppCompatActivity {
                 return;
             }
 
-            // 🔥 Navegar al detalle del tanque
             Intent intent = new Intent(Lista.this, Informacion.class);
             intent.putExtra("tanqueId", tanqueSeleccionado.getIdTanque());
             intent.putExtra("tanqueNombre", tanqueSeleccionado.getNombre());
@@ -85,7 +80,9 @@ public class Lista extends AppCompatActivity {
 
     private void cargarTanques() {
 
-        usuariosRef.addValueEventListener(new ValueEventListener() {
+        // ⭐ CAMBIO CRÍTICO: Listener seguro que NO causa crash al volver
+        usuariosRef.addListenerForSingleValueEvent(new ValueEventListener() {
+
             @Override
             public void onDataChange(DataSnapshot snapshot) {
 
@@ -94,14 +91,13 @@ public class Lista extends AppCompatActivity {
                 if (snapshot.exists()) {
 
                     for (DataSnapshot tanqueSnap : snapshot.getChildren()) {
+
                         TanqueAgua tanque = tanqueSnap.getValue(TanqueAgua.class);
 
                         if (tanque != null) {
-
                             if (tanque.getIdTanque() == null) {
                                 tanque.setIdTanque(tanqueSnap.getKey());
                             }
-
                             listaTanques.add(tanque);
                         }
                     }
@@ -109,7 +105,8 @@ public class Lista extends AppCompatActivity {
                     adapter.notifyDataSetChanged();
 
                 } else {
-                    Toast.makeText(Lista.this, "No hay tanques registrados", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(Lista.this, "No hay tanques registrados",
+                            Toast.LENGTH_SHORT).show();
                 }
             }
 
