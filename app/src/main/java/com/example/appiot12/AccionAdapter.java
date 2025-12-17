@@ -1,69 +1,114 @@
 package com.example.appiot12;
-// Paquete base de la app. Mantiene la arquitectura modular y ordenada 🚀
+// 📦 Paquete base del proyecto Agua Segura.
+// Mantiene todo ordenado, como una oficina bien gestionada 🗂️🚀
 
-import android.annotation.SuppressLint;
 import android.content.Context;
-import android.view.*;
-import android.widget.*;
-// Importamos elementos esenciales para inflar vistas y manejar UI en listas 📱
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.TextView;
+// 📱 Herramientas para crear y manejar filas dentro de una lista
 
 import androidx.annotation.NonNull;
 
 import java.text.SimpleDateFormat;
-import java.util.*;
-// Librerías de fecha y utilidades. Porque el tiempo es oro… y logs también ⏳✨
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
+// ⏰ Utilidades para manejar fechas de forma bonita y entendible
 
+/**
+ * 🧾 AccionAdapter
+ *
+ * Este adaptador se encarga de:
+ * 👉 Tomar una lista de acciones (AccionLog)
+ * 👉 Transformarlas en filas visuales
+ * 👉 Mostrarlas en un ListView
+ *
+ * En simple:
+ * Es el traductor entre los datos y lo que ve el usuario 👀📊
+ */
 public class AccionAdapter extends ArrayAdapter<AccionLog> {
-    // Adapter corporativo encargado de convertir objetos AccionLog → vistas en pantalla 📊
 
-    private final Context context;       // Contexto maestro de la app (la “oficina central”) 🏢
-    private final List<AccionLog> acciones; // El backlog de acciones operacionales registradas 📝
+    private final Context context;          // 🏢 Contexto de la app (dónde estamos parados)
+    private final List<AccionLog> acciones; // 📝 Lista de acciones registradas (historial)
 
-    public AccionAdapter(Context context, List<AccionLog> acciones) {
+    /**
+     * 🛠️ Constructor del adaptador
+     *
+     * @param context  contexto de la aplicación
+     * @param acciones lista de acciones a mostrar
+     */
+    public AccionAdapter(@NonNull Context context, @NonNull List<AccionLog> acciones) {
         super(context, R.layout.item_accion, acciones);
-        // Llamamos al constructor de ArrayAdapter, informándole el layout por defecto.
+        // 📌 Le decimos al ArrayAdapter qué layout usar y qué datos manejar
 
-        this.context = context;         // Asignamos el contexto operativo 🔌
-        this.acciones = acciones;       // Cargamos la lista de acciones (log histórico) 💾
+        this.context = context;
+        this.acciones = acciones;
     }
 
-    @SuppressLint("ViewHolder")
-    // Avisamos que no usaremos patrón ViewHolder esta vez.
-    // KPI de rendimiento aceptable: sí, pero podríamos optimizar a futuro 📈😉
+    /**
+     * 🧱 ViewHolder
+     *
+     * Truco profesional para:
+     * ✅ No buscar las vistas una y otra vez
+     * ✅ Mejorar rendimiento
+     * ✅ Evitar código redundante
+     *
+     * Dicho fácil:
+     * Guardamos las piezas para no armarlas de nuevo 🔩🙂
+     */
+    private static class ViewHolder {
+        TextView txtDescripcion; // 📘 Texto de la acción
+        TextView txtFecha;       // ⏰ Texto de la fecha
+    }
 
+    @NonNull
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
-        // Método que se ejecuta para cada fila del ListView. Produce la “tarjeta” del log 📬
+    public View getView(int position, View convertView, @NonNull ViewGroup parent) {
+        // 🔄 Este método se llama cada vez que se muestra una fila en la lista
 
-        View row = LayoutInflater.from(context).inflate(R.layout.item_accion, parent, false);
-        // Inflamos el layout item_accion.
-        // Aquí nace visualmente una nueva línea del historial 🧱✨
+        ViewHolder holder;
 
-        TextView txtDescripcion = row.findViewById(R.id.txtDescripcion);
-        // Buscamos el TextView donde va la descripción. KPI: claridad narrativa 📘
+        // 🧐 Si la fila no existe, la creamos
+        if (convertView == null) {
 
-        TextView txtFecha = row.findViewById(R.id.txtFecha);
-        // Buscamos el TextView donde irá la fecha y hora del suceso ⏰
+            // 🧱 Inflamos el layout del item
+            convertView = LayoutInflater.from(context)
+                    .inflate(R.layout.item_accion, parent, false);
 
-        AccionLog log = acciones.get(position);
-        // Obtenemos la acción específica según su posición en la lista.
-        // Esto es como sacar un ticket del CRM interno 📂
+            // 🧰 Creamos el ViewHolder
+            holder = new ViewHolder();
 
-        txtDescripcion.setText(log.getDescripcion());
-        // Cargamos la descripción en pantalla.
-        // “Usuario eliminó un tanque”, “Se añadió dispositivo”, etc. 🛠️
+            // 🔍 Buscamos los TextView dentro del layout
+            holder.txtDescripcion = convertView.findViewById(R.id.txtDescripcion);
+            holder.txtFecha = convertView.findViewById(R.id.txtFecha);
 
-        String fecha = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
-                .format(new Date(log.getTimestamp()));
-        // Convertimos el timestamp guardado en formato bonito.
-        // De números raros → a algo digno de comité ejecutivo 🧮➡️🕒
+            // 🏷️ Guardamos el holder dentro de la vista
+            convertView.setTag(holder);
 
-        txtFecha.setText(fecha);
-        // Renderizamos la fecha/hora procesada.
-        // Ahora el historial tiene trazabilidad digna de ISO 9001 📑✨
+        } else {
+            // ♻️ Si la fila ya existe, reutilizamos lo que ya estaba listo
+            holder = (ViewHolder) convertView.getTag();
+        }
 
-        return row;
-        // Regresamos la fila completa para que el ListView la muestre.
-        // Acción ejecutada exitosamente ✔️
+        // 📂 Obtenemos la acción correspondiente a esta posición
+        AccionLog accion = acciones.get(position);
+
+        // 📝 Mostramos la descripción de la acción
+        holder.txtDescripcion.setText(accion.getDescripcion());
+
+        // 🕒 Convertimos el timestamp en una fecha entendible
+        String fechaFormateada = new SimpleDateFormat(
+                "dd/MM/yyyy HH:mm",
+                Locale.getDefault()
+        ).format(new Date(accion.getTimestamp()));
+
+        // 📅 Mostramos la fecha en pantalla
+        holder.txtFecha.setText(fechaFormateada);
+
+        // ✅ Devolvemos la fila lista para mostrarse
+        return convertView;
     }
 }

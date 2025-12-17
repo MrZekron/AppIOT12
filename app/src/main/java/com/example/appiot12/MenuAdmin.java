@@ -1,32 +1,33 @@
 package com.example.appiot12;
-// 📦 Pantalla oficial del ADMINISTRADOR del sistema AguaSegura
-// El “Command Center” donde el admin domina absolutamente todo 😎🚀
+// 📦 Menú principal del ADMIN en AguaSegura.
+// Este es el “centro de mando” donde el admin controla el sistema 💼🚀
 
-import android.content.Intent; // 🚪 Para navegar entre módulos
-import android.os.Bundle; // 🎒 Estado persistente de la Activity
-import android.view.View; // 👆 Manejar clics en botones
-import android.widget.Button; // 🔘 Botones del menú
-import android.widget.Toast; // 🍞 Mensajes sutiles informativos
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge; // 📱 UI moderna edge-to-edge
-import androidx.appcompat.app.AppCompatActivity; // 🏛 Activity base
-import androidx.core.graphics.Insets; // 📐 Márgenes del sistema
+import androidx.activity.EdgeToEdge;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 /**
  * 🌟 MENU ADMINISTRADOR 🌟
  *
- * Este panel permite al administrador gestionar:
- *   ✔ Usuarios del sistema
- *   ✔ Estadísticas globales (tanques, dispositivos, usuarios)
- *   ✔ Configuración general
+ * Explicado para un niño 👶:
+ * 👉 Esta pantalla es como la sala de control 🎮
+ * 👉 Desde aquí el admin puede mirar y ordenar todo
+ * 👉 No guarda datos, no calcula nada, solo abre otras pantallas 🚪
  *
- * Es la interfaz desde donde se gobierna todo el ecosistema AguaSegura 💧🔧💼
+ * REGLA DE ORO:
+ * 👉 Si empieza a tener lógica → se mueve a un Controller ❌
  */
 public class MenuAdmin extends AppCompatActivity {
 
-    // Botones del panel principal
+    // 🔘 Botones del panel admin
     private Button btnGestionUsuarios;
     private Button btnHistorialGlobal;
     private Button btnConfigAdmin;
@@ -35,49 +36,59 @@ public class MenuAdmin extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        EdgeToEdge.enable(this); // 📱 Activar diseño de pantalla completa
-        setContentView(R.layout.activity_menu_admin); // 🎨 Dibujar layout
+        // 📱 Activamos UI moderna a pantalla completa
+        EdgeToEdge.enable(this);
+        setContentView(R.layout.activity_menu_admin);
 
-        // Ajuste automático para evitar choque con barras superior/inferior
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets sb = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(sb.left, sb.top, sb.right, sb.bottom);
-            return insets;
-        });
+        // 📐 Ajustar márgenes para no chocar con barras del sistema
+        ViewCompat.setOnApplyWindowInsetsListener(
+                findViewById(R.id.main),
+                (v, insets) -> {
 
-        // 🔗 Vincular elementos UI del XML
+                    Insets sb = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+                    v.setPadding(sb.left, sb.top, sb.right, sb.bottom);
+                    return insets;
+                }
+        );
+
+        // 🔗 Vincular botones del XML
         btnGestionUsuarios = findViewById(R.id.btnGestionUsuarios);
-        btnHistorialGlobal = findViewById(R.id.btnHistorialGlobal); // ✔ Botón añadido
+        btnHistorialGlobal = findViewById(R.id.btnHistorialGlobal);
         btnConfigAdmin = findViewById(R.id.btnConfigAdmin);
 
-        // Configurar acciones de los botones
-        configurarListeners();
+        configurarAcciones(); // 🎛️ Activar navegación
     }
 
     // =========================================================
-    // 🎛️ CONFIGURACIÓN DE EVENTOS DE BOTONES
+    // 🚀 MÉTODO GENÉRICO PARA NAVEGAR ENTRE PANTALLAS
     // =========================================================
-    private void configurarListeners() {
+    private void irA(Class<?> destino, String mensaje) {
 
-        // ⭐ GESTIÓN DE USUARIOS
-        btnGestionUsuarios.setOnClickListener(v -> {
-            Toast.makeText(this, "Abriendo gestión de usuarios...", Toast.LENGTH_SHORT).show();
-            startActivity(new Intent(this, GestionUsuarios.class));
-            // 🎯 Módulo donde se listan y gestionan usuarios
-        });
+        // 🧠 Mensaje UX opcional (feedback inmediato)
+        Toast.makeText(this, mensaje, Toast.LENGTH_SHORT).show();
 
-        // ⭐ HISTORIAL GLOBAL
-        btnHistorialGlobal.setOnClickListener(v -> {
-            Toast.makeText(this, "Abriendo historial global...", Toast.LENGTH_SHORT).show();
-            startActivity(new Intent(this, HistorialGlobal.class));
-            // 🚀 Dashboard con gráficas globales (usuarios/tanques/dispositivos)
-        });
+        // 🚪 Navegación limpia
+        startActivity(new Intent(this, destino));
+    }
 
-        // ⭐ CONFIGURACIÓN DEL SISTEMA
-        btnConfigAdmin.setOnClickListener(v -> {
-            Toast.makeText(this, "Abriendo configuración...", Toast.LENGTH_SHORT).show();
-            startActivity(new Intent(this, Configuracion.class));
-            // ⚙️ Configuración general del admin
-        });
+    // =========================================================
+    // 🎛️ CONFIGURAR ACCIONES DE LOS BOTONES
+    // =========================================================
+    private void configurarAcciones() {
+
+        // 👥 Gestión de usuarios
+        btnGestionUsuarios.setOnClickListener(v ->
+                irA(GestionUsuarios.class, "Abriendo gestión de usuarios 👥")
+        );
+
+        // 📊 Historial / métricas globales
+        btnHistorialGlobal.setOnClickListener(v ->
+                irA(HistorialGlobal.class, "Abriendo estadísticas globales 📊")
+        );
+
+        // ⚙️ Configuración general
+        btnConfigAdmin.setOnClickListener(v ->
+                irA(Configuracion.class, "Abriendo configuración ⚙️")
+        );
     }
 }

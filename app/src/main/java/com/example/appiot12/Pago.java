@@ -1,143 +1,136 @@
 package com.example.appiot12;
-// 📦 Clase de modelo para representar un PAGO asociado a la compra de un dispositivo.
-// Actúa como "motor financiero" dentro del sistema AguaSegura 💸⚙️
+// 📦 Modelo que representa un PAGO dentro del sistema AguaSegura 💧💸
 
 /**
  * ⭐ CLASE PAGO ⭐
  *
- * Representa:
- *   - El total del dispositivo
- *   - La cantidad de cuotas pactadas
- *   - Cuántas cuotas ya fueron pagadas
- *   - El saldo pendiente
- *   - La fecha en que se realizó la compra
- *   - El dispositivo al cual pertenece el pago
- *   - Estado final: pagado / no pagado
+ * Explicado para un niño 👶:
+ * 👉 Es como cuando compras algo caro
+ * 👉 Puedes pagar todo de una vez o en partes
+ * 👉 La app recuerda cuánto debes y cuánto ya pagaste 🧠
  *
- * Esta clase alimenta:
+ * Esta clase se usa en:
+ *   ✔ ComprarDispositivo
  *   ✔ CentroPagos
+ *   ✔ HistorialCompra
  *   ✔ PagoAdapter
- *   ✔ Historial de compras
- *   ✔ Dashboard financiero del usuario
  */
 public class Pago {
 
     // 🆔 Identificador único del pago
     private String idPago;
 
-    // 🆔 Relación directa con un dispositivo comprado
+    // 🔗 Dispositivo asociado a este pago
     private String idDispositivo;
 
-    // 💰 Monto total del dispositivo comprado
+    // 💰 Precio total del dispositivo
     private int precioTotal;
 
-    // 🔢 Número total de cuotas acordadas
+    // 🔢 Total de cuotas acordadas
     private int cuotasTotales;
 
-    // 🔢 Cuántas cuotas ya han sido pagadas
+    // 🔢 Cuántas cuotas ya fueron pagadas
     private int cuotasPagadas;
 
-    // 💵 Saldo actual pendiente de pago
+    // 💵 Dinero que aún falta por pagar
     private int saldoPendiente;
 
-    // 📅 Momento de compra en milisegundos (timestamp)
+    // 📅 Fecha de creación del pago (timestamp)
     private long fechaPago;
 
-    // ✔️ Estado del pago (true = pagado completamente)
+    // ✔️ ¿Está completamente pagado?
     private boolean pagado;
 
-    // 🔧 Constructor vacío requerido por Firebase
-    public Pago() {}
+    // ============================================================
+    // 🔧 CONSTRUCTOR VACÍO (OBLIGATORIO PARA FIREBASE)
+    // ============================================================
+    public Pago() {
+        // Firebase necesita este constructor vacío para reconstruir el objeto
+    }
 
     /**
-     * 🎯 Constructor oficial completo
+     * 🎯 CONSTRUCTOR PRINCIPAL
      *
-     * Crea un pago nuevo con:
-     *   - saldo total igual al precio
-     *   - 0 cuotas pagadas
-     *   - estado "no pagado"
+     * Crea un pago nuevo:
+     * ✔ Sin cuotas pagadas
+     * ✔ Saldo completo pendiente
+     * ✔ Estado: NO pagado
      */
-    public Pago(String idPago, int precioTotal, int cuotasTotales, long fechaPago, String idDispositivo) {
+    public Pago(String idPago,
+                int precioTotal,
+                int cuotasTotales,
+                long fechaPago,
+                String idDispositivo) {
+
         this.idPago = idPago;
         this.precioTotal = precioTotal;
         this.cuotasTotales = cuotasTotales;
         this.fechaPago = fechaPago;
         this.idDispositivo = idDispositivo;
 
-        this.cuotasPagadas = 0;         // Recién creado → ningún pago realizado
-        this.saldoPendiente = precioTotal; // Pendiente = total
-        this.pagado = false;               // Aún no está pagado
+        this.cuotasPagadas = 0;
+        this.saldoPendiente = precioTotal;
+        this.pagado = false;
     }
 
     // ============================================================
-    // GETTERS & SETTERS (con lógica automática opcional)
+    // GETTERS (LECTURA SEGURA)
     // ============================================================
 
     public String getIdPago() { return idPago; }
-    public void setIdPago(String idPago) { this.idPago = idPago; }
 
     public String getIdDispositivo() { return idDispositivo; }
-    public void setIdDispositivo(String idDispositivo) { this.idDispositivo = idDispositivo; }
 
     public int getPrecioTotal() { return precioTotal; }
-    public void setPrecioTotal(int precioTotal) {
-        this.precioTotal = precioTotal;
-        actualizarEstadoPago();
-    }
 
     public int getCuotasTotales() { return cuotasTotales; }
-    public void setCuotasTotales(int cuotasTotales) {
-        this.cuotasTotales = cuotasTotales;
-        actualizarEstadoPago();
-    }
 
     public int getCuotasPagadas() { return cuotasPagadas; }
-    public void setCuotasPagadas(int cuotasPagadas) {
-        this.cuotasPagadas = cuotasPagadas;
-        actualizarEstadoPago(); // 🧠 Si llega al total → pagado = true
-    }
 
     public int getSaldoPendiente() { return saldoPendiente; }
-    public void setSaldoPendiente(int saldoPendiente) {
-        this.saldoPendiente = saldoPendiente;
-        actualizarEstadoPago(); // 🧮 Recalcular estado automático
-    }
 
     public long getFechaPago() { return fechaPago; }
-    public void setFechaPago(long fechaPago) { this.fechaPago = fechaPago; }
 
     public boolean isPagado() { return pagado; }
-    public void setPagado(boolean pagado) { this.pagado = pagado; }
 
     // ============================================================
-    // 🧠 LÓGICA DE NEGOCIO FINANCIERA
+    // SETTERS (CON LÓGICA CONTROLADA)
+    // ============================================================
+
+    public void setCuotasPagadas(int cuotasPagadas) {
+        this.cuotasPagadas = Math.max(0, cuotasPagadas); // 🛡️ Nunca negativo
+        recalcularEstado();
+    }
+
+    public void setSaldoPendiente(int saldoPendiente) {
+        this.saldoPendiente = Math.max(0, saldoPendiente); // 🛡️ Nunca negativo
+        recalcularEstado();
+    }
+
+    // ============================================================
+    // 🧠 LÓGICA FINANCIERA CENTRALIZADA
     // ============================================================
 
     /**
-     * Regla de oro del módulo financiero:
-     * Un pago se considera COMPLETADO cuando ocurre:
-     *   ✔ saldoPendiente <= 0  → pagado
-     *   ✔ cuotasPagadas >= cuotasTotales → pagado
+     * 🧮 REGLA DE ORO DEL SISTEMA FINANCIERO
      *
-     * Si ninguna se cumple → sigue activo.
+     * Un pago se considera COMPLETADO cuando:
+     *   ✔ El saldo pendiente llega a 0
+     *   ✔ O se pagaron todas las cuotas
+     *
+     * Nadie puede forzar manualmente el estado ❌
+     * El sistema lo calcula solo 🧠
      */
-    private void actualizarEstadoPago() {
+    private void recalcularEstado() {
 
-        // Caso 1 → Se pagó todo el saldo
-        if (saldoPendiente <= 0) {
-            pagado = true;
-            saldoPendiente = 0; // Seguridad contable
-            return;
-        }
+        boolean saldoPagado = saldoPendiente <= 0;
+        boolean cuotasCompletas = cuotasPagadas >= cuotasTotales;
 
-        // Caso 2 → Se pagaron todas las cuotas pactadas
-        if (cuotasPagadas >= cuotasTotales) {
-            pagado = true;
+        pagado = saldoPagado || cuotasCompletas;
+
+        // Seguridad extra: si está pagado, el saldo debe ser 0
+        if (pagado) {
             saldoPendiente = 0;
-            return;
         }
-
-        // Caso contrario → el pago sigue activo
-        pagado = false;
     }
 }

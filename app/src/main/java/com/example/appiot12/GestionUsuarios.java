@@ -1,106 +1,126 @@
 package com.example.appiot12;
-// 📦 Pantalla reservada para administración: gestionar usuarios del sistema
+// 📦 Módulo de administración del proyecto Agua Segura.
+// Esta pantalla permite a un ADMIN ver y gestionar a los usuarios 👥⚙️
 
+// ===== IMPORTS ANDROID =====
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ListView;
-// 🧰 Componentes de UI: contenedor de lista y botones
+// 📋 ListView: lista visual donde mostramos usuarios
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
-// 🎨 Ajustes modernos de UI que hacen feliz al diseñador UX
+// 🏛 Activity base moderna y estable
 
+// ===== IMPORTS FIREBASE =====
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-// ☁️ Firebase Realtime Database: donde residen todos los usuarios
+// ☁️ Firebase Realtime Database: fuente oficial de los usuarios
 
+// ===== IMPORTS JAVA =====
 import java.util.ArrayList;
+import java.util.List;
+// 🗂️ Listas dinámicas
 
+/**
+ * 👥 GestionUsuarios
+ *
+ * ¿Qué hace esta pantalla?
+ * 👉 Muestra todos los usuarios registrados
+ * 👉 Filtra SOLO usuarios normales (no admins)
+ * 👉 Permite al administrador revisarlos
+ *
+ * Explicado para un niño:
+ * 👉 Es como una lista de alumnos, pero solo vemos a los alumnos,
+ *    no a los profesores 📋🙂
+ */
 public class GestionUsuarios extends AppCompatActivity {
 
-    private ListView listUsuarios;              // 📋 Lista visual donde aparecerán los usuarios
-    private UsuarioAdapter adapter;             // 🎨 Adaptador personalizado para mostrar cada item
-    private ArrayList<Usuario> usuariosList;    // 🗂 Lista interna con datos de usuarios normales
+    // 📋 Lista visual
+    private ListView listUsuarios;
+
+    // 🎨 Adaptador que dibuja cada usuario
+    private UsuarioAdapter adapter;
+
+    // 🗂️ Lista interna con usuarios normales
+    private final List<Usuario> usuarios = new ArrayList<>();
+
+    // ☁️ Referencia a Firebase
+    private DatabaseReference refUsuarios;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this); // 📱 Pantalla completa elegante
-        setContentView(R.layout.activity_gestion_usuarios); // 🎨 Dibujamos el layout
+        setContentView(R.layout.activity_gestion_usuarios); // 🎨 Mostramos la pantalla
 
-        // Ajuste automático del contenido para no chocar con la barra del sistema
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
+        // 🔗 Conectamos UI con el XML
+        inicializarVistas();
 
-        // 🎯 Vinculamos el ListView
-        listUsuarios = findViewById(R.id.listUsuarios);
+        // ☁️ Apuntamos al nodo raíz de usuarios
+        refUsuarios = FirebaseDatabase.getInstance()
+                .getReference("usuarios");
 
-        // Preparamos nuestra lista dinámica
-        usuariosList = new ArrayList<>();
-
-        // Creamos el adaptador visual
-        adapter = new UsuarioAdapter(this, usuariosList);
+        // 🎨 Creamos el adaptador
+        adapter = new UsuarioAdapter(this, usuarios);
         listUsuarios.setAdapter(adapter);
 
-        // 🚀 Cargar usuarios desde Firebase
+        // 📥 Cargamos usuarios desde Firebase
         cargarUsuarios();
     }
 
-    // ================================================================
-    // 📥 DESCARGAR LISTA DE USUARIOS DESDE FIREBASE
-    // ================================================================
-    private void cargarUsuarios() {
-
-        FirebaseDatabase.getInstance()
-                .getReference("usuarios") // Carpeta principal donde viven todos los usuarios
-                .addValueEventListener(new ValueEventListener() {
-
-                    @Override
-                    public void onDataChange(DataSnapshot snapshot) {
-
-                        usuariosList.clear(); // 🧹 Limpieza previa de la lista
-
-                        // 🔄 Recorremos todos los usuarios del sistema
-                        for (DataSnapshot snap : snapshot.getChildren()) {
-
-                            Usuario u = snap.getValue(Usuario.class);
-
-                            if (u == null) continue; // Seguridad básica
-
-                            // Firebase NO rellena el campo ID del usuario, así que lo agregamos manual:
-                            u.setId(snap.getKey()); // 🆔 Autocompletado elegante
-
-                            // ⭐ Solo mostramos usuarios NORMALES, NO administradores
-                            if (u.getRol() != null &&
-                                    u.getRol().equalsIgnoreCase("usuario")) {
-
-                                usuariosList.add(u); // Agregamos a la lista visible
-                            }
-                        }
-
-                        // Notificamos al adaptador que hubo cambios
-                        adapter.notifyDataSetChanged();
-                    }
-
-                    @Override
-                    public void onCancelled(DatabaseError error) {
-                        // ⚠️ Error silencioso: aquí podrías agregar logs si deseas
-                    }
-                });
+    /**
+     * 🔗 Vincula los elementos visuales con el XML
+     */
+    private void inicializarVistas() {
+        listUsuarios = findViewById(R.id.listUsuarios);
     }
 
-    // ================================================================
-    // 🔙 BOTÓN VOLVER AL MENÚ ADMIN
-    // ================================================================
-    public void volver(View v) {
-        finish(); // 🚪 Cierra esta pantalla y vuelve atrás
+    // =====================================================
+    // 📥 CARGAR USUARIOS DESDE FIREBASE
+    // =====================================================
+    private void cargarUsuarios() {
+
+        refUsuarios.addValueEventListener(new ValueEventListener() {
+
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+
+                usuarios.clear(); // ♻️ Limpiamos lista antes de recargar
+
+                // 🔄 Recorremos todos los usuarios
+                for (DataSnapshot snap : snapshot.getChildren()) {
+
+                    Usuario usuario = snap.getValue(Usuario.class);
+
+                    if (usuario == null) continue; // 🛑 Seguridad básica
+
+                    // 🆔 Firebase no llena el ID automáticamente
+                    usuario.setId(snap.getKey());
+
+                    // ⭐ Mostramos SOLO usuarios normales
+                    if ("usuario".equalsIgnoreCase(usuario.getRol())) {
+                        usuarios.add(usuario);
+                    }
+                }
+
+                // 🔄 Actualizamos la lista visual
+                adapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onCancelled(DatabaseError error) {
+                // ⚠️ Error al leer usuarios
+                // Aquí podrías mostrar un Toast o log si lo deseas
+            }
+        });
+    }
+
+    // =====================================================
+    // 🔙 VOLVER AL MENÚ ADMIN
+    // =====================================================
+    public void volver(View view) {
+        finish(); // 🚪 Cerramos esta pantalla
     }
 }

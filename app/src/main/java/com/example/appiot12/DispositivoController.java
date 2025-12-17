@@ -1,125 +1,155 @@
 package com.example.appiot12;
-// 📦 Controlador central del módulo IoT. Aquí se gestiona la vida, muerte y asignación de dispositivos.
+// 📦 Controlador central del módulo IoT del proyecto Agua Segura.
+// Aquí se gestiona TODO el ciclo de vida de los dispositivos 🤖💧☁️
 
 import androidx.annotation.NonNull;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.*;
-// ☁️ Firebase Auth + Realtime DB: nuestro backend en la nube.
+// ☁️ Firebase Auth + Realtime Database = cerebro en la nube
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 /**
- * 🚀 DISPOSITIVO CONTROLLER CLOUD v2.0
+ * 🚀 DispositivoController
  *
- * Este módulo fue diseñado para operar 100% sobre Firebase:
- *  ✔ Crear dispositivos cuando el usuario compra uno
- *  ✔ Asociar dispositivo ↔ tanque (relación 1:1 estilo premium)
- *  ✔ Liberarlo cuando un tanque es borrado
- *  ✔ Listar dispositivos disponibles
- *  ✔ Buscar un dispositivo por ID directamente en la nube
+ * ¿Qué hace esta clase?
+ * 👉 Crear dispositivos cuando el usuario compra uno
+ * 👉 Listar dispositivos disponibles (libres)
+ * 👉 Buscar un dispositivo por ID
+ * 👉 Asociar un dispositivo a un tanque
+ * 👉 Liberar un dispositivo cuando se borra un tanque
  *
- * Esencialmente, el "departamento IoT" del proyecto AguaSegura 🌊🤖.
+ * Explicado para un niño:
+ * 👉 Es el encargado de decir dónde vive cada robot 🤖🏠
  */
 public class DispositivoController {
 
-    // ==========================================================
-    // 🔗 REFERENCIA AUTOMÁTICA A /usuarios/{uid}/dispositivos
-    // ==========================================================
-    private static DatabaseReference getUserDispositivosRef() {
+    // =====================================================
+    // 🔐 OBTENER REFERENCIA A /usuarios/{uid}/dispositivos
+    // =====================================================
+    private static DatabaseReference getDispositivosUsuarioRef() {
 
-        // Obtener el UID del usuario logueado 🔐
+        // 👤 Obtenemos el usuario actual
+        if (FirebaseAuth.getInstance().getCurrentUser() == null) {
+            return null; // ❌ No hay usuario
+        }
+
         String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
-        // Referencia a su lista de dispositivos dentro de Firebase ☁️
+        // ☁️ Devolvemos la ruta exacta de los dispositivos del usuario
         return FirebaseDatabase.getInstance()
                 .getReference("usuarios")
                 .child(uid)
                 .child("dispositivos");
     }
 
+    // =====================================================
+    // 🛒 CREAR DISPOSITIVO CUANDO SE COMPRA
+    // =====================================================
+    public static void crearDispositivoComprado(FirebaseCallback callback) {
 
-    // ==========================================================
-    // ✅ CREAR DISPOSITIVO CUANDO SE COMPRA UNO
-    // ==========================================================
-    public static void crearDispositivoComprado(int montoTotal, int cuotas, FirebaseCallback callback) {
+        DatabaseReference ref = getDispositivosUsuarioRef();
 
-        // Generamos ID único para el dispositivo recién comprado 🆔✨
-        String uidDispositivo = UUID.randomUUID().toString();
+        if (ref == null) {
+            callback.onError("Usuario no autenticado ❌");
+            return;
+        }
 
-        // Creamos un dispositivo base con sensores iniciales placeholder
+        // 🆔 Generamos ID único
+        String idDispositivo = UUID.randomUUID().toString();
+
+        // 🤖 Creamos dispositivo con valores iniciales seguros
         Dispositivo dispositivo = new Dispositivo(
-                uidDispositivo,
-                7.0,     // ph inicial aceptable 🧪
-                500.0,   // conductividad estándar ⚡
-                1.0,     // turbidez limpia 🌫️
-                100.0    // ultrasonico inicial (nivel base) 📡
+                idDispositivo,
+                7.0,     // 🧪 pH neutro
+                500.0,   // ⚡ Conductividad base
+                1.0,     // 🌫️ Turbidez limpia
+                100.0    // 📏 Nivel inicial
         );
 
-        // Guardamos el dispositivo en Firebase bajo el usuario correspondiente
-        getUserDispositivosRef()
-                .child(uidDispositivo)
+        // ☁️ Guardamos el dispositivo en Firebase
+        ref.child(idDispositivo)
                 .setValue(dispositivo)
-                .addOnSuccessListener(aVoid -> callback.onSuccess(uidDispositivo))
-                .addOnFailureListener(e -> callback.onError(e.getMessage()));
+                .addOnSuccessListener(a ->
+                        callback.onSuccess(idDispositivo)
+                )
+                .addOnFailureListener(e ->
+                        callback.onError(e.getMessage())
+                );
     }
 
+    // =====================================================
+    // 📦 OBTENER DISPOSITIVOS LIBRES (SIN TANQUE)
+    // =====================================================
+    public static void obtenerDispositivosLibres(
+            FirebaseListCallback<Dispositivo> callback
+    ) {
 
-    // ==========================================================
-    // ✅ LISTAR DISPOSITIVOS NO ASOCIADOS A NINGÚN TANQUE
-    // ==========================================================
-    public static void obtenerDispositivosLibres(FirebaseListCallback<Dispositivo> callback) {
+        DatabaseReference ref = getDispositivosUsuarioRef();
 
-        getUserDispositivosRef()
+        if (ref == null) {
+            callback.onError("Usuario no autenticado ❌");
+            return;
+        }
+
+        ref.addListenerForSingleValueEvent(new ValueEventListener() {
+
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+
+                List<Dispositivo> dispositivosLibres = new ArrayList<>();
+
+                for (DataSnapshot snap : snapshot.getChildren()) {
+
+                    Dispositivo d = snap.getValue(Dispositivo.class);
+
+                    if (d == null) continue;
+
+                    // 🏠 Si no tiene tanque, está libre
+                    if (d.getIdTanque() == null) {
+                        dispositivosLibres.add(d);
+                    }
+                }
+
+                callback.onSuccess(dispositivosLibres);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                callback.onError(error.getMessage());
+            }
+        });
+    }
+
+    // =====================================================
+    // 🔍 BUSCAR DISPOSITIVO POR ID
+    // =====================================================
+    public static void buscarDispositivoPorId(
+            String idDispositivo,
+            FirebaseObjectCallback<Dispositivo> callback
+    ) {
+
+        DatabaseReference ref = getDispositivosUsuarioRef();
+
+        if (ref == null) {
+            callback.onError("Usuario no autenticado ❌");
+            return;
+        }
+
+        ref.child(idDispositivo)
                 .addListenerForSingleValueEvent(new ValueEventListener() {
 
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
 
-                        List<Dispositivo> libres = new ArrayList<>();
-
-                        for (DataSnapshot snap : snapshot.getChildren()) {
-
-                            Dispositivo d = snap.getValue(Dispositivo.class);
-
-                            if (d == null) continue;
-
-                            // Si el dispositivo NO tiene tanque → está libre 🚀
-                            // (Se asume idTanque = null si fue inicializado correctamente)
-                            // if (d.getIdTanque() == null)
-
-                            libres.add(d);
-                        }
-
-                        callback.onSuccess(libres);
-                    }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError error) {
-                        callback.onError(error.getMessage());
-                    }
-                });
-    }
-
-
-    // ==========================================================
-    // ✅ BUSCAR DISPOSITIVO POR ID
-    // ==========================================================
-    public static void findDispositivo(String id, FirebaseObjectCallback<Dispositivo> callback) {
-
-        getUserDispositivosRef()
-                .child(id)
-                .addListenerForSingleValueEvent(new ValueEventListener() {
-
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-
-                        Dispositivo dispositivo = snapshot.getValue(Dispositivo.class);
+                        Dispositivo dispositivo =
+                                snapshot.getValue(Dispositivo.class);
 
                         if (dispositivo == null) {
-                            callback.onError("Dispositivo no encontrado");
+                            callback.onError("Dispositivo no encontrado 🔍❌");
                             return;
                         }
 
@@ -133,54 +163,86 @@ public class DispositivoController {
                 });
     }
 
+    // =====================================================
+    // 🔗 ASOCIAR DISPOSITIVO A TANQUE
+    // =====================================================
+    public static void asociarDispositivoATanque(
+            String idDispositivo,
+            String idTanque,
+            FirebaseCallback callback
+    ) {
 
-    // ==========================================================
-    // ✅ ASOCIAR DISPOSITIVO → TANQUE
-    // ==========================================================
-    public static void asociarDispositivoATanque(String idDispositivo,
-                                                 String idTanque,
-                                                 FirebaseCallback callback) {
+        DatabaseReference ref = getDispositivosUsuarioRef();
 
-        // Simple, efectivo y directo: guardamos idTanque dentro del dispositivo
-        getUserDispositivosRef()
-                .child(idDispositivo)
+        if (ref == null) {
+            callback.onError("Usuario no autenticado ❌");
+            return;
+        }
+
+        // 🔗 Guardamos el ID del tanque dentro del dispositivo
+        ref.child(idDispositivo)
                 .child("idTanque")
                 .setValue(idTanque)
-                .addOnSuccessListener(aVoid -> callback.onSuccess(idDispositivo))
-                .addOnFailureListener(e -> callback.onError(e.getMessage()));
+                .addOnSuccessListener(a ->
+                        callback.onSuccess(idDispositivo)
+                )
+                .addOnFailureListener(e ->
+                        callback.onError(e.getMessage())
+                );
     }
 
+    // =====================================================
+    // ♻️ LIBERAR DISPOSITIVO (QUEDA DISPONIBLE)
+    // =====================================================
+    public static void liberarDispositivo(
+            String idDispositivo,
+            FirebaseCallback callback
+    ) {
 
-    // ==========================================================
-    // ✅ LIBERAR DISPOSITIVO (cuando borras un tanque)
-    // ==========================================================
-    public static void liberarDispositivo(String idDispositivo, FirebaseCallback callback) {
+        DatabaseReference ref = getDispositivosUsuarioRef();
 
-        // Se deja idTanque = null → vuelve a estar disponible en inventario 📦
-        getUserDispositivosRef()
-                .child(idDispositivo)
+        if (ref == null) {
+            callback.onError("Usuario no autenticado ❌");
+            return;
+        }
+
+        // 📦 Dejamos idTanque en null
+        ref.child(idDispositivo)
                 .child("idTanque")
                 .setValue(null)
-                .addOnSuccessListener(aVoid -> callback.onSuccess(idDispositivo))
-                .addOnFailureListener(e -> callback.onError(e.getMessage()));
+                .addOnSuccessListener(a ->
+                        callback.onSuccess(idDispositivo)
+                )
+                .addOnFailureListener(e ->
+                        callback.onError(e.getMessage())
+                );
     }
 
+    // =====================================================
+    // 🔧 CALLBACKS (RESPUESTAS DE FIREBASE)
+    // =====================================================
 
-    // ==========================================================
-    // 🔧 CALLBACKS BASE PARA RESPUESTAS
-    // ==========================================================
+    /**
+     * ✅ Callback simple (devuelve un ID)
+     */
     public interface FirebaseCallback {
-        void onSuccess(String idResult); // Cuando una operación tiene 1 resultado simple
-        void onError(String error);      // Error corporativo con mensaje descriptivo
+        void onSuccess(String idResult); // ✔️ Operación exitosa
+        void onError(String error);      // ❌ Error con mensaje
     }
 
+    /**
+     * 📦 Callback para un solo objeto
+     */
     public interface FirebaseObjectCallback<T> {
-        void onSuccess(T object);        // Cuando Firebase devuelve UN OBJETO (Dispositivo)
+        void onSuccess(T object); // ✔️ Objeto recibido
         void onError(String error);
     }
 
+    /**
+     * 📋 Callback para listas
+     */
     public interface FirebaseListCallback<T> {
-        void onSuccess(List<T> lista);   // Cuando Firebase devuelve UNA LISTA de objetos
+        void onSuccess(List<T> lista); // ✔️ Lista recibida
         void onError(String error);
     }
 }

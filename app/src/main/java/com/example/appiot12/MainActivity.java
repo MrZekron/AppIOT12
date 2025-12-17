@@ -1,60 +1,70 @@
 package com.example.appiot12;
-// 📦 Paquete principal donde vive la Activity “lobby” del sistema AguaSegura
+// 📦 Activity inicial del sistema AguaSegura.
+// Es la pantalla de bienvenida: no hace lógica, solo redirige 👋💧
 
-// === IMPORTS ANDROID / UI ===
-import android.content.Intent; // 🚪 Permite saltar a otras pantallas
-import android.os.Bundle; // 🎒 Estado de la Activity al crearse
-import android.view.View; // 👆 Para manejar clics
+import android.content.Intent; // 🚪 Para cambiar de pantalla
+import android.os.Bundle; // 🎒 Datos del ciclo de vida
+import android.view.View; // 👆 Detectar clics
 
-// === LIBRERÍAS DE UI MODERNAS ===
-import androidx.activity.EdgeToEdge; // ↔️ Permite UI a pantalla completa estilo moderno
-import androidx.appcompat.app.AppCompatActivity; // 🏛 Activity con compatibilidad extendida
-import androidx.core.graphics.Insets; // 📐 Márgenes de sistema
-import androidx.core.view.ViewCompat; // 🛠 Utilidades para Views
-import androidx.core.view.WindowInsetsCompat; // 🪟 Manejo de insets del sistema (notch / barra)
+import androidx.activity.EdgeToEdge; // 📱 UI moderna sin bordes
+import androidx.appcompat.app.AppCompatActivity; // 🏛 Activity base
+import androidx.core.graphics.Insets; // 📐 Márgenes del sistema
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 
-// 🎯 Esta es la Activity inicial del proyecto (la pantalla de bienvenida).
+/**
+ * 🏠 MAIN ACTIVITY
+ *
+ * Explicado para un niño 👶:
+ * 👉 Esta pantalla es como la puerta de entrada a una casa 🏡
+ * 👉 Aquí no hacemos nada complicado
+ * 👉 Solo mostramos bienvenida y enviamos al login 🔐
+ */
 public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        // 📱 Activamos modo pantalla completa (edge-to-edge)
         EdgeToEdge.enable(this);
-        // ↗️ Activa el modo “edge-to-edge”: la UI puede usar toda la pantalla,
-        // respetando notch, barras y curvas del teléfono 😎📱
 
+        // 🎨 Cargamos el diseño visual de la pantalla principal
         setContentView(R.layout.activity_main);
-        // 🖼️ Infla el layout XML que define la pantalla principal
 
-        // 🔧 Ajustar automáticamente padding para evitar que la UI
-        // quede debajo de la barra de estado o la barra de navegación
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+        // 🧩 Ajustamos la vista para que no quede debajo
+        // de la barra superior o inferior del celular
+        ViewCompat.setOnApplyWindowInsetsListener(
+                findViewById(R.id.main),
+                (v, insets) -> {
 
-            Insets sb = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            // 📏 Obtenemos los márgenes reales del sistema (status bar, nav bar)
+                    Insets systemBars =
+                            insets.getInsets(WindowInsetsCompat.Type.systemBars());
 
-            v.setPadding(sb.left, sb.top, sb.right, sb.bottom);
-            // ↔️ Aplicamos esos márgenes al contenedor principal
+                    // 📏 Aplicamos los márgenes correctos
+                    v.setPadding(
+                            systemBars.left,
+                            systemBars.top,
+                            systemBars.right,
+                            systemBars.bottom
+                    );
 
-            return insets;
-            // 🔁 Devolvemos insets sin consumirlos (para que otros listeners puedan usarlos)
-        });
+                    return insets;
+                }
+        );
     }
 
     /**
-     * 🔐 MÉTODO iniciar()
-     * Este método está vinculado al botón en el layout via:
-     *      android:onClick="iniciar"
+     * ▶️ iniciar()
      *
-     * Su misión:
-     * 👉 Enviar al usuario a la pantalla de login (IniciarSesion)
-     *    donde validará su identidad.
+     * Método conectado al botón del XML:
+     * android:onClick="iniciar"
+     *
+     * ¿Qué hace?
+     * 👉 Envía al usuario a la pantalla de inicio de sesión 🔐
      */
     public void iniciar(View view) {
         startActivity(new Intent(this, IniciarSesion.class));
-        // ▶️ Lanzamos la Activity de inicio de sesión
-        // y dejamos esta como “pantalla de bienvenida”.
+        // 🚀 Lanzamos la pantalla de login
     }
-
 }

@@ -1,90 +1,152 @@
 package com.example.appiot12;
-// 📦 Pantalla encargada de mostrar el historial de acciones del usuario.
-// Aquí vive el "SAP de auditoría" del proyecto 😎📊
+// 📦 Pantalla de historial del proyecto Agua Segura.
+// Aquí se muestran las acciones recientes del usuario 📊🧾
 
+// ===== IMPORTS ANDROID =====
 import android.os.Bundle;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+// 🏛 Activity base estable
 
+// ===== IMPORTS FIREBASE =====
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.*;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+// ☁️ Firebase Realtime Database
 
+// ===== IMPORTS JAVA =====
 import java.util.ArrayList;
+import java.util.List;
 
+/**
+ * 📜 HistorialAcciones
+ *
+ * ¿Qué hace esta pantalla?
+ * 👉 Muestra las acciones del usuario
+ * 👉 Solo trae registros de los últimos 30 días
+ * 👉 Usa un ListView con AccionAdapter
+ *
+ * Explicado para un niño:
+ * 👉 Es como ver el cuaderno donde se anotan
+ *    todas las cosas importantes que hiciste 📒🙂
+ */
 public class HistorialAcciones extends AppCompatActivity {
 
-    private ListView lvHistorial;               // 📋 Lista visual para mostrar acciones
-    private ArrayList<AccionLog> acciones = new ArrayList<>(); // 🗂 Contenedor dinámico de logs
-    private AccionAdapter adapter;              // 🎨 Adaptador para transformar logs → UI
+    // 📋 Lista visual
+    private ListView lvHistorial;
+
+    // 🗂️ Lista en memoria con las acciones
+    private final List<AccionLog> acciones = new ArrayList<>();
+
+    // 🎨 Adaptador que convierte acciones → filas
+    private AccionAdapter adapter;
+
+    // ☁️ Referencia al historial en Firebase
+    private DatabaseReference refHistorial;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this); // 📱 Pantalla full edge
-        setContentView(R.layout.activity_historial_acciones); // 🎨 Dibujamos UI
+        setContentView(R.layout.activity_historial_acciones); // 🎨 Mostramos la pantalla
 
-        lvHistorial = findViewById(R.id.lvHistorial); // Unimos ListView del XML
+        // 🔗 Conectamos UI con el XML
+        inicializarVistas();
 
-        adapter = new AccionAdapter(this, acciones);  // Creamos adaptador con lista vacía
-        lvHistorial.setAdapter(adapter);              // Asignamos el adaptador al ListView
+        // 👤 Obtenemos UID del usuario
+        String uid = obtenerUidUsuario();
 
-        cargarHistorial(); // 🚀 Descargamos historial desde Firebase
-    }
+        if (uid == null) {
+            Toast.makeText(this, "Usuario no autenticado ❌", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
 
-    // ============================================================================
-    // 📥 CARGAR HISTORIAL DESDE FIREBASE (solo últimos 30 días)
-    // ============================================================================
-    private void cargarHistorial() {
-
-        // Obtenemos UID del usuario actual
-        String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
-
-        // Referencia: usuarios/{uid}/historial/
-        DatabaseReference ref = FirebaseDatabase.getInstance()
+        // ☁️ Apuntamos al historial del usuario
+        refHistorial = FirebaseDatabase.getInstance()
                 .getReference("usuarios")
                 .child(uid)
                 .child("historial");
 
-        // Calculamos timestamp de hace 30 días:
-        long treintaDias = System.currentTimeMillis() - (30L * 24 * 60 * 60 * 1000);
-        // 🧠 Fórmula empresarial: 30 días * 24 horas * 60 min * 60 seg * 1000 ms
+        // 🎨 Creamos el adaptador
+        adapter = new AccionAdapter(this, acciones);
+        lvHistorial.setAdapter(adapter);
 
-        // Consulta: traer registros ordenados por timestamp y solo desde hace 30 días
-        ref.orderByChild("timestamp")
-                .startAt(treintaDias) // 👉 Filtrado temporal
+        // 📥 Cargamos historial
+        cargarHistorialUltimos30Dias();
+    }
+
+    /**
+     * 🔗 Vincula el ListView con el XML
+     */
+    private void inicializarVistas() {
+        lvHistorial = findViewById(R.id.lvHistorial);
+    }
+
+    /**
+     * 👤 Obtiene el UID del usuario autenticado
+     */
+    private String obtenerUidUsuario() {
+        if (FirebaseAuth.getInstance().getCurrentUser() == null) {
+            return null;
+        }
+        return FirebaseAuth.getInstance().getCurrentUser().getUid();
+    }
+
+    // =====================================================
+    // 📥 CARGAR HISTORIAL (ÚLTIMOS 30 DÍAS)
+    // =====================================================
+    private void cargarHistorialUltimos30Dias() {
+
+        // 🧠 Calculamos la fecha de hace 30 días
+        long haceTreintaDias =
+                System.currentTimeMillis() - (30L * 24 * 60 * 60 * 1000);
+
+        // 🔍 Consultamos Firebase por timestamp
+        refHistorial
+                .orderByChild("timestamp")
+                .startAt(haceTreintaDias)
                 .addListenerForSingleValueEvent(new ValueEventListener() {
 
                     @Override
                     public void onDataChange(DataSnapshot snapshot) {
 
-                        acciones.clear(); // 🔄 Limpiamos lista anterior
+                        acciones.clear(); // ♻️ Limpiamos lista
 
-                        // Recorremos cada acción encontrada en Firebase
+                        // 🔄 Recorremos cada acción
                         for (DataSnapshot s : snapshot.getChildren()) {
 
                             AccionLog log = s.getValue(AccionLog.class);
-                            // Convertimos el JSON → objeto AccionLog
 
-                            if (log != null) acciones.add(log); // Añadimos a la lista
+                            if (log != null) {
+                                acciones.add(log);
+                            }
                         }
 
-                        // Si no hubo registros recientes
+                        // 📭 Si no hay acciones recientes
                         if (acciones.isEmpty()) {
-                            Toast.makeText(HistorialAcciones.this,
-                                    "No hay acciones registradas en los últimos 30 días",
-                                    Toast.LENGTH_LONG).show();
+                            Toast.makeText(
+                                    HistorialAcciones.this,
+                                    "No hay acciones en los últimos 30 días 📭",
+                                    Toast.LENGTH_LONG
+                            ).show();
                         }
 
-                        // Notificamos al adaptador que la data ha cambiado
+                        // 🔄 Actualizamos la lista
                         adapter.notifyDataSetChanged();
                     }
 
                     @Override
                     public void onCancelled(DatabaseError error) {
-                        // Error silencioso (podríamos agregar Log.e si fuera necesario)
+                        Toast.makeText(
+                                HistorialAcciones.this,
+                                "Error al cargar historial ⚠️",
+                                Toast.LENGTH_SHORT
+                        ).show();
                     }
                 });
     }

@@ -1,50 +1,60 @@
 package com.example.appiot12;
-// 📦 Clase utilitaria para registrar acciones en el historial del usuario.
-// Es como un “mini-HistorialLogger 2.0” compatible con Firebase 📊🔥
+// 📦 Controlador único de logs del sistema.
+// Esta clase es la "caja negra" oficial de AguaSegura ✈️📊
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.FirebaseDatabase;
 
+/**
+ * 🧠 LOG CONTROLLER
+ *
+ * ¿Qué hace?
+ * 👉 Guarda lo que hace el usuario, como un cuaderno invisible 📓
+ *
+ * ¿Para qué sirve?
+ * 👉 Para auditoría
+ * 👉 Para historial
+ * 👉 Para saber quién hizo qué y cuándo ⏰
+ *
+ * Explicado para un niño 👶:
+ * 👉 Es como cuando anotas en un cuaderno:
+ *    "Hoy creé un tanque" ✍️
+ */
 public class LogController {
 
     /**
-     * 📝 registrarAccion()
+     * 📝 registrarAccion
      *
-     * Registra un evento en:
-     *      usuarios/{uid}/historial/{idLog}
+     * Guarda una acción en Firebase en:
+     * usuarios/{uid}/historial/{idLog}
      *
-     * Cada log incluye:
-     *  - tipo: crear / editar / eliminar / compra / alerta / etc.
-     *  - descripcion: texto entendible de qué ocurrió
-     *  - timestamp: generado automáticamente por AccionLog
-     *  - id único: UUID automático
-     *
-     * Este método sirve como “cámara de seguridad digital” del sistema.
+     * Cada registro tiene:
+     * - tipo 👉 qué pasó (crear, editar, borrar, comprar)
+     * - descripcion 👉 explicación simple
+     * - timestamp 👉 cuándo pasó ⏰
      */
     public static void registrarAccion(String tipo, String descripcion) {
 
-        // 🔐 Verificar usuario autenticado
+        // 🔐 Obtener usuario actual
         FirebaseAuth auth = FirebaseAuth.getInstance();
 
-        if (auth.getCurrentUser() == null) {
-            // Si no hay usuario, no registramos nada (modo silencioso)
-            return;
-        }
+        // ❌ Si no hay usuario, no hacemos nada (modo silencioso)
+        if (auth.getCurrentUser() == null) return;
 
         String uid = auth.getCurrentUser().getUid();
 
-        // Validación adicional (muy improbable que ocurra)
+        // 🛡️ Seguridad extra (rara vez pasa, pero somos profesionales)
         if (uid == null || uid.isEmpty()) return;
 
-        // 🆕 Crear estructura del log
+        // 🆕 Crear el log (AccionLog genera ID + timestamp solo)
         AccionLog log = new AccionLog(tipo, descripcion);
 
-        // 📤 Guardar log en Firebase
+        // ☁️ Guardar en Firebase
         FirebaseDatabase.getInstance()
                 .getReference("usuarios")
                 .child(uid)
                 .child("historial")
-                .child(log.getId())    // El ID del log se usa como key
-                .setValue(log);        // Subimos el objeto completo
+                .child(log.getId())
+                .setValue(log);
     }
 }

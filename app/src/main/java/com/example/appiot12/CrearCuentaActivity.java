@@ -1,240 +1,318 @@
-package com.example.appiot12; // 📦 Aquí vive esta clase dentro del proyecto
+package com.example.appiot12;
+// 📦 Paquete base del proyecto Agua Segura.
+// Aquí vive la pantalla para crear cuentas nuevas 👤✨
 
-// === IMPORTS ===
-// Son como herramientas que pedimos prestadas para construir nuestra app 🛠️
+// ===== IMPORTS ANDROID =====
+import android.app.ProgressDialog;      // ⏳ Ventanita de “cargando…”
+import android.content.Intent;          // 🚪 Navegación entre pantallas
+import android.os.Bundle;               // 🎒 Estado de la Activity
+import android.util.Patterns;           // 🔍 Validación de correos
+import android.view.View;               // 👆 Eventos de clic
+import android.widget.Button;           // 🔘 Botones
+import android.widget.EditText;         // 📝 Campos de texto
+import android.widget.Toast;            // 🍞 Mensajes rápidos
 
-import android.app.ProgressDialog; // ⏳ Ventanita "cargando..."
-import android.content.Intent; // 🚪 Navegación entre pantallas
-import android.os.Bundle; // 🎒 Datos transportados entre Activities
-import android.util.Patterns; // 🔍 Validación elegante de correos
-import android.view.View; // 👆 Reconocer clics
-import android.widget.Button; // 🔘 Botoncitos felices
-import android.widget.EditText; // 📝 Entrada de texto
-import android.widget.Toast; // 🍞 Notificaciones rápidas
+import androidx.appcompat.app.AppCompatActivity; // 🏛 Activity base
 
-import androidx.activity.EdgeToEdge; // 📱 UI que se expande hasta los bordes
-import androidx.appcompat.app.AppCompatActivity; // 🏛 La madre de todas las pantallas
-import androidx.core.graphics.Insets; // 📐 Gestión de bordes del sistema
-import androidx.core.view.ViewCompat; // 🛠 Utilidades de vista
-import androidx.core.view.WindowInsetsCompat; // 🪟 Insets del sistema
+// ===== IMPORTS FIREBASE =====
+import com.google.android.gms.tasks.Task;        // 📦 Resultado de tareas
+import com.google.firebase.auth.AuthResult;      // 🔐 Resultado de Auth
+import com.google.firebase.auth.FirebaseAuth;    // 🔐 Autenticación
+import com.google.firebase.auth.FirebaseAuthUserCollisionException; // 💥 Correo duplicado
+import com.google.firebase.auth.FirebaseUser;    // 👤 Usuario
+import com.google.firebase.auth.UserProfileChangeRequest; // 🎨 Nombre de perfil
+import com.google.firebase.database.FirebaseDatabase; // ☁️ Base de datos
 
-// === FIREBASE ===
-import com.google.android.gms.tasks.OnCompleteListener; // 📬 Saber cuándo Firebase terminó una tarea
-import com.google.android.gms.tasks.Task; // 📦 Resultado de operaciones asíncronas
-import com.google.firebase.auth.AuthResult; // 🔐 Resultado de creación de usuario
-import com.google.firebase.auth.FirebaseAuth; // 🔐 Control total de sesiones
-import com.google.firebase.auth.FirebaseAuthUserCollisionException; // 💥 Correo ya registrado
-import com.google.firebase.auth.FirebaseUser; // 👤 Usuario autenticado
-import com.google.firebase.auth.UserProfileChangeRequest; // 🎨 Asignar nombre al usuario
-import com.google.firebase.database.FirebaseDatabase; // 🛢️ Realtime Database
+import java.util.HashMap;
+import java.util.Map;
+// 🧱 Mapas para guardar datos del usuario
 
-import java.util.HashMap; // 🧱 Mapa clave-valor para insertar datos
-import java.util.Map; // 🗂️ Mapa genérico
-
-// 🎇✨ PANTALLA PARA CREAR UNA CUENTA NUEVA ✨🎇
+/**
+ * 🎇 CrearCuentaActivity 🎇
+ *
+ * Esta pantalla permite:
+ * 👉 Crear una cuenta nueva
+ * 👉 Validar datos básicos
+ * 👉 Registrar el usuario en Firebase
+ * 👉 Asignar rol (admin o usuario)
+ *
+ * En simple:
+ * Es la puerta de entrada a Agua Segura 🚪💧
+ */
 public class CrearCuentaActivity extends AppCompatActivity {
 
-    // 🧪 Campos del formulario donde escribimos datos
-    private EditText etNombre, etEmail, etPass, etPassConfirm;
+    // 📝 Campos del formulario
+    private EditText etNombre;
+    private EditText etEmail;
+    private EditText etPass;
+    private EditText etPassConfirm;
 
     // 🔘 Botón principal
     private Button btnCrear;
 
-    // 🔐 Autenticador de Firebase
-    private FirebaseAuth mAuth;
+    // 🔐 Firebase Auth
+    private FirebaseAuth auth;
 
-    // ⏳ Ventanita con “Cargando...”
+    // ⏳ Diálogo de carga
     private ProgressDialog progressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_crear_cuenta); // 🎨 Mostramos la pantalla
 
-        EdgeToEdge.enable(this); // 📱 Pantalla completa moderna
-        setContentView(R.layout.activity_crear_cuenta); // 🎨 UI cargada
+        // 🔗 Conectamos la UI con el XML
+        inicializarVistas();
 
-        // Ajustar contenido a los bordes del sistema para evitar recortes
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
+        // 🔐 Inicializamos Firebase Auth
+        auth = FirebaseAuth.getInstance();
 
-        // 🏗️ Vincular componentes con el XML
+        // ⏳ Configuramos el diálogo de carga
+        progressDialog = new ProgressDialog(this);
+        progressDialog.setCancelable(false);
+
+        // 🔘 Acción principal: crear cuenta
+        btnCrear.setOnClickListener(this::crearCuenta);
+    }
+
+    /**
+     * 🔗 Conecta los EditText y botones con el XML
+     */
+    private void inicializarVistas() {
         etNombre = findViewById(R.id.etNombre);
         etEmail = findViewById(R.id.etEmailCrear);
         etPass = findViewById(R.id.etPassCrear);
         etPassConfirm = findViewById(R.id.etPassConfirm);
         btnCrear = findViewById(R.id.btnCrearCuenta);
-
-        // Iniciamos Firebase Auth
-        mAuth = FirebaseAuth.getInstance();
-
-        // Crear ventanita de progreso
-        progressDialog = new ProgressDialog(this);
-        progressDialog.setCancelable(false); // ❌ Evitar cerrar accidentalmente
-
-        // Cuando se presiona el botón, creamos cuenta
-        btnCrear.setOnClickListener(this::createAccount);
     }
 
-    // ============================================================
-    // 📌 VALIDAR CAMPOS Y PREPARAR CREACIÓN DE CUENTA
-    // ============================================================
-    public void createAccount(View view) {
+    // =====================================================
+    // 🧠 VALIDAR DATOS Y COMENZAR REGISTRO
+    // =====================================================
+    private void crearCuenta(View view) {
 
-        // Tomar valores del formulario
+        // ✏️ Leemos lo que escribió el usuario
         String nombre = etNombre.getText().toString().trim();
         String email = etEmail.getText().toString().trim().toLowerCase();
         String pass = etPass.getText().toString().trim();
         String passConfirm = etPassConfirm.getText().toString().trim();
 
-        // Validaciones básicas
-        if (nombre.isEmpty() || email.isEmpty() || pass.isEmpty() || passConfirm.isEmpty()) {
-            Toast.makeText(this, "Por favor complete todos los campos", Toast.LENGTH_SHORT).show();
-            return;
+        // 🛑 Validaciones básicas
+        if (!datosValidos(nombre, email, pass, passConfirm)) {
+            return; // ❌ Algo estaba mal
         }
 
-        // Validar formato del correo
-        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            Toast.makeText(this, "Ingrese un correo válido", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        // Validar coincidencia de contraseñas
-        if (!pass.equals(passConfirm)) {
-            Toast.makeText(this, "Las contraseñas no coinciden", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        // Requisitos mínimos de seguridad
-        if (pass.length() < 6) {
-            Toast.makeText(this, "La contraseña debe tener al menos 6 caracteres", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        // Mostrar progreso
-        progressDialog.setMessage("Creando cuenta... 😎");
+        // ⏳ Mostramos carga
+        progressDialog.setMessage("Creando cuenta... ⏳");
         progressDialog.show();
-        btnCrear.setEnabled(false); // Evita doble registro
+        btnCrear.setEnabled(false);
 
-        // Comprobar si el correo ya existe
-        mAuth.fetchSignInMethodsForEmail(email).addOnCompleteListener(fetchTask -> {
+        // 🔍 Verificamos si el correo ya existe
+        auth.fetchSignInMethodsForEmail(email)
+                .addOnCompleteListener(task -> {
 
-            if (!fetchTask.isSuccessful() || fetchTask.getResult() == null) {
-                proceedCreateUser(nombre, email, pass);
-                return;
-            }
-
-            // Si Firebase devuelve métodos de inicio → ya está registrado
-            if (fetchTask.getResult().getSignInMethods() != null &&
-                    !fetchTask.getResult().getSignInMethods().isEmpty()) {
-
-                progressDialog.dismiss();
-                btnCrear.setEnabled(true);
-                Toast.makeText(this, "El correo ya está registrado.", Toast.LENGTH_LONG).show();
-            } else {
-                proceedCreateUser(nombre, email, pass);
-            }
-        });
-    }
-
-    // ============================================================
-    // 📌 CREAR USUARIO EN FIREBASE AUTH
-    // ============================================================
-    private void proceedCreateUser(String nombre, String email, String pass) {
-
-        mAuth.createUserWithEmailAndPassword(email, pass)
-                .addOnCompleteListener(this, (OnCompleteListener<AuthResult>) task -> {
-
-                    // ❌ Falló la creación
-                    if (!task.isSuccessful()) {
-                        progressDialog.dismiss();
-                        btnCrear.setEnabled(true);
-
-                        String msg;
-                        if (task.getException() instanceof FirebaseAuthUserCollisionException) {
-                            msg = "El correo ya está registrado.";
-                        } else {
-                            msg = (task.getException() != null ?
-                                    task.getException().getMessage() :
-                                    "Error al crear cuenta");
-                        }
-
-                        Toast.makeText(this, "Registro fallido: " + msg, Toast.LENGTH_LONG).show();
+                    if (!task.isSuccessful() || task.getResult() == null) {
+                        crearUsuarioFirebase(nombre, email, pass);
                         return;
                     }
 
-                    // ✔ Usuario creado correctamente
-                    FirebaseUser firebaseUser = mAuth.getCurrentUser();
+                    if (task.getResult().getSignInMethods() != null &&
+                            !task.getResult().getSignInMethods().isEmpty()) {
 
-                    if (firebaseUser == null) {
-                        progressDialog.dismiss();
-                        btnCrear.setEnabled(true);
-                        Toast.makeText(this, "Error interno: usuario nulo", Toast.LENGTH_SHORT).show();
-                        return;
+                        // 💥 Correo ya registrado
+                        restaurarUI();
+                        Toast.makeText(
+                                this,
+                                "El correo ya está registrado ❌",
+                                Toast.LENGTH_LONG
+                        ).show();
+                    } else {
+                        crearUsuarioFirebase(nombre, email, pass);
                     }
-
-                    String uid = firebaseUser.getUid(); // 🆔 ID del usuario en Firebase
-
-                    // Actualizar nombre del perfil
-                    UserProfileChangeRequest profileUpdates =
-                            new UserProfileChangeRequest.Builder()
-                                    .setDisplayName(nombre)
-                                    .build();
-                    firebaseUser.updateProfile(profileUpdates);
-
-                    // Enviar correo de verificación
-                    firebaseUser.sendEmailVerification();
-
-                    // REGLA DE ORO: correos con @aguasegura.cl → administradores
-                    boolean esAdmin = email.endsWith("@aguasegura.cl");
-                    String rolAsignado = esAdmin ? "admin" : "usuario";
-
-                    // 🚀 Preparar estructura en la base de datos
-                    Map<String, Object> userMap = new HashMap<>();
-                    userMap.put("id", uid);
-                    userMap.put("correo", email);
-                    userMap.put("rol", rolAsignado);
-                    userMap.put("tanques", new HashMap<>()); // 🧱 Comienza sin tanques
-                    userMap.put("createdAt", System.currentTimeMillis());
-
-                    // Guardar en Realtime Database
-                    FirebaseDatabase.getInstance()
-                            .getReference("usuarios")
-                            .child(uid)
-                            .setValue(userMap)
-                            .addOnCompleteListener(dbTask -> {
-
-                                progressDialog.dismiss();
-                                btnCrear.setEnabled(true);
-
-                                if (!dbTask.isSuccessful()) {
-                                    Toast.makeText(this,
-                                            "Error al guardar datos del usuario.",
-                                            Toast.LENGTH_LONG).show();
-                                    return;
-                                }
-
-                                Toast.makeText(this,
-                                        "Cuenta creada correctamente 🎉",
-                                        Toast.LENGTH_LONG).show();
-
-                                // Redirección según rol
-                                Intent intent = esAdmin
-                                        ? new Intent(this, MenuAdmin.class)
-                                        : new Intent(this, Menu.class);
-
-                                startActivity(intent);
-                                finish();
-                            });
                 });
     }
 
-    // ============================================================
+    /**
+     * ✅ Valida los datos del formulario
+     */
+    private boolean datosValidos(
+            String nombre,
+            String email,
+            String pass,
+            String passConfirm
+    ) {
+
+        if (nombre.isEmpty() || email.isEmpty() ||
+                pass.isEmpty() || passConfirm.isEmpty()) {
+
+            Toast.makeText(
+                    this,
+                    "Completa todos los campos 📝",
+                    Toast.LENGTH_SHORT
+            ).show();
+            return false;
+        }
+
+        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            Toast.makeText(
+                    this,
+                    "Correo inválido 📧❌",
+                    Toast.LENGTH_SHORT
+            ).show();
+            return false;
+        }
+
+        if (!pass.equals(passConfirm)) {
+            Toast.makeText(
+                    this,
+                    "Las contraseñas no coinciden 🔐",
+                    Toast.LENGTH_SHORT
+            ).show();
+            return false;
+        }
+
+        if (pass.length() < 6) {
+            Toast.makeText(
+                    this,
+                    "La contraseña debe tener al menos 6 caracteres",
+                    Toast.LENGTH_SHORT
+            ).show();
+            return false;
+        }
+
+        return true; // ✔️ Todo bien
+    }
+
+    // =====================================================
+    // 🔐 CREAR USUARIO EN FIREBASE AUTH
+    // =====================================================
+    private void crearUsuarioFirebase(String nombre, String email, String pass) {
+
+        auth.createUserWithEmailAndPassword(email, pass)
+                .addOnCompleteListener(this, task -> {
+
+                    if (!task.isSuccessful()) {
+                        manejarErrorRegistro(task);
+                        return;
+                    }
+
+                    FirebaseUser user = auth.getCurrentUser();
+
+                    if (user == null) {
+                        restaurarUI();
+                        Toast.makeText(
+                                this,
+                                "Error interno 😢",
+                                Toast.LENGTH_SHORT
+                        ).show();
+                        return;
+                    }
+
+                    // 🎨 Asignamos nombre al perfil
+                    UserProfileChangeRequest profile =
+                            new UserProfileChangeRequest.Builder()
+                                    .setDisplayName(nombre)
+                                    .build();
+                    user.updateProfile(profile);
+
+                    // 📧 Enviamos correo de verificación
+                    user.sendEmailVerification();
+
+                    // 🏷️ Asignamos rol
+                    boolean esAdmin = email.endsWith("@aguasegura.cl");
+                    String rol = esAdmin ? "admin" : "usuario";
+
+                    // ☁️ Guardamos datos en la base
+                    guardarUsuarioEnDatabase(user.getUid(), email, rol, esAdmin);
+                });
+    }
+
+    /**
+     * ☁️ Guarda la información del usuario en Realtime Database
+     */
+    private void guardarUsuarioEnDatabase(
+            String uid,
+            String email,
+            String rol,
+            boolean esAdmin
+    ) {
+
+        Map<String, Object> datosUsuario = new HashMap<>();
+        datosUsuario.put("id", uid);
+        datosUsuario.put("correo", email);
+        datosUsuario.put("rol", rol);
+        datosUsuario.put("tanques", new HashMap<>());
+        datosUsuario.put("createdAt", System.currentTimeMillis());
+
+        FirebaseDatabase.getInstance()
+                .getReference("usuarios")
+                .child(uid)
+                .setValue(datosUsuario)
+                .addOnCompleteListener(dbTask -> {
+
+                    restaurarUI();
+
+                    if (!dbTask.isSuccessful()) {
+                        Toast.makeText(
+                                this,
+                                "Error al guardar usuario ❌",
+                                Toast.LENGTH_LONG
+                        ).show();
+                        return;
+                    }
+
+                    Toast.makeText(
+                            this,
+                            "Cuenta creada correctamente 🎉",
+                            Toast.LENGTH_LONG
+                    ).show();
+
+                    // 🚪 Redirigimos según rol
+                    Intent intent = esAdmin
+                            ? new Intent(this, MenuAdmin.class)
+                            : new Intent(this, Menu.class);
+
+                    startActivity(intent);
+                    finish();
+                });
+    }
+
+    /**
+     * ⚠️ Maneja errores al crear cuenta
+     */
+    private void manejarErrorRegistro(Task<AuthResult> task) {
+
+        restaurarUI();
+
+        String mensaje;
+
+        if (task.getException() instanceof FirebaseAuthUserCollisionException) {
+            mensaje = "El correo ya está registrado ❌";
+        } else if (task.getException() != null) {
+            mensaje = task.getException().getMessage();
+        } else {
+            mensaje = "Error desconocido 😢";
+        }
+
+        Toast.makeText(
+                this,
+                "Registro fallido: " + mensaje,
+                Toast.LENGTH_LONG
+        ).show();
+    }
+
+    /**
+     * ♻️ Restaura la UI luego de una operación
+     */
+    private void restaurarUI() {
+        progressDialog.dismiss();
+        btnCrear.setEnabled(true);
+    }
+
+    // =====================================================
     // ❌ CANCELAR REGISTRO
-    // ============================================================
+    // =====================================================
     public void cancelCreateAccount(View view) {
-        finish(); // Cierra la pantalla
+        finish(); // 🚪 Cerramos pantalla
     }
 }

@@ -1,6 +1,6 @@
 package com.example.appiot12;
-// 📦 Controlador encargado de la administración lógica de los tanques.
-// Maneja creación, edición, eliminación y una lista local en memoria.
+// 📦 Controlador lógico de tanques.
+// Es como el “jefe de bodega” que sabe qué tanques existen y dónde están 🧠💧
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
@@ -12,28 +12,44 @@ import java.util.List;
 /**
  * ⭐ CONTROLADOR DE TANQUES ⭐
  *
- * Actúa como capa lógica "cliente" para:
- *   ✔ Crear tanques
- *   ✔ Editarlos
- *   ✔ Eliminarlos
- *   ✔ Guardarlos en Firebase
- *   ✔ Llevar una lista local de trabajo (no sincronizada)
+ * Qué hace este controlador:
+ * ✔ Crea tanques
+ * ✔ Edita tanques
+ * ✔ Elimina tanques
+ * ✔ Guarda cambios en Firebase ☁️
+ * ✔ Mantiene una lista local en memoria 🧠
  *
- * IMPORTANTE:
- *   - No escucha Firebase automáticamente.
- *   - Funciona como cache temporal.
- *   - Actividades como Lista cargan datos directamente desde Firebase.
+ * Qué NO hace:
+ * ❌ No escucha Firebase en tiempo real
+ * ❌ No valida sensores (eso es de Dispositivo)
+ *
+ * Piensa en él como una libreta de trabajo ✏️
  */
 public class TanqueAguaController {
 
-    // Lista LOCAL en memoria (cache rápida)
-    private static ArrayList<TanqueAgua> listaTanques = new ArrayList<>();
+    // 🧠 Lista LOCAL en memoria (cache rápida, no automática)
+    private static final List<TanqueAgua> listaTanques = new ArrayList<>();
 
     // ============================================================
-    //   RUTA: TANQUES DEL USUARIO ACTUAL
+    // 🔐 OBTENER UID DEL USUARIO ACTUAL (SEGURO)
+    // ============================================================
+    private static String getUidSeguro() {
+        if (FirebaseAuth.getInstance().getCurrentUser() == null) {
+            return null; // 🚫 No hay usuario logueado
+        }
+        return FirebaseAuth.getInstance().getCurrentUser().getUid();
+    }
+
+    // ============================================================
+    // 📍 RUTA: /usuarios/{uid}/tanques
     // ============================================================
     private static DatabaseReference getUserTanquesRef() {
-        String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
+        String uid = getUidSeguro();
+
+        if (uid == null) {
+            return null; // 🚫 Evita crash
+        }
 
         return FirebaseDatabase.getInstance()
                 .getReference("usuarios")
@@ -42,67 +58,67 @@ public class TanqueAguaController {
     }
 
     // ============================================================
-    //   RUTA CORRECTA: DISPOSITIVOS DEL USUARIO ACTUAL
-    // ============================================================
-    private static DatabaseReference getUserDispositivosRef() {
-        String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
-
-        return FirebaseDatabase.getInstance()
-                .getReference("usuarios")
-                .child(uid)
-                .child("dispositivos");
-    }
-
-    // ============================================================
-    //    AGREGAR TANQUE CON DISPOSITIVO ASOCIADO
+    // ➕ AGREGAR TANQUE NUEVO
     // ============================================================
     public static String addTanque(String nombre,
                                    String capacidad,
                                    String color,
                                    String idDispositivo) {
 
-        // 🚫 Validar nombres duplicados en la cache local
-        for (TanqueAgua tanque : listaTanques) {
-            if (tanque.getNombre().equalsIgnoreCase(nombre)) {
-                return "Error: Ya existe un tanque con ese nombre.";
-            }
+        // 🛑 Validaciones básicas (para niños 👶)
+        if (nombre == null || nombre.trim().isEmpty()) {
+            return "Error: el nombre está vacío ❌";
         }
 
-        // 🚫 Validar ID de dispositivo
         if (idDispositivo == null || idDispositivo.trim().isEmpty()) {
-            return "Error: ID de dispositivo inválido.";
+            return "Error: el tanque debe tener un dispositivo 📡";
         }
 
-        // ⚠ NO podemos verificar la existencia del dispositivo en Firebase aquí
-        // porque Firebase es asíncrono. La verificación real ocurre en UI.
+        // 🚫 Evitar nombres duplicados (en memoria)
+        if (findTanqueByNombre(nombre) != null) {
+            return "Error: ya existe un tanque con ese nombre 🛑";
+        }
 
-        // Crear tanque nuevo
-        TanqueAgua t = new TanqueAgua();
-        t.setNombre(nombre);
-        t.setCapacidad(capacidad);
-        t.setColor(color);
-        t.setIdDispositivo(idDispositivo);
-
-        // Generar ID con push()
         DatabaseReference ref = getUserTanquesRef();
-        String idTanque = ref.push().getKey(); // Firebase autogenera clave única
-        t.setIdTanque(idTanque);
 
-        // Guardar en Firebase
-        ref.child(idTanque).setValue(t);
+        if (ref == null) {
+            return "Error: usuario no autenticado 🔐";
+        }
 
-        // Guardar en memoria
-        listaTanques.add(t);
+        // 🆔 Firebase genera ID único
+        String idTanque = ref.push().getKey();
 
-        return "Tanque agregado exitosamente: " + nombre;
+        if (idTanque == null) {
+            return "Error al generar ID del tanque ❌";
+        }
+
+        // 🏗 Crear tanque
+        TanqueAgua tanque = new TanqueAgua(
+                idTanque,
+                nombre,
+                capacidad,
+                color,
+                idDispositivo
+        );
+
+        // ☁️ Guardar en Firebase
+        ref.child(idTanque).setValue(tanque);
+
+        // 🧠 Guardar en cache local
+        listaTanques.add(tanque);
+
+        return "Tanque agregado correctamente ✅";
     }
 
     // ============================================================
-    //    BUSCAR TANQUE POR NOMBRE (solo en cache)
+    // 🔍 BUSCAR TANQUE POR NOMBRE (SOLO MEMORIA)
     // ============================================================
-    public static TanqueAgua findTanque(String nombre) {
+    public static TanqueAgua findTanqueByNombre(String nombre) {
+
+        if (nombre == null) return null;
+
         for (TanqueAgua t : listaTanques) {
-            if (t.getNombre().equalsIgnoreCase(nombre)) {
+            if (nombre.equalsIgnoreCase(t.getNombre())) {
                 return t;
             }
         }
@@ -110,67 +126,81 @@ public class TanqueAguaController {
     }
 
     // ============================================================
-    //    EDITAR TANQUE (local + Firebase)
+    // 🔍 BUSCAR TANQUE POR ID (REUTILIZABLE)
+    // ============================================================
+    private static TanqueAgua findTanqueById(String idTanque) {
+
+        if (idTanque == null) return null;
+
+        for (TanqueAgua t : listaTanques) {
+            if (idTanque.equals(t.getIdTanque())) {
+                return t;
+            }
+        }
+        return null;
+    }
+
+    // ============================================================
+    // ✏️ EDITAR TANQUE EXISTENTE
     // ============================================================
     public static String updateTanque(String idTanque,
                                       String nombre,
                                       String capacidad,
                                       String color) {
 
-        TanqueAgua tanque = null;
-
-        // Buscar en la cache local
-        for (TanqueAgua t : listaTanques) {
-            if (t.getIdTanque().equals(idTanque)) {
-                tanque = t;
-                break;
-            }
-        }
+        TanqueAgua tanque = findTanqueById(idTanque);
 
         if (tanque == null) {
-            return "Error: Tanque no encontrado en memoria.";
+            return "Error: tanque no encontrado 🛑";
         }
 
-        // Actualizar objeto local
+        // ✍️ Actualizar datos locales
         tanque.setNombre(nombre);
         tanque.setCapacidad(capacidad);
         tanque.setColor(color);
 
-        // Guardar en Firebase
-        getUserTanquesRef()
-                .child(idTanque)
-                .setValue(tanque);
+        DatabaseReference ref = getUserTanquesRef();
 
-        return "Tanque actualizado: " + nombre;
+        if (ref == null) {
+            return "Error: usuario no autenticado 🔐";
+        }
+
+        // ☁️ Guardar cambios en Firebase
+        ref.child(idTanque).setValue(tanque);
+
+        return "Tanque actualizado correctamente ✨";
     }
 
     // ============================================================
-    //    ELIMINAR TANQUE (local + Firebase)
+    // 🗑 ELIMINAR TANQUE
     // ============================================================
-    public static void eliminarTanque(String idTanque) {
+    public static String eliminarTanque(String idTanque) {
 
-        TanqueAgua eliminar = null;
+        TanqueAgua tanque = findTanqueById(idTanque);
 
-        // Buscar en la cache
-        for (TanqueAgua t : listaTanques) {
-            if (t.getIdTanque().equals(idTanque)) {
-                eliminar = t;
-                break;
-            }
+        if (tanque == null) {
+            return "Error: tanque no encontrado ❌";
         }
 
-        if (eliminar != null) {
-            listaTanques.remove(eliminar);
+        // 🧠 Eliminar de memoria
+        listaTanques.remove(tanque);
+
+        DatabaseReference ref = getUserTanquesRef();
+
+        if (ref == null) {
+            return "Error: usuario no autenticado 🔐";
         }
 
-        // Eliminar en Firebase
-        getUserTanquesRef().child(idTanque).removeValue();
+        // ☁️ Eliminar de Firebase
+        ref.child(idTanque).removeValue();
+
+        return "Tanque eliminado correctamente 🗑️";
     }
 
     // ============================================================
-    //    LISTA LOCAL SINCRONIZADA MANUALMENTE
+    // 📋 OBTENER LISTA LOCAL (LECTURA)
     // ============================================================
     public static List<TanqueAgua> getListaTanques() {
-        return listaTanques;
+        return new ArrayList<>(listaTanques); // 🔒 Copia defensiva
     }
 }

@@ -1,59 +1,98 @@
 package com.example.appiot12;
-// Paquete oficial donde vive este modelo. Mantiene orden corporativo 📁🏢
+// 📦 Paquete del proyecto Agua Segura.
+// Aquí viven los modelos de datos, ordenados y sin caos 🗂️💧
 
+import java.util.UUID;
+// 🔑 Usamos UUID para generar identificadores únicos (sin choques, sin estrés)
+
+/**
+ * 🧾 AccionLog
+ *
+ * Esta clase representa una acción realizada dentro de la app.
+ * Cada vez que el usuario hace algo importante, se guarda un AccionLog.
+ *
+ * En palabras simples:
+ * 👉 Es el “diario de vida” del sistema 📔🙂
+ */
 public class AccionLog {
-    // Clase que representa un registro en el historial de acciones del sistema.
-    // Cada acción es como una minuta ejecutiva: quién hizo qué y cuándo 📝✨
 
+    // 🆔 Identificador único del registro
     private String id;
-    // Identificador único del log. KPI: unicidad absoluta gracias a UUID 🔑
 
+    // 🏷️ Tipo de acción (CREAR, EDITAR, ELIMINAR, COMPRA, etc.)
     private String tipo;
-    // Tipo de acción realizada: creado / eliminado / editado / compra
-    // Esto permite clasificar comportamiento operacional 📊
 
+    // 📝 Descripción de lo que pasó
     private String descripcion;
-    // Mensaje descriptivo, ejemplo: "Se creó tanque X".
-    // Aporta storytelling para auditorías internas 📘😎
 
+    // ⏰ Momento exacto en que ocurrió la acción (en milisegundos)
     private long timestamp;
-    // Marca de tiempo exacta del evento.
-    // Usamos System.currentTimeMillis() → precisión intergaláctica ⏱️🚀
 
-    public AccionLog() {}
-    // Constructor vacío requerido por Firebase para deserializar automáticamente 🔄
-
-    public AccionLog(String tipo, String descripcion) {
-        // Constructor corporativo para crear logs listos para el comité de crisis 😄
-
-        this.id = java.util.UUID.randomUUID().toString();
-        // Generamos un ID único tipo UUID.
-        // Nada de duplicados en esta operación, señor. 🎯
-
-        this.tipo = tipo;
-        // Guardamos el tipo de acción.
-        // Métrica útil para segmentar comportamiento del usuario 🧩
-
-        this.descripcion = descripcion;
-        // Guardamos la descripción que literalmente cuenta “la historia del suceso” 📜
-
-        this.timestamp = System.currentTimeMillis();
-        // Registramos el instante exacto del evento.
-        // Perfecto para trazabilidad estilo auditoría premium ⏰📑
+    /**
+     * 🔄 Constructor vacío
+     *
+     * Firebase lo necesita para poder:
+     * 👉 Leer los datos desde la nube
+     * 👉 Convertirlos en un objeto AccionLog
+     *
+     * Aunque no haga nada, es MUY importante ⚠️
+     */
+    public AccionLog() {
+        // Firebase trabaja en silencio aquí 🤫☁️
     }
 
-    public String getId() { return id; }
-    // Retorna el ID del log. Ideal para búsquedas 🔍
+    /**
+     * 🛠️ Constructor principal
+     *
+     * Se usa cuando queremos crear un nuevo registro de acción.
+     *
+     * @param tipo        tipo de acción realizada
+     * @param descripcion explicación corta de lo ocurrido
+     */
+    public AccionLog(String tipo, String descripcion) {
 
-    public String getTipo() { return tipo; }
-    // Retorna el tipo de operación (creado, eliminado…).
-    // Permite filtrar o aplicar colores semáforo 🟥🟨🟩
+        // 🔑 Generamos un ID único automáticamente
+        this.id = UUID.randomUUID().toString();
 
-    public String getDescripcion() { return descripcion; }
-    // Retorna la narrativa del evento.
-    // Un CRM interno para tanques de agua 😆💧
+        // 🏷️ Guardamos el tipo de acción
+        this.tipo = tipo;
 
-    public long getTimestamp() { return timestamp; }
-    // Retorna el timestamp.
-    // Base para ordenar cronológicamente el historial y detectar patrones temporales 📈
+        // 📝 Guardamos la descripción del evento
+        this.descripcion = descripcion;
+
+        // ⏱️ Guardamos el momento exacto en que ocurrió
+        this.timestamp = System.currentTimeMillis();
+    }
+
+    // =========================
+    // 📤 MÉTODOS GET (lectura)
+    // =========================
+
+    /**
+     * 🆔 Devuelve el ID del registro
+     */
+    public String getId() {
+        return id;
+    }
+
+    /**
+     * 🏷️ Devuelve el tipo de acción
+     */
+    public String getTipo() {
+        return tipo;
+    }
+
+    /**
+     * 📝 Devuelve la descripción del evento
+     */
+    public String getDescripcion() {
+        return descripcion;
+    }
+
+    /**
+     * ⏰ Devuelve el momento en que ocurrió la acción
+     */
+    public long getTimestamp() {
+        return timestamp;
+    }
 }

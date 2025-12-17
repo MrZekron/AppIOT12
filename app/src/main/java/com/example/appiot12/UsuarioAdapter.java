@@ -1,13 +1,12 @@
 package com.example.appiot12;
-// 📦 Adaptador responsable de mostrar cada usuario dentro del panel administrativo.
-// Incluye estado, bloqueo, deuda pendiente y atraso estimado.
+// 📦 Adaptador visual para el panel de administración.
+// Su misión es MOSTRAR información, no gobernar el sistema 👀🎨
 
 import android.content.Context;
 import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.TextView;
@@ -22,16 +21,16 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.List;
 
 /**
- * 🌟 USUARIO ADAPTER 🌟
+ * 🌟 ADAPTADOR DE USUARIOS (ADMIN) 🌟
  *
- * Renderiza:
- *   ✔ Correo del usuario
- *   ✔ Estado de bloqueo (activo / bloqueado)
- *   ✔ Deuda total pendiente
- *   ✔ Tiempo en atraso (días)
- *   ✔ Botón de bloquear / desbloquear
+ * Muestra por usuario:
+ * ✔ Correo
+ * ✔ Estado (activo / bloqueado)
+ * ✔ Deuda pendiente
+ * ✔ Días de atraso estimados
  *
- * Funciona como un mini–dashboard corporativo por usuario ⚙️.
+ * ⚠️ NO contiene reglas de negocio complejas
+ * ⚠️ NO decide políticas del sistema
  */
 public class UsuarioAdapter extends ArrayAdapter<Usuario> {
 
@@ -52,195 +51,151 @@ public class UsuarioAdapter extends ArrayAdapter<Usuario> {
         ViewHolder holder;
 
         // ============================================================
-        // 🧠 OPTIMIZACIÓN: ViewHolder Pattern
+        // 🧠 ViewHolder Pattern → rápido y seguro
         // ============================================================
         if (row == null) {
 
-            // Inflamos el layout del usuario
-            row = LayoutInflater.from(context).inflate(R.layout.item_usuario, parent, false);
+            row = LayoutInflater.from(context)
+                    .inflate(R.layout.item_usuario, parent, false);
 
-            // Creamos el holder que almacena referencias
             holder = new ViewHolder();
             holder.tvCorreo = row.findViewById(R.id.tvCorreo);
-            holder.tvEstadoCuenta = row.findViewById(R.id.tvEstadoCuenta);
+            holder.tvEstado = row.findViewById(R.id.tvEstadoCuenta);
             holder.tvDeuda = row.findViewById(R.id.tvDeuda);
-            holder.tvTiempoAtraso = row.findViewById(R.id.tvTiempoAtraso);
+            holder.tvAtraso = row.findViewById(R.id.tvTiempoAtraso);
             holder.btnBloquear = row.findViewById(R.id.btnBloquear);
 
             row.setTag(holder);
         } else {
-            // Reusamos la vista (muchísimo más rápido)
             holder = (ViewHolder) row.getTag();
         }
 
         Usuario usuario = usuarios.get(position);
 
         // ============================================================
-        // 📧 CORREO DEL USUARIO
+        // 📧 Correo
         // ============================================================
         holder.tvCorreo.setText(usuario.getCorreo());
 
         // ============================================================
-        // 🔐 ESTADO DE CUENTA (BLOQUEADO / ACTIVO)
+        // 🔐 Estado de cuenta
         // ============================================================
         if (usuario.isBloqueado()) {
-
-            holder.tvEstadoCuenta.setText("Cuenta bloqueada ❌");
-            holder.tvEstadoCuenta.setTextColor(Color.RED);
-
-            // Botón cambia a DESBLOQUEAR
+            holder.tvEstado.setText("Cuenta bloqueada ❌");
+            holder.tvEstado.setTextColor(Color.RED);
             holder.btnBloquear.setText("Desbloquear");
-
         } else {
-
-            holder.tvEstadoCuenta.setText("Cuenta activa ✔");
-            holder.tvEstadoCuenta.setTextColor(Color.GREEN);
-
-            // Botón cambia a BLOQUEAR
+            holder.tvEstado.setText("Cuenta activa ✔");
+            holder.tvEstado.setTextColor(Color.GREEN);
             holder.btnBloquear.setText("Bloquear");
         }
 
         // ============================================================
-        // 💰 INICIALIZAR CAMPOS DE DEUDA Y ATRASO
+        // 💰 Estado financiero (placeholder mientras carga)
         // ============================================================
-        holder.tvDeuda.setText("Cargando...");
-        holder.tvTiempoAtraso.setText("Calculando...");
+        holder.tvDeuda.setText("Cargando…");
         holder.tvDeuda.setTextColor(Color.GRAY);
-        holder.tvTiempoAtraso.setTextColor(Color.GRAY);
+
+        holder.tvAtraso.setText("Calculando…");
+        holder.tvAtraso.setTextColor(Color.GRAY);
 
         // Cargar deuda real desde Firebase
-        cargarDeudaUsuario(usuario, holder.tvDeuda, holder.tvTiempoAtraso);
+        cargarResumenFinanciero(usuario.getId(), holder);
 
         // ============================================================
-        // 🚫 BOTÓN BLOQUEAR / DESBLOQUEAR (ADMIN ONLY)
-        // Actualiza Firebase y refresca la vista
+        // 🚫 Bloquear / Desbloquear usuario
         // ============================================================
         holder.btnBloquear.setOnClickListener(v -> {
 
-            boolean nuevoEstado = !usuario.isBloqueado(); // toggle rápido
+            boolean nuevoEstado = !usuario.isBloqueado();
             usuario.setBloqueado(nuevoEstado);
 
-            // Guardamos estado en Firebase
             FirebaseDatabase.getInstance()
                     .getReference("usuarios")
                     .child(usuario.getId())
                     .child("bloqueado")
                     .setValue(nuevoEstado);
 
-            // Refrescamos UI
-            notifyDataSetChanged();
+            notifyDataSetChanged(); // Refrescar vista
         });
 
         return row;
     }
 
     // ============================================================
-    // 🔍 LECTURA REAL DE PAGOS DEL USUARIO
-    //     + CÁLCULO DE DEUDA TOTAL
-    //     + CÁLCULO DE ATRASO EN DÍAS
+    // 📊 Cargar deuda + atraso (solo lectura)
     // ============================================================
-    private void cargarDeudaUsuario(Usuario usuario, TextView tvDeuda, TextView tvAtraso) {
+    private void cargarResumenFinanciero(String userId, ViewHolder holder) {
 
         FirebaseDatabase.getInstance()
                 .getReference("usuarios")
-                .child(usuario.getId())
-                .child("pagos") // Nodo donde viven los pagos del usuario
+                .child(userId)
+                .child("pagos")
                 .addListenerForSingleValueEvent(new ValueEventListener() {
 
                     @Override
                     public void onDataChange(DataSnapshot snapshot) {
 
-                        // ================================
-                        // 🔹 Usuario sin compras
-                        // ================================
                         if (!snapshot.exists()) {
-                            tvDeuda.setText("Sin compras");
-                            tvDeuda.setTextColor(Color.GRAY);
+                            holder.tvDeuda.setText("Sin compras");
+                            holder.tvDeuda.setTextColor(Color.GRAY);
 
-                            tvAtraso.setText("Atrasado: 0 días");
-                            tvAtraso.setTextColor(Color.GREEN);
-
+                            holder.tvAtraso.setText("Atraso: 0 días");
+                            holder.tvAtraso.setTextColor(Color.GREEN);
                             return;
                         }
 
-                        int deudaTotal = 0;
-                        long ultimoPago = 0; // timestamp más reciente
+                        int deuda = 0;
+                        long ultimaFecha = 0;
 
-                        // ================================
-                        // 💳 SUMAR TODA LA DEUDA
-                        // ================================
-                        for (DataSnapshot pagoSnap : snapshot.getChildren()) {
-
-                            Pago pago = pagoSnap.getValue(Pago.class);
+                        for (DataSnapshot snap : snapshot.getChildren()) {
+                            Pago pago = snap.getValue(Pago.class);
                             if (pago == null) continue;
 
-                            deudaTotal += pago.getSaldoPendiente();
-
-                            // Obtener fecha del último pago registrado
-                            if (pago.getFechaPago() > ultimoPago) {
-                                ultimoPago = pago.getFechaPago();
-                            }
+                            deuda += pago.getSaldoPendiente();
+                            ultimaFecha = Math.max(ultimaFecha, pago.getFechaPago());
                         }
 
-                        // ================================
-                        // 💰 MOSTRAR DEUDA
-                        // ================================
-                        if (deudaTotal == 0) {
-                            tvDeuda.setText("Al día ✔");
-                            tvDeuda.setTextColor(Color.GREEN);
+                        // 💰 Mostrar deuda
+                        if (deuda == 0) {
+                            holder.tvDeuda.setText("Al día ✔");
+                            holder.tvDeuda.setTextColor(Color.GREEN);
                         } else {
-                            tvDeuda.setText("Debe $" + deudaTotal);
-                            tvDeuda.setTextColor(Color.RED);
+                            holder.tvDeuda.setText("Debe $" + deuda);
+                            holder.tvDeuda.setTextColor(Color.RED);
                         }
 
-                        // ================================
-                        // 📅 CALCULAR ATRASO EN DÍAS
-                        // ================================
-                        if (ultimoPago == 0) {
-                            tvAtraso.setText("Atrasado: 0 días");
-                            tvAtraso.setTextColor(Color.GREEN);
-                            return;
-                        }
+                        // 📅 Calcular atraso
+                        long dias = (System.currentTimeMillis() - ultimaFecha)
+                                / (1000 * 60 * 60 * 24);
 
-                        long hoy = System.currentTimeMillis();
-                        long diff = hoy - ultimoPago;
+                        holder.tvAtraso.setText("Atraso: " + dias + " días");
 
-                        // Convertir milisegundos → días
-                        long diasAtraso = diff / (1000 * 60 * 60 * 24);
-
-                        tvAtraso.setText("Atrasado: " + diasAtraso + " días");
-
-                        // ================================
-                        // 🚦 SEMÁFORO CORPORATIVO
-                        // ================================
-                        if (diasAtraso == 0) {
-                            tvAtraso.setTextColor(Color.GREEN);
-
-                        } else if (diasAtraso <= 15) {
-                            tvAtraso.setTextColor(Color.parseColor("#FBC02D")); // Amarillo corporativo
-
+                        if (dias == 0) {
+                            holder.tvAtraso.setTextColor(Color.GREEN);
+                        } else if (dias <= 15) {
+                            holder.tvAtraso.setTextColor(Color.parseColor("#FBC02D"));
                         } else {
-                            tvAtraso.setTextColor(Color.RED); // Alerta
+                            holder.tvAtraso.setTextColor(Color.RED);
                         }
                     }
 
                     @Override
                     public void onCancelled(DatabaseError error) {
-                        // Error leyendo pagos
-                        tvDeuda.setText("Error");
-                        tvDeuda.setTextColor(Color.RED);
+                        holder.tvDeuda.setText("Error ❌");
+                        holder.tvDeuda.setTextColor(Color.RED);
 
-                        tvAtraso.setText("Error");
-                        tvAtraso.setTextColor(Color.RED);
+                        holder.tvAtraso.setText("Error");
+                        holder.tvAtraso.setTextColor(Color.RED);
                     }
                 });
     }
 
     // ============================================================
-    // 🔧 HOLDER DE VISTAS
+    // 🧱 ViewHolder
     // ============================================================
     static class ViewHolder {
-        TextView tvCorreo, tvEstadoCuenta, tvDeuda, tvTiempoAtraso;
+        TextView tvCorreo, tvEstado, tvDeuda, tvAtraso;
         Button btnBloquear;
     }
 }

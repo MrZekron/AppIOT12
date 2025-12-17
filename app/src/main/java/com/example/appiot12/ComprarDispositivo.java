@@ -1,5 +1,6 @@
 package com.example.appiot12;
-// Zona premium donde vive el módulo de compras. La fintech oficial de tus dispositivos IoT 💳🤖
+// 💳 Paquete del módulo de compras del proyecto Agua Segura.
+// Aquí se gestionan compras de dispositivos IoT de forma simple y ordenada 🏦🤖💧
 
 import android.os.Bundle;
 import android.view.View;
@@ -8,178 +9,231 @@ import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
-// Widgets para UI financiera: textos, spinners, botones y toasts 💸📱
+// 🖥️ Componentes visuales para mostrar precio, cuotas y ejecutar la compra
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
-// Ajuste visual incómodo para usuarios, pero elegante para CEOs 🧑‍💼✨
+// 🎖️ Activity base moderna y estable
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-// Firebase: la nube que respalda nuestras transacciones IoT ☁️📡
+// ☁️ Firebase: guardamos dispositivos y pagos en la nube
 
 import java.util.UUID;
-// Generador de IDs únicos estilo “no-duplicable-a-nivel-galáctico” 🌌
+// 🔑 Generador de IDs únicos (sin duplicados, sin problemas)
 
+/**
+ * 🛒 ComprarDispositivo
+ *
+ * Esta pantalla permite:
+ * 👉 Elegir en cuántas cuotas comprar un dispositivo
+ * 👉 Crear el dispositivo IoT
+ * 👉 Crear el pago asociado
+ * 👉 Guardar todo en Firebase
+ *
+ * En simple:
+ * Es la tienda oficial de dispositivos del sistema 🛍️🙂
+ */
 public class ComprarDispositivo extends AppCompatActivity {
-    // Activity encargada de ejecutar el flujo de compra:
-    // seleccionar cuotas → registrar dispositivo → generar pago.
-    // Básicamente, un e-commerce minimalista pero funcional 🛒⚙️
 
-    private TextView tvPrecio, tvResumenCuota; // Etiquetas informativas del precio y cuota 💰📊
-    private Spinner spnCuotas;                 // Selector de cuotas flexible 🔽
-    private Button btnComprar;                 // Botón para disparar operación financiera 🟩💳
+    // 💰 Precio fijo del dispositivo (CLP)
+    private static final int PRECIO_DISPOSITIVO = 100_000;
 
-    private final int PRECIO_DISPOSITIVO = 100000; // Precio fijo (CLP). CFO-approved 🇨🇱💵
-    private int cuotasSeleccionadas = 1;            // Default: 1 cuota ✔️
+    // 🖥️ Elementos de la interfaz
+    private TextView tvPrecio;
+    private TextView tvResumenCuota;
+    private Spinner spnCuotas;
+    private Button btnComprar;
+
+    // ➗ Cuotas seleccionadas por el usuario
+    private int cuotasSeleccionadas = 1;
+
+    // ☁️ Referencia base a Firebase
+    private DatabaseReference refUsuario;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_comprar_dispositivo); // 🎨 Mostramos la pantalla
 
-        EdgeToEdge.enable(this);                        // Pantalla de extremo a extremo 📱✨
-        setContentView(R.layout.activity_comprar_dispositivo); // Renderiza el layout principal 🎨
+        // 🔗 Conectamos la UI con el XML
+        inicializarVistas();
 
-        // Ajustes automáticos según barras del sistema (modern UI)
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets sb = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(sb.left, sb.top, sb.right, sb.bottom); // Padding dinámico 📐
-            return insets;
-        });
+        // 👤 Obtenemos usuario autenticado
+        String uid = obtenerUidUsuario();
+        if (uid == null) {
+            Toast.makeText(this, "Usuario no autenticado ❌", Toast.LENGTH_LONG).show();
+            finish();
+            return;
+        }
 
-        // ================================
-        // VINCULACIÓN DEL XML CON JAVA
-        // ================================
+        // ☁️ Apuntamos al nodo del usuario en Firebase
+        refUsuario = FirebaseDatabase.getInstance()
+                .getReference("usuarios")
+                .child(uid);
+
+        // 📈 Mostramos el precio del dispositivo
+        tvPrecio.setText("Precio: $" + PRECIO_DISPOSITIVO + " CLP");
+
+        // 🔽 Configuramos selector de cuotas
+        inicializarSpinnerCuotas();
+
+        // 🟢 Configuramos botón comprar
+        btnComprar.setOnClickListener(v -> procesarCompra());
+    }
+
+    /**
+     * 🔗 Conecta los componentes visuales con el XML
+     */
+    private void inicializarVistas() {
         tvPrecio = findViewById(R.id.tvPrecio);
         tvResumenCuota = findViewById(R.id.tvResumenCuota);
         spnCuotas = findViewById(R.id.spnCuotas);
         btnComprar = findViewById(R.id.btnComprar);
-
-        // Mostramos el precio oficialmente 📈
-        tvPrecio.setText("Precio: $" + PRECIO_DISPOSITIVO + " CLP");
-
-        inicializarSpinner();     // Carga el selector de cuotas 🔽
-        configurarBotonCompra();  // Prepara el botón de compra 💳
     }
 
-    // ============================================
-    // 🔽 INICIALIZAR SPINNER DE CUOTAS
-    // ============================================
-    private void inicializarSpinner() {
+    /**
+     * 👤 Obtiene el UID del usuario autenticado
+     */
+    private String obtenerUidUsuario() {
+        if (FirebaseAuth.getInstance().getCurrentUser() == null) {
+            return null;
+        }
+        return FirebaseAuth.getInstance().getCurrentUser().getUid();
+    }
 
+    // =====================================================
+    // 🔽 CONFIGURAR SPINNER DE CUOTAS
+    // =====================================================
+    private void inicializarSpinnerCuotas() {
+
+        // 📋 Cargamos las opciones desde resources (XML)
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
-                this,                       // Contexto actual
-                R.array.cuotas_array,       // Arreglo de cuotas definido en resources XML
-                android.R.layout.simple_spinner_item // Layout minimalista oficial 🎨
+                this,
+                R.array.cuotas_array,
+                android.R.layout.simple_spinner_item
         );
 
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spnCuotas.setAdapter(adapter); // Se carga el spinner
+        adapter.setDropDownViewResource(
+                android.R.layout.simple_spinner_dropdown_item
+        );
 
-        // Listener para saber cuántas cuotas eligió el usuario
-        spnCuotas.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(android.widget.AdapterView<?> adapterView, View view, int pos, long id) {
+        spnCuotas.setAdapter(adapter);
 
-                // Asignamos número de cuotas según posición del Spinner
-                switch (pos) {
-                    case 0: cuotasSeleccionadas = 1; break;
-                    case 1: cuotasSeleccionadas = 3; break;
-                    case 2: cuotasSeleccionadas = 6; break;
-                    case 3: cuotasSeleccionadas = 12; break;
+        // 🧠 Detectamos selección del usuario
+        spnCuotas.setOnItemSelectedListener(
+                new android.widget.AdapterView.OnItemSelectedListener() {
+
+                    @Override
+                    public void onItemSelected(
+                            android.widget.AdapterView<?> parent,
+                            View view,
+                            int position,
+                            long id
+                    ) {
+
+                        // 🔢 Traducimos posición → número de cuotas
+                        cuotasSeleccionadas = obtenerCuotasDesdePosicion(position);
+
+                        // 💰 Calculamos valor de cada cuota
+                        int valorCuota = PRECIO_DISPOSITIVO / cuotasSeleccionadas;
+
+                        // 📊 Mostramos resumen al usuario
+                        tvResumenCuota.setText(
+                                "Valor por cuota: $" + valorCuota
+                        );
+                    }
+
+                    @Override
+                    public void onNothingSelected(android.widget.AdapterView<?> parent) {
+                        // No hacemos nada aquí 👍
+                    }
                 }
-
-                // Cálculo contable de la cuota
-                int valorCuota = PRECIO_DISPOSITIVO / cuotasSeleccionadas;
-                tvResumenCuota.setText("Valor por cuota: $" + valorCuota);
-            }
-
-            @Override
-            public void onNothingSelected(android.widget.AdapterView<?> adapterView) { }
-        });
+        );
     }
 
-
-    // =============================================================
-    // 🟢 CONFIGURAR BOTÓN COMPRAR (ORQUESTADOR FINANCIERO)
-    // =============================================================
-    private void configurarBotonCompra() {
-
-        btnComprar.setOnClickListener(v -> procesarCompra());
-        // Cuando el usuario presiona, se inicia el flujo de compra ☕💳
+    /**
+     * 🔢 Convierte la posición del Spinner en número de cuotas
+     */
+    private int obtenerCuotasDesdePosicion(int position) {
+        switch (position) {
+            case 1: return 3;
+            case 2: return 6;
+            case 3: return 12;
+            default: return 1; // posición 0
+        }
     }
 
-
-    // =============================================================
-    // 🔥 PROCESAR COMPRA — CREA DISPOSITIVO + CREA PAGO
-    // =============================================================
+    // =====================================================
+    // 🔥 PROCESAR COMPRA
+    // =====================================================
     private void procesarCompra() {
 
-        String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
-
-        if (uid == null) {
-            Toast.makeText(this, "Error: usuario no autenticado", Toast.LENGTH_LONG).show();
-            return; // Abortamos misión 🚨
-        }
-
-        // ==========================
-        // Generamos IDs únicos 🔐
-        // ==========================
+        // 🆔 Generamos IDs únicos
         String idDispositivo = UUID.randomUUID().toString();
         String idPago = UUID.randomUUID().toString();
 
-        // =============================================================
-        // 1) Crear DISPOSITIVO (No asociado a ningún tanque aún)
-        // =============================================================
-        Dispositivo dispositivo = new Dispositivo(
-                idDispositivo,  // ID único
-                7.0,            // pH inicial simulado 🤖
-                500.0,          // Conductividad inicial
-                1.0,            // Turbidez base
-                1000.0          // Nivel base
-        );
+        // 🤖 Creamos el dispositivo con valores iniciales
+        Dispositivo dispositivo = crearDispositivo(idDispositivo);
 
-        // =============================================================
-        // 2) Crear PAGO (CONSTRUCTOR FORMAL)
-        // =============================================================
-        long timestamp = System.currentTimeMillis();
+        // 💳 Creamos el pago asociado
+        Pago pago = crearPago(idPago, idDispositivo);
 
-        Pago pago = new Pago(
-                idPago,               // idPago
-                PRECIO_DISPOSITIVO,   // precio total de la compra
-                cuotasSeleccionadas,  // cuotas seleccionadas por el usuario
-                timestamp,            // fecha de creación del pago
-                idDispositivo         // ID del dispositivo comprado
-        );
-
-        // ============================
-        // Guardar DISPOSITIVO en Firebase
-        // ============================
-        FirebaseDatabase.getInstance()
-                .getReference("usuarios")
-                .child(uid)
-                .child("dispositivos")
+        // ☁️ Guardamos dispositivo en Firebase
+        refUsuario.child("dispositivos")
                 .child(idDispositivo)
                 .setValue(dispositivo);
 
-        // ============================
-        // Guardar PAGO en Firebase
-        // ============================
-        FirebaseDatabase.getInstance()
-                .getReference("usuarios")
-                .child(uid)
-                .child("pagos")
+        // ☁️ Guardamos pago en Firebase
+        refUsuario.child("pagos")
                 .child(idPago)
                 .setValue(pago)
                 .addOnSuccessListener(a -> {
-                    Toast.makeText(this, "Dispositivo comprado y pago registrado 🎉", Toast.LENGTH_LONG).show();
-                    finish(); // Cerramos pantalla porque la compra finalizó ✔️
+                    Toast.makeText(
+                            this,
+                            "Dispositivo comprado y pago registrado 🎉",
+                            Toast.LENGTH_LONG
+                    ).show();
+                    finish(); // 🚪 Cerramos pantalla
                 })
                 .addOnFailureListener(e ->
-                        Toast.makeText(this, "Error al registrar pago: " + e.getMessage(), Toast.LENGTH_LONG).show()
+                        Toast.makeText(
+                                this,
+                                "Error al registrar pago: " + e.getMessage(),
+                                Toast.LENGTH_LONG
+                        ).show()
                 );
+    }
+
+    /**
+     * 🤖 Crea un dispositivo IoT con valores iniciales
+     */
+    private Dispositivo crearDispositivo(String idDispositivo) {
+
+        // Valores iniciales simulados:
+        // pH neutro, lecturas base seguras
+        return new Dispositivo(
+                idDispositivo,
+                7.0,     // 🧪 pH
+                500.0,   // ⚡ Conductividad
+                1.0,     // 🌫️ Turbidez
+                1000.0   // 📏 Nivel
+        );
+    }
+
+    /**
+     * 💳 Crea el objeto Pago asociado a la compra
+     */
+    private Pago crearPago(String idPago, String idDispositivo) {
+
+        long timestamp = System.currentTimeMillis();
+
+        return new Pago(
+                idPago,
+                PRECIO_DISPOSITIVO,
+                cuotasSeleccionadas,
+                timestamp,
+                idDispositivo
+        );
     }
 }

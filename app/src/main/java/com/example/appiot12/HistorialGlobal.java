@@ -1,171 +1,178 @@
 package com.example.appiot12;
-// 📦 Pantalla de estadísticas globales.
-// El panel donde los CEOs lloran de emoción viendo KPIs en vivo 📊😎
+// 📦 Pantalla de estadísticas globales del proyecto Agua Segura.
+// Aquí vemos los números grandes del sistema 📊💧
 
 import android.graphics.Color;
 import android.os.Bundle;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
 import com.github.mikephil.charting.charts.PieChart;
 import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.data.PieEntry;
-import com.google.firebase.database.*;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.List;
 
+/**
+ * 📊 HistorialGlobal
+ *
+ * ¿Qué hace esta pantalla?
+ * 👉 Cuenta usuarios, tanques y dispositivos del sistema
+ * 👉 Muestra los resultados en texto
+ * 👉 Dibuja un gráfico circular simple
+ *
+ * Explicado para un niño:
+ * 👉 Es como un resumen con dibujos que dice
+ *    cuántas personas, tanques y robots hay 🤖🛢️👤
+ */
 public class HistorialGlobal extends AppCompatActivity {
 
-    // 📝 TextViews para mostrar KPIs globales
-    private TextView txtUsuariosTotal, txtTanquesTotal, txtDispositivosTotal;
+    // 📝 Textos donde mostramos los números
+    private TextView txtUsuariosTotal;
+    private TextView txtTanquesTotal;
+    private TextView txtDispositivosTotal;
 
-    // 📊 Gráfico circular para representar proporciones
+    // 📊 Gráfico circular
     private PieChart pieChartUsuarios;
+
+    // ☁️ Referencia a Firebase
+    private DatabaseReference refUsuarios;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this); // 🖥️ Pantalla moderna sin bordes
-        setContentView(R.layout.activity_historial_global);
+        setContentView(R.layout.activity_historial_global); // 🎨 Mostramos la pantalla
 
-        // Ajuste automático de padding según barras del sistema
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets sb = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(sb.left, sb.top, sb.right, sb.bottom);
-            return insets;
-        });
+        // 🔗 Conectamos UI con XML
+        inicializarVistas();
 
-        // 🔗 Vincular UI
+        // ☁️ Nodo principal de usuarios
+        refUsuarios = FirebaseDatabase.getInstance().getReference("usuarios");
+
+        // 🚀 Cargamos estadísticas globales
+        cargarEstadisticasGlobales();
+    }
+
+    /**
+     * 🔗 Vincula los elementos visuales con el XML
+     */
+    private void inicializarVistas() {
         txtUsuariosTotal = findViewById(R.id.txtUsuariosTotal);
         txtTanquesTotal = findViewById(R.id.txtTanquesTotal);
         txtDispositivosTotal = findViewById(R.id.txtDispositivosTotal);
         pieChartUsuarios = findViewById(R.id.pieChartUsuarios);
-
-        // 🚀 Cargar KPIs de Firebase
-        cargarHistorialGlobal();
     }
 
-    // ============================================================================
-    // 📥 CARGAR INFORMACIÓN GLOBAL DESDE FIREBASE
-    // ============================================================================
-    private void cargarHistorialGlobal() {
-
-        // Accedemos al nodo principal de usuarios
-        DatabaseReference refUsuarios =
-                FirebaseDatabase.getInstance().getReference("usuarios");
+    // =====================================================
+    // 📥 CARGAR ESTADÍSTICAS DESDE FIREBASE
+    // =====================================================
+    private void cargarEstadisticasGlobales() {
 
         refUsuarios.addListenerForSingleValueEvent(new ValueEventListener() {
 
             @Override
             public void onDataChange(DataSnapshot snapshot) {
 
-                // 🔢 Contadores globales
                 int totalUsuarios = 0;
                 int totalTanques = 0;
                 int totalDispositivos = 0;
 
-                // 🔄 Iteramos sobre todos los usuarios
+                // 🔄 Recorremos todos los usuarios
                 for (DataSnapshot usuarioSnap : snapshot.getChildren()) {
 
-                    // ============================
-                    // 🔥 FILTRO: Solo usuarios normales
-                    // ============================
                     String rol = usuarioSnap.child("rol").getValue(String.class);
 
-                    if (rol == null || !rol.equalsIgnoreCase("usuario")) {
-                        // Saltamos administradores o cualquier otro rol
+                    // ⭐ Solo contamos usuarios normales
+                    if (!"usuario".equalsIgnoreCase(rol)) {
                         continue;
                     }
 
-                    totalUsuarios++; // 👤 Usuario válido encontrado
+                    totalUsuarios++; // 👤 Usuario válido
 
-                    // ============================
-                    // 🔍 CONTAR TANQUES DEL USUARIO
-                    // ============================
-                    if (usuarioSnap.child("tanques").exists()) {
+                    // 🛢️ Contar tanques
+                    DataSnapshot tanquesSnap = usuarioSnap.child("tanques");
+                    if (tanquesSnap.exists()) {
 
-                        for (DataSnapshot tanqueSnap : usuarioSnap.child("tanques").getChildren()) {
+                        for (DataSnapshot tanqueSnap : tanquesSnap.getChildren()) {
 
                             totalTanques++; // 🛢️ Sumamos tanque
 
-                            // ============================
-                            // 🎯 CONTAR DISPOSITIVOS ASOCIADOS
-                            // ============================
+                            // 📡 Si tiene dispositivo asociado
                             if (tanqueSnap.child("idDispositivo").exists()) {
-                                totalDispositivos++; // 📡 Dispositivo asignado a ese tanque
+                                totalDispositivos++;
                             }
                         }
                     }
                 }
 
-                // ================================
-                // 🔢 MOSTRAR RESULTADOS EN UI
-                // ================================
-                txtUsuariosTotal.setText("Usuarios totales: " + totalUsuarios);
-                txtTanquesTotal.setText("Tanques totales: " + totalTanques);
-                txtDispositivosTotal.setText("Dispositivos totales: " + totalDispositivos);
+                // 📝 Mostrar resultados
+                mostrarResultados(totalUsuarios, totalTanques, totalDispositivos);
 
-                // ================================
-                // 📊 Actualizar gráfico circular
-                // ================================
+                // 📊 Actualizar gráfico
                 actualizarGrafico(totalUsuarios, totalDispositivos);
             }
 
             @Override
             public void onCancelled(DatabaseError error) {
-                Toast.makeText(HistorialGlobal.this,
-                        "Error al leer historial: " + error.getMessage(),
-                        Toast.LENGTH_LONG).show();
+                Toast.makeText(
+                        HistorialGlobal.this,
+                        "Error al leer datos ⚠️",
+                        Toast.LENGTH_LONG
+                ).show();
             }
         });
     }
 
-    // ============================================================================
-    // ⭐ GRÁFICO PIECHART DINÁMICO (Usuarios vs Dispositivos)
-    // ============================================================================
+    /**
+     * 📝 Muestra los resultados en los TextView
+     */
+    private void mostrarResultados(int usuarios, int tanques, int dispositivos) {
+        txtUsuariosTotal.setText("Usuarios totales: " + usuarios);
+        txtTanquesTotal.setText("Tanques totales: " + tanques);
+        txtDispositivosTotal.setText("Dispositivos totales: " + dispositivos);
+    }
+
+    // =====================================================
+    // 📊 ACTUALIZAR GRÁFICO CIRCULAR
+    // =====================================================
     private void actualizarGrafico(int usuarios, int dispositivos) {
 
-        ArrayList<PieEntry> entries = new ArrayList<>();
+        List<PieEntry> entradas = new ArrayList<>();
 
-        // Entradas del gráfico
-        entries.add(new PieEntry(usuarios, "Usuarios"));
-        entries.add(new PieEntry(dispositivos, "Dispositivos"));
+        entradas.add(new PieEntry(usuarios, "Usuarios 👤"));
+        entradas.add(new PieEntry(dispositivos, "Dispositivos 🤖"));
 
-        // Dataset del gráfico
-        PieDataSet dataSet = new PieDataSet(entries, "Distribución del Sistema");
-        dataSet.setSliceSpace(3f);     // Separación estética
-        dataSet.setSelectionShift(6f); // Aumento visual cuando se selecciona
+        PieDataSet dataSet = new PieDataSet(entradas, "Distribución del sistema");
+        dataSet.setSliceSpace(3f);
+        dataSet.setSelectionShift(6f);
 
-        // 🎨 Paleta corporativa verde + azul
-        ArrayList<Integer> colors = new ArrayList<>();
-        colors.add(Color.parseColor("#4CAF50")); // Verde → usuarios
-        colors.add(Color.parseColor("#303F9F")); // Azul → dispositivos
-        dataSet.setColors(colors);
+        // 🎨 Colores corporativos
+        List<Integer> colores = new ArrayList<>();
+        colores.add(Color.parseColor("#4CAF50")); // Verde
+        colores.add(Color.parseColor("#303F9F")); // Azul
+        dataSet.setColors(colores);
 
-        // Formato de texto
         PieData data = new PieData(dataSet);
         data.setValueTextSize(14f);
         data.setValueTextColor(Color.WHITE);
 
-        // Configuración general del gráfico
+        // ⚙️ Configuración del gráfico
         pieChartUsuarios.setUsePercentValues(true);
-        pieChartUsuarios.setDrawHoleEnabled(true);      // 🔘 Gráfico tipo donut
+        pieChartUsuarios.setDrawHoleEnabled(true);
         pieChartUsuarios.setHoleColor(Color.TRANSPARENT);
-
         pieChartUsuarios.getDescription().setEnabled(false);
         pieChartUsuarios.getLegend().setEnabled(true);
 
-        // Asignar dataset
         pieChartUsuarios.setData(data);
-
-        // Refrescar visualización
-        pieChartUsuarios.invalidate();
+        pieChartUsuarios.invalidate(); // 🔄 Redibujar
     }
 }

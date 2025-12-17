@@ -1,47 +1,44 @@
 package com.example.appiot12;
-// 📦 El modelo que representa un tanque dentro del ecosistema AguaSegura.
-// Este objeto NO almacena sensores ni estados del agua: para eso existe Dispositivo.
-// Aquí solo vive la metadata del tanque + su idDispositivo (si existe).
+// 📦 Modelo que representa un tanque dentro del ecosistema AguaSegura.
+// Contiene SOLO metadata del tanque + referencia al dispositivo asociado.
 
 /**
- * ⭐ MODELO DE TANQUE DE AGUA ⭐
+ * ⭐ MODELO TANQUE DE AGUA ⭐
  *
- * Contiene:
- *   ✔ idTanque        → Identificador único en Firebase
- *   ✔ nombre          → Nombre asignado por el usuario
- *   ✔ capacidad       → Capacidad en litros (string para flexibilidad)
- *   ✔ color           → Color físico del tanque (blanco, azul, negro…)
- *   ✔ idDispositivo   → ID del dispositivo asociado o null si no tiene
+ * Rol en la arquitectura:
+ * 👉 Representar el tanque como entidad lógica
+ * 👉 NO manejar sensores (eso es responsabilidad de Dispositivo)
+ * 👉 Servir como nodo estable en Firebase
  *
- * Este modelo es simple, limpio y directo.
- * Funciona como "contendor lógico" dentro del sistema.
+ * Principio aplicado:
+ * ✔ Single Responsibility (SRP)
  */
 public class TanqueAgua {
 
-    // ============================
-    // 🔑 CAMPOS DEL MODELO
-    // ============================
+    // ======================================================
+    // 🔑 ATRIBUTOS DEL MODELO
+    // ======================================================
 
-    private String idTanque;      // 🆔 Clave única en Firebase
-    private String nombre;        // 🏷 Nombre amigable del tanque
-    private String capacidad;     // 💧 Capacidad total (texto por flexibilidad)
-    private String color;         // 🎨 Color físico del tanque (blanco/negro/azul)
+    private String idTanque;        // 🆔 ID único (key Firebase)
+    private String nombre;          // 🏷 Nombre asignado por el usuario
+    private String capacidad;       // 💧 Capacidad total en litros (String por flexibilidad)
+    private String color;           // 🎨 Color físico del tanque
+    private String idDispositivo;   // 📡 Dispositivo asociado (null = libre)
 
-    // ⭐ SOLO referencia al dispositivo asociado
-    //    null → no tiene dispositivo asignado
-    private String idDispositivo;
-
-    // ============================
+    // ======================================================
     // 🧱 CONSTRUCTOR VACÍO
-    // Obligatorio para Firebase
-    // ============================
+    // Requerido obligatoriamente por Firebase
+    // ======================================================
     public TanqueAgua() {}
 
-    // ============================
+    // ======================================================
     // 🏗 CONSTRUCTOR COMPLETO
-    // ============================
-    public TanqueAgua(String idTanque, String nombre, String capacidad,
-                      String color, String idDispositivo) {
+    // ======================================================
+    public TanqueAgua(String idTanque,
+                      String nombre,
+                      String capacidad,
+                      String color,
+                      String idDispositivo) {
 
         this.idTanque = idTanque;
         this.nombre = nombre;
@@ -50,31 +47,81 @@ public class TanqueAgua {
         this.idDispositivo = idDispositivo; // puede ser null
     }
 
-    // ============================
+    // ======================================================
     // 📌 GETTERS & SETTERS
-    // ============================
+    // ======================================================
 
-    public String getIdTanque() { return idTanque; }
-    public void setIdTanque(String idTanque) { this.idTanque = idTanque; }
+    public String getIdTanque() {
+        return idTanque;
+    }
 
-    public String getNombre() { return nombre; }
-    public void setNombre(String nombre) { this.nombre = nombre; }
+    public void setIdTanque(String idTanque) {
+        this.idTanque = idTanque;
+    }
 
-    public String getCapacidad() { return capacidad; }
-    public void setCapacidad(String capacidad) { this.capacidad = capacidad; }
+    public String getNombre() {
+        return nombre;
+    }
 
-    public String getColor() { return color; }
-    public void setColor(String color) { this.color = color; }
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
 
-    public String getIdDispositivo() { return idDispositivo; }
-    public void setIdDispositivo(String idDispositivo) { this.idDispositivo = idDispositivo; }
+    public String getCapacidad() {
+        return capacidad;
+    }
 
-    // ============================
-    // 🧩 UTILIDAD DE DEPURACIÓN
-    // ============================
+    public void setCapacidad(String capacidad) {
+        this.capacidad = capacidad;
+    }
+
+    public String getColor() {
+        return color;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
+    }
+
+    public String getIdDispositivo() {
+        return idDispositivo;
+    }
+
+    public void setIdDispositivo(String idDispositivo) {
+        this.idDispositivo = idDispositivo;
+    }
+
+    // ======================================================
+    // 🧠 MÉTODOS DE UTILIDAD (NEGOCIO LIGERO)
+    // ======================================================
+
+    /**
+     * ✔ Indica si el tanque tiene un dispositivo asignado
+     */
+    public boolean tieneDispositivo() {
+        return idDispositivo != null && !idDispositivo.isEmpty();
+    }
+
+    /**
+     * ✔ Devuelve la capacidad como número
+     * Evita parseos repetidos en adapters/controllers
+     */
+    public double getCapacidadNumerica() {
+        try {
+            return Double.parseDouble(capacidad);
+        } catch (Exception e) {
+            return 0;
+        }
+    }
+
+    // ======================================================
+    // 🧩 UTILIDAD DE DEPURACIÓN / UI
+    // ======================================================
     @Override
     public String toString() {
-        // Lo que se muestra cuando el tanque aparece en un Spinner o debug log
-        return nombre != null ? nombre : "Tanque sin nombre";
+        // Se usa automáticamente en Spinner, logs y debugging
+        return nombre != null && !nombre.isEmpty()
+                ? nombre
+                : "Tanque sin nombre";
     }
 }

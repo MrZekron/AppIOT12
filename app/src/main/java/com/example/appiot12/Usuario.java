@@ -1,11 +1,11 @@
 package com.example.appiot12;
-// 📦 Modelo principal que representa a cada usuario del sistema AguaSegura.
-// Este modelo se guarda en Firebase y se usa en gestión de usuarios, autenticación,
-// roles, bloqueo/desbloqueo y visualización administrativa.
+// 📦 Modelo que representa a un usuario dentro del sistema AguaSegura 👤💧
+// Este objeto describe QUIÉN es el usuario, no QUÉ hace.
 
-import com.google.firebase.database.Exclude; // 🔒 Oculta campos en Firebase cuando corresponde
+// 🔒 Firebase
+import com.google.firebase.database.Exclude;
 
-import java.io.Serializable;       // Permite enviar Usuario entre Activities
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -13,52 +13,48 @@ import java.util.Objects;
 /**
  * 🌟 MODELO DE USUARIO 🌟
  *
- * Contiene:
- *  ✔ id              → UID de FirebaseAuth
- *  ✔ correo          → email del usuario
- *  ✔ password        → NO se guarda en Firebase gracias a @Exclude
- *  ✔ rol             → "usuario" o "admin"
- *  ✔ tanques         → mapa de tanques propiedad del usuario
- *  ✔ bloqueado       → si está suspendido por el administrador
+ * Este modelo se guarda en Firebase en:
+ *    usuarios/{uid}
  *
- * IMPORTANTE:
- *  - Los pagos YA NO viven aquí.
- *  - Cada usuario tiene su nodo independiente en Firebase:
- *        usuarios/{uid}/
- *  - Serializable permite enviarlo por Intent sin errores.
+ * Contiene SOLO información esencial del usuario:
+ * ✔ Identidad
+ * ✔ Rol
+ * ✔ Estado administrativo
+ *
+ * ❌ No maneja lógica
+ * ❌ No maneja sensores
+ * ❌ No maneja pagos
+ *
+ * Es un modelo LIMPIO, SEGURO y ENTENDIBLE 👶✨
  */
 public class Usuario implements Serializable {
 
     // ==========================
-    // 🧩 DATOS BÁSICOS DEL USUARIO
+    // 🆔 IDENTIDAD
     // ==========================
-    private String id;       // UID de FirebaseAuth
-    private String correo;   // Email visible y público
-    private String password; // 🚫 No se sube a Firebase (Solo en sesión actual)
-    private String rol;      // admin / usuario
+    private String id;      // UID de FirebaseAuth
+    private String correo;  // Email del usuario
 
     // ==========================
-    // 🧩 RELACIÓN CON TANQUES
+    // 🏷 ROL DEL SISTEMA
     // ==========================
-    private Map<String, TanqueAgua> tanques = new HashMap<>();
-    // Se almacena como un mapa para acceso rápido y compatibilidad con Firebase.
+    private String rol;     // "usuario" o "admin"
 
     // ==========================
-    // 🧩 ESTADO ADMINISTRATIVO
+    // 🚫 ESTADO ADMINISTRATIVO
     // ==========================
-    private boolean bloqueado = false; // true = suspendido por admin
+    private boolean bloqueado = false;
 
     // ==========================
-    // 🧩 CONSTRUCTORES
+    // 🔧 CONSTRUCTORES
     // ==========================
 
-    // Constructor vacío requerido por Firebase
+    // Constructor vacío → obligatorio para Firebase
     public Usuario() {}
 
-    public Usuario(String id, String correo, String password, String rol) {
+    public Usuario(String id, String correo, String rol) {
         this.id = id;
         this.correo = correo;
-        this.password = password; // ⚠️ No se guarda en Firebase gracias a @Exclude
         this.rol = rol;
         this.bloqueado = false;
     }
@@ -73,77 +69,56 @@ public class Usuario implements Serializable {
     public String getCorreo() { return correo; }
     public void setCorreo(String correo) { this.correo = correo; }
 
-    // 🔒 @Exclude → Firebase ignora este campo.
-    // Contraseña JAMÁS debe almacenarse en Realtime Database.
-    @Exclude
-    public String getPassword() { return password; }
-
-    @Exclude
-    public void setPassword(String password) { this.password = password; }
-
     public String getRol() { return rol; }
     public void setRol(String rol) { this.rol = rol; }
-
-    public Map<String, TanqueAgua> getTanques() { return tanques; }
-    public void setTanques(Map<String, TanqueAgua> tanques) { this.tanques = tanques; }
 
     public boolean isBloqueado() { return bloqueado; }
     public void setBloqueado(boolean bloqueado) { this.bloqueado = bloqueado; }
 
     // ==========================
-    // ➕ AÑADIR TANQUE AL MAPA
-    // ==========================
-    public void addTanque(TanqueAgua tanque) {
-        if (tanques == null) tanques = new HashMap<>();
-        tanques.put(tanque.getIdTanque(), tanque);
-    }
-
-    // ==========================
-    // 📤 CONVERTER A MAPA (para subir a Firebase)
+    // 📤 CONVERSIÓN A MAPA
+    // Ideal para Firebase updateChildren()
     // ==========================
     @Exclude
     public Map<String, Object> toMap() {
-        Map<String, Object> map = new HashMap<>();
 
+        Map<String, Object> map = new HashMap<>();
         map.put("id", id);
         map.put("correo", correo);
         map.put("rol", rol);
-        map.put("tanques", tanques);
         map.put("bloqueado", bloqueado);
 
-        // ❌ NO INCLUYE PASSWORD → Seguridad garantizada
+        // ❌ NO hay password
+        // ❌ NO hay tanques
         return map;
     }
 
     // ==========================
-    // 📌 toString elegante
+    // 🧾 REPRESENTACIÓN HUMANA
     // ==========================
     @Override
     public String toString() {
         return correo +
                 " | Rol: " + rol +
-                " | Bloqueado: " + (bloqueado ? "Sí ❌" : "No ✔") +
-                " | Tanques: " + (tanques != null ? tanques.size() : 0);
+                " | Bloqueado: " + (bloqueado ? "Sí ❌" : "No ✔");
     }
 
     // ==========================
     // ⚖ EQUALS & HASHCODE
-    // Para colecciones, Comparadores, Sets
+    // Comparación segura por identidad
     // ==========================
     @Override
     public boolean equals(Object o) {
+
         if (this == o) return true;
         if (!(o instanceof Usuario)) return false;
 
         Usuario usuario = (Usuario) o;
-
-        return Objects.equals(id, usuario.id) &&
-                Objects.equals(correo, usuario.correo) &&
-                Objects.equals(rol, usuario.rol);
+        return Objects.equals(id, usuario.id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, correo, rol);
+        return Objects.hash(id);
     }
 }

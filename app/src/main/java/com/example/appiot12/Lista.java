@@ -1,12 +1,11 @@
 package com.example.appiot12;
 // 📦 Pantalla principal donde se listan los tanques del usuario.
-// El "CRM del agua" 💧📊
+// Piensa en esto como una **agenda** donde vemos todos nuestros tanques 💧📒
 
-import android.content.Intent;
-import android.os.Bundle;
-import android.view.View;
-import android.widget.ListView;
-import android.widget.Toast;
+import android.content.Intent;      // 🚪 Abrir otra pantalla
+import android.os.Bundle;           // 🎒 Datos al iniciar la pantalla
+import android.widget.ListView;     // 📋 Lista visual
+import android.widget.Toast;        // 🍞 Mensajes rápidos
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -16,137 +15,169 @@ import androidx.core.view.WindowInsetsCompat;
 
 // ☁️ Firebase
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.database.*;
 
 import java.util.ArrayList;
 
+/**
+ * 🧠 Lista
+ *
+ * ¿Qué hace esta pantalla?
+ * 👉 Muestra todos los tanques del usuario
+ * 👉 Permite tocar uno para ver su información
+ *
+ * Explicado para un niño 👶:
+ * 👉 Es como una lista de mochilas 🎒
+ * 👉 Tocás una mochila y ves qué tiene adentro 😄
+ */
 public class Lista extends AppCompatActivity {
 
-    // UI
-    private ListView listView;                   // 📋 Vista donde mostramos tanques
-    private ArrayList<TanqueAgua> listaTanques;  // 🗂 Lista dinámica
-    private TanqueAdapter adapter;               // 🎨 Adaptador personalizado
+    // ============================
+    // 🖥️ ELEMENTOS DE LA UI
+    // ============================
+    private ListView listViewTanques;               // 📋 Lista donde aparecen los tanques
+    private TanqueAdapter tanqueAdapter;            // 🎨 Dibuja cada tanque bonito
+    private final ArrayList<TanqueAgua> tanques = new ArrayList<>();
+    // 🗂 Lista en memoria (no se repite, no se duplica)
 
-    // Firebase
-    private FirebaseAuth mAuth;                  // 🔐 Usuario actual
-    private DatabaseReference usuariosRef;       // 📍 Ruta a /usuarios/{uid}/tanques
+    // ============================
+    // 🔐 FIREBASE
+    // ============================
+    private DatabaseReference tanquesRef;            // 📍 Ruta a /usuarios/{uid}/tanques
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);                 // 📱 Pantalla moderna elegante
+        EdgeToEdge.enable(this);                     // 📱 Pantalla completa moderna
         setContentView(R.layout.activity_lista);
 
-        // Ajustar pantalla según barras del sistema (notch, barra inferior)
+        // Ajustar pantalla para no chocar con barras del sistema
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets sb = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(sb.left, sb.top, sb.right, sb.bottom);
             return insets;
         });
 
-        // ============================
-        // 🔗 Conectar elementos UI
-        // ============================
-        listView = findViewById(R.id.listaTanques);
-        listaTanques = new ArrayList<>();
+        // 🔗 Conectar UI
+        inicializarUI();
 
-        adapter = new TanqueAdapter(this, listaTanques); // Adaptador visual
-        listView.setAdapter(adapter);
+        // 🔐 Preparar Firebase
+        prepararFirebase();
 
-        // ============================
-        // 🔐 Obtener UID actual
-        // ============================
-        mAuth = FirebaseAuth.getInstance();
-        String uid = mAuth.getCurrentUser().getUid();
+        // 📥 Cargar tanques una sola vez
+        cargarTanques();
 
-        // ============================
-        // 🔗 Ruta a los tanques del usuario
-        // ============================
-        usuariosRef = FirebaseDatabase.getInstance()
+        // 👆 Acción al tocar un tanque
+        configurarClickLista();
+    }
+
+    // =====================================================
+    // 🔗 INICIALIZAR UI
+    // =====================================================
+    private void inicializarUI() {
+        listViewTanques = findViewById(R.id.listaTanques);
+
+        tanqueAdapter = new TanqueAdapter(this, tanques);
+        listViewTanques.setAdapter(tanqueAdapter);
+    }
+
+    // =====================================================
+    // 🔐 PREPARAR FIREBASE
+    // =====================================================
+    private void prepararFirebase() {
+
+        FirebaseAuth auth = FirebaseAuth.getInstance();
+
+        if (auth.getCurrentUser() == null) {
+            // 🚨 No debería pasar, pero es buena práctica
+            Toast.makeText(this,
+                    "Usuario no autenticado ❌",
+                    Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
+
+        String uid = auth.getCurrentUser().getUid();
+
+        // 📍 Ruta directa a los tanques del usuario
+        tanquesRef = FirebaseDatabase.getInstance()
                 .getReference("usuarios")
                 .child(uid)
                 .child("tanques");
-
-        // Cargar tanques desde Firebase
-        cargarTanques();
-
-        // ============================
-        // 👆 Evento al tocar un tanque
-        // ============================
-        listView.setOnItemClickListener((parent, view, position, id) -> {
-
-            TanqueAgua tanqueSeleccionado = listaTanques.get(position);
-
-            if (tanqueSeleccionado == null) {
-                Toast.makeText(Lista.this, "Error al seleccionar tanque", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            // Crear Intent para abrir la pantalla Informacion.java
-            Intent intent = new Intent(Lista.this, Informacion.class);
-
-            // Mandamos los datos relevantes del tanque
-            intent.putExtra("tanqueId", tanqueSeleccionado.getIdTanque());
-            intent.putExtra("tanqueNombre", tanqueSeleccionado.getNombre());
-            intent.putExtra("tanqueCapacidad", tanqueSeleccionado.getCapacidad());
-            intent.putExtra("tanqueColor", tanqueSeleccionado.getColor());
-            intent.putExtra("idDispositivo", tanqueSeleccionado.getIdDispositivo());
-
-            startActivity(intent); // Abrir información del tanque
-        });
     }
 
-    // ============================================================
-    // 📥 Obtener los tanques desde Firebase
-    // ============================================================
+    // =====================================================
+    // 📥 CARGAR TANQUES DESDE FIREBASE
+    // =====================================================
     private void cargarTanques() {
 
-        // ⭐ Listener que trae la lista una sola vez (evita duplicar al volver atrás)
-        usuariosRef.addListenerForSingleValueEvent(new ValueEventListener() {
+        tanquesRef.addListenerForSingleValueEvent(new ValueEventListener() {
 
             @Override
             public void onDataChange(DataSnapshot snapshot) {
 
-                listaTanques.clear(); // 💡 Siempre limpiar antes de cargar
+                tanques.clear(); // 🧹 Limpieza antes de cargar (NO duplicados)
 
-                if (snapshot.exists()) {
-
-                    // 🔄 Iterar tanques del usuario
-                    for (DataSnapshot tanqueSnap : snapshot.getChildren()) {
-
-                        TanqueAgua tanque = tanqueSnap.getValue(TanqueAgua.class);
-
-                        if (tanque != null) {
-
-                            // Firebase no carga el ID → lo ponemos manualmente
-                            if (tanque.getIdTanque() == null) {
-                                tanque.setIdTanque(tanqueSnap.getKey());
-                            }
-
-                            listaTanques.add(tanque);
-                        }
-                    }
-
-                    adapter.notifyDataSetChanged(); // 🔃 Actualizar lista en UI
-
-                } else {
+                if (!snapshot.exists()) {
                     Toast.makeText(Lista.this,
-                            "No hay tanques registrados",
+                            "No tienes tanques registrados 💧",
                             Toast.LENGTH_SHORT).show();
+                    tanqueAdapter.notifyDataSetChanged();
+                    return;
                 }
+
+                // 🔄 Recorremos cada tanque
+                for (DataSnapshot snap : snapshot.getChildren()) {
+
+                    TanqueAgua tanque = snap.getValue(TanqueAgua.class);
+
+                    if (tanque == null) continue;
+
+                    // 🆔 Firebase no guarda el ID dentro del objeto → lo seteamos
+                    tanque.setIdTanque(snap.getKey());
+
+                    tanques.add(tanque); // ➕ Agregar a la lista
+                }
+
+                tanqueAdapter.notifyDataSetChanged(); // 🔄 Refrescar UI
             }
 
             @Override
             public void onCancelled(DatabaseError error) {
-
                 Toast.makeText(Lista.this,
-                        "Error al cargar tanques: " + error.getMessage(),
+                        "Error al cargar tanques ❌",
                         Toast.LENGTH_LONG).show();
             }
+        });
+    }
+
+    // =====================================================
+    // 👆 CONFIGURAR CLICK EN CADA TANQUE
+    // =====================================================
+    private void configurarClickLista() {
+
+        listViewTanques.setOnItemClickListener((parent, view, position, id) -> {
+
+            TanqueAgua tanque = tanques.get(position);
+
+            if (tanque == null) {
+                Toast.makeText(this,
+                        "Tanque inválido ❌",
+                        Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // 🚀 Abrimos pantalla de información
+            Intent intent = new Intent(this, Informacion.class);
+
+            // 📦 Enviamos los datos necesarios
+            intent.putExtra("tanqueId", tanque.getIdTanque());
+            intent.putExtra("tanqueNombre", tanque.getNombre());
+            intent.putExtra("tanqueCapacidad", tanque.getCapacidad());
+            intent.putExtra("tanqueColor", tanque.getColor());
+            intent.putExtra("idDispositivo", tanque.getIdDispositivo());
+
+            startActivity(intent);
         });
     }
 }

@@ -1,37 +1,40 @@
 package com.example.appiot12;
-// 📦 Adaptador encargado de transformar objetos Pago → vistas (item_pago.xml)
-// Es el motor visual del módulo financiero de AguaSegura 💸✨
+// 📦 Adaptador que convierte objetos Pago en filas visibles (item_pago.xml)
+// Es el traductor visual del dinero 💸➡️👀
 
 import android.content.Context;
-import android.view.LayoutInflater; // 🏭 Creador de layouts dinámicos
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter; // 📋 Adaptador base para listas simples
-import android.widget.TextView; // ✏️ Cada línea del ListView
+import android.widget.ArrayAdapter;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import java.text.SimpleDateFormat; // 🗓 Formato de fecha
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
 /**
- * ⭐ ADAPTADOR FINANCIERO DE PAGOS ⭐
+ * ⭐ ADAPTADOR DE PAGOS ⭐
  *
- * Muestra:
- *   - descripción del pago
- *   - saldo pendiente
- *   - fecha
- *   - estado (Pagado / Pendiente)
+ * Explicado para un niño 👶:
+ * 👉 Tenemos muchos pagos guardados
+ * 👉 El ListView no los entiende
+ * 👉 Este adaptador se los explica y los dibuja en pantalla 🎨
  *
- * Utiliza ViewHolder para rendimiento 🔥.
+ * Muestra por cada pago:
+ *   ✔ Qué es
+ *   ✔ Cuánto falta por pagar
+ *   ✔ Cuándo se compró
+ *   ✔ Si ya está pagado o no
  */
 public class PagoAdapter extends ArrayAdapter<Pago> {
 
-    private final Context context;  // 🌍 Entorno donde vive el ListView
-    private final List<Pago> pagos; // 💰 Lista de pagos a mostrar
+    private final Context context;      // 🌍 Dónde se dibuja la lista
+    private final List<Pago> pagos;     // 💰 Lista de pagos
 
     public PagoAdapter(Context context, List<Pago> pagos) {
         super(context, R.layout.item_pago, pagos);
@@ -41,52 +44,57 @@ public class PagoAdapter extends ArrayAdapter<Pago> {
 
     @NonNull
     @Override
-    public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+    public View getView(int position,
+                        @Nullable View convertView,
+                        @NonNull ViewGroup parent) {
 
-        View row = convertView;
         ViewHolder holder;
 
         // ============================================================
-        // 🧠 OPTIMIZACIÓN: VIEWHOLDER PATTERN
-        // Reutiliza vistas para ahorrar memoria y acelerar scroll.
+        // ♻️ VIEW HOLDER PATTERN (rendimiento)
         // ============================================================
-        if (row == null) {
-            // No existe vista previa → inflamos una nueva
-            row = LayoutInflater.from(context).inflate(R.layout.item_pago, parent, false);
+        if (convertView == null) {
+            // No hay vista reciclable → crear una nueva
+            convertView = LayoutInflater.from(context)
+                    .inflate(R.layout.item_pago, parent, false);
 
-            // Creamos el “cajón” para guardar referencias
             holder = new ViewHolder();
-            holder.tvDescripcion = row.findViewById(R.id.tvDescripcionPago);
-            holder.tvMonto = row.findViewById(R.id.tvMontoPago);
-            holder.tvFecha = row.findViewById(R.id.tvFechaPago);
-            holder.tvEstado = row.findViewById(R.id.tvEstadoPago);
+            holder.tvDescripcion = convertView.findViewById(R.id.tvDescripcionPago);
+            holder.tvMonto = convertView.findViewById(R.id.tvMontoPago);
+            holder.tvFecha = convertView.findViewById(R.id.tvFechaPago);
+            holder.tvEstado = convertView.findViewById(R.id.tvEstadoPago);
 
-            row.setTag(holder); // Asociamos ViewHolder a la vista
-        }
-        else {
-            // Reciclamos una vista existente → rendimiento TOP 🚀
-            holder = (ViewHolder) row.getTag();
+            convertView.setTag(holder);
+        } else {
+            // Reutilizamos vista existente (rápido y eficiente 🚀)
+            holder = (ViewHolder) convertView.getTag();
         }
 
-        // Obtenemos el pago actual
+        // ============================================================
+        // 📦 OBTENER PAGO ACTUAL
+        // ============================================================
         Pago pago = pagos.get(position);
 
         if (pago == null) {
-            // Caso poco probable pero seguro ante errores
-            holder.tvDescripcion.setText("Pago inválido");
+            // Caso extremadamente raro, pero seguro 🛡️
+            holder.tvDescripcion.setText("Pago no disponible");
             holder.tvMonto.setText("-");
             holder.tvFecha.setText("-");
             holder.tvEstado.setText("-");
-            return row;
+            return convertView;
         }
 
         // ============================================================
-        // 📝 DESCRIPCIÓN DEL PAGO
+        // 📝 DESCRIPCIÓN
         // ============================================================
-        // Ejemplo: "Compra de dispositivo (2/6 cuotas)"
-        String descripcion = "Compra de dispositivo (" +
-                pago.getCuotasPagadas() + "/" + pago.getCuotasTotales() + " cuotas)";
-        holder.tvDescripcion.setText(descripcion);
+        // Ejemplo: Compra de dispositivo (1/6 cuotas)
+        holder.tvDescripcion.setText(
+                "Compra de dispositivo (" +
+                        pago.getCuotasPagadas() +
+                        "/" +
+                        pago.getCuotasTotales() +
+                        " cuotas)"
+        );
 
         // ============================================================
         // 💵 MONTO PENDIENTE
@@ -96,35 +104,38 @@ public class PagoAdapter extends ArrayAdapter<Pago> {
         // ============================================================
         // 📅 FECHA DE COMPRA
         // ============================================================
-        try {
-            long fecha = pago.getFechaPago(); // timestamp original
-            String fechaFormateada =
-                    new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-                            .format(new Date(fecha));
-
-            holder.tvFecha.setText("Fecha: " + fechaFormateada);
-
-        } catch (Exception e) {
-            holder.tvFecha.setText("Fecha: -");
-        }
+        holder.tvFecha.setText(formatearFecha(pago.getFechaPago()));
 
         // ============================================================
-        // 🔵🟢🔴 ESTADO DEL PAGO
+        // 🚦 ESTADO DEL PAGO (SEMÁFORO FINANCIERO)
         // ============================================================
-
         if (pago.isPagado()) {
             holder.tvEstado.setText("Pagado ✔");
-            holder.tvEstado.setTextColor(0xFF388E3C); // Verde corporativo
+            holder.tvEstado.setTextColor(0xFF388E3C); // 🟢 Verde
         } else {
             holder.tvEstado.setText("Pendiente ❌");
-            holder.tvEstado.setTextColor(0xFFD32F2F); // Rojo de alerta
+            holder.tvEstado.setTextColor(0xFFD32F2F); // 🔴 Rojo
         }
 
-        return row;
+        return convertView;
     }
 
     // ============================================================
-    // 📦 Holder para la vista, mejora rendimiento del ListView
+    // 🗓 FORMATEAR FECHA (helper limpio)
+    // ============================================================
+    private String formatearFecha(long timestamp) {
+        try {
+            return "Fecha: " + new SimpleDateFormat(
+                    "dd/MM/yyyy",
+                    Locale.getDefault()
+            ).format(new Date(timestamp));
+        } catch (Exception e) {
+            return "Fecha: -";
+        }
+    }
+
+    // ============================================================
+    // 📦 VIEW HOLDER (cajón de referencias)
     // ============================================================
     private static class ViewHolder {
         TextView tvDescripcion;
