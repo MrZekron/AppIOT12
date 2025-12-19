@@ -9,7 +9,9 @@
     android:background="@mipmap/fondo"
     tools:context=".GestionUsuarios">
 
-    <!-- Título -->
+    <!-- ========================= -->
+    <!-- 📌 TÍTULO -->
+    <!-- ========================= -->
     <TextView
         android:id="@+id/tvTituloUsuarios"
         android:layout_width="wrap_content"
@@ -23,19 +25,40 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- Lista de usuarios -->
+    <!-- ========================= -->
+    <!-- 🎛 BOTÓN FILTROS -->
+    <!-- ========================= -->
+    <Button
+        android:id="@+id/btnFiltrarUsuarios"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Filtrar usuarios"
+        android:textSize="16sp"
+        android:padding="10dp"
+        android:textColor="#FFFFFF"
+        android:background="#455A64"
+        android:layout_marginTop="12dp"
+        app:layout_constraintTop_toBottomOf="@id/tvTituloUsuarios"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <!-- ========================= -->
+    <!-- 📋 LISTA DE USUARIOS -->
+    <!-- ========================= -->
     <ListView
         android:id="@+id/listUsuarios"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:dividerHeight="8dp"
         android:padding="16dp"
-        app:layout_constraintTop_toBottomOf="@id/tvTituloUsuarios"
+        app:layout_constraintTop_toBottomOf="@id/btnFiltrarUsuarios"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toTopOf="@id/btnVolver" />
 
-    <!-- ⭐ BOTÓN VOLVER ⭐ -->
+    <!-- ========================= -->
+    <!-- 🔙 BOTÓN VOLVER -->
+    <!-- ========================= -->
     <Button
         android:id="@+id/btnVolver"
         android:layout_width="wrap_content"

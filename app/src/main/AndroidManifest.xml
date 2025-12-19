@@ -2,7 +2,23 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- ========================= -->
+    <!-- 🌐 PERMISOS -->
+    <!-- ========================= -->
+
     <uses-permission android:name="android.permission.INTERNET" />
+
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
+    <!-- Necesario para caché de mapas (OSMDroid) -->
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28" />
+
+    <!-- ========================= -->
+    <!-- 📱 APLICACIÓN -->
+    <!-- ========================= -->
 
     <application
         android:allowBackup="true"
@@ -14,73 +30,42 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AppIOT12"
         tools:targetApi="31">
+
+        <!-- ❌ NO GOOGLE MAPS -->
+        <!-- ❌ NO API KEY -->
+        <!-- ✅ MAPAS GRATIS -->
+
         <activity
-            android:name=".CentroPagos"
+            android:name=".MapaDireccionActivity"
             android:exported="false" />
-        <activity
-            android:name=".HistorialAcciones"
-            android:exported="false" />
-        <activity
-            android:name=".AsociarDispositivoATanque"
-            android:exported="false" />
-        <activity
-            android:name=".ComprarDispositivo"
-            android:exported="false" />
-        <activity
-            android:name=".HistorialGlobal"
-            android:exported="false" />
-        <activity
-            android:name=".ListaGlobalTanques"
-            android:exported="false" />
-        <activity
-            android:name=".GestionUsuarios"
-            android:exported="false" />
-        <activity
-            android:name=".MenuAdmin"
-            android:exported="false" />
-        <activity
-            android:name=".HistorialCompra"
-            android:exported="false" />
-        <activity
-            android:name=".Configuracion"
-            android:exported="false" />
-        <activity
-            android:name=".OlvideContrasenaActivity"
-            android:exported="false" />
-        <activity
-            android:name=".CrearCuentaActivity"
-            android:exported="false" />
-        <activity
-            android:name=".TanqueAdapter"
-            android:exported="false"
-            tools:ignore="Instantiatable" />
-        <activity
-            android:name=".Editor"
-            android:exported="false" />
-        <activity
-            android:name=".Informacion"
-            android:exported="false" />
-        <activity
-            android:name=".Lista"
-            android:exported="false" />
+
         <activity
             android:name=".Agregar"
             android:exported="false" />
+
+        <activity
+            android:name=".Lista"
+            android:exported="false" />
+
         <activity
             android:name=".Menu"
             android:exported="false" />
+
         <activity
             android:name=".IniciarSesion"
             android:exported="false" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true">
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
         </activity>
+
     </application>
 
 </manifest>

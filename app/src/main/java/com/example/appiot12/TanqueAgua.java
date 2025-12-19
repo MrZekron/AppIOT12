@@ -21,8 +21,9 @@ public class TanqueAgua {
 
     private String idTanque;        // 🆔 ID único (key Firebase)
     private String nombre;          // 🏷 Nombre asignado por el usuario
-    private String capacidad;       // 💧 Capacidad total en litros (String por flexibilidad)
+    private String capacidad;       // 💧 Capacidad total en litros (String validado)
     private String color;           // 🎨 Color físico del tanque
+    private String direccion;       // 📍 Dirección física (OPCIONAL)
     private String idDispositivo;   // 📡 Dispositivo asociado (null = libre)
 
     // ======================================================
@@ -38,13 +39,15 @@ public class TanqueAgua {
                       String nombre,
                       String capacidad,
                       String color,
+                      String direccion,
                       String idDispositivo) {
 
         this.idTanque = idTanque;
         this.nombre = nombre;
         this.capacidad = capacidad;
         this.color = color;
-        this.idDispositivo = idDispositivo; // puede ser null
+        this.direccion = direccion;       // ✅ puede ser null o ""
+        this.idDispositivo = idDispositivo;
     }
 
     // ======================================================
@@ -83,6 +86,18 @@ public class TanqueAgua {
         this.color = color;
     }
 
+    // =========================
+    // 📍 DIRECCIÓN (OPCIONAL)
+    // =========================
+
+    public String getDireccion() {
+        return direccion;
+    }
+
+    public void setDireccion(String direccion) {
+        this.direccion = direccion;
+    }
+
     public String getIdDispositivo() {
         return idDispositivo;
     }
@@ -114,12 +129,19 @@ public class TanqueAgua {
         }
     }
 
+    /**
+     * ✔ Indica si el tanque tiene dirección registrada
+     * Útil para mapas, filtros o reportes
+     */
+    public boolean tieneDireccion() {
+        return direccion != null && !direccion.trim().isEmpty();
+    }
+
     // ======================================================
     // 🧩 UTILIDAD DE DEPURACIÓN / UI
     // ======================================================
     @Override
     public String toString() {
-        // Se usa automáticamente en Spinner, logs y debugging
         return nombre != null && !nombre.isEmpty()
                 ? nombre
                 : "Tanque sin nombre";

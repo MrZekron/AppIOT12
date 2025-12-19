@@ -1,9 +1,8 @@
 package com.example.appiot12;
 // 📦 Centro de Pagos del usuario.
-// Aquí el usuario puede ver sus pagos y pagar cuotas o el total 💳💸
+// Aquí se pagan cuotas y, si corresponde, se CREA el dispositivo 🤖💳
 
 import android.os.Bundle;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -19,27 +18,24 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.*;
 
 import java.util.ArrayList;
+import java.util.UUID;
 
 public class CentroPagos extends AppCompatActivity {
 
-    // =========================
-    // 📺 ELEMENTOS DE LA PANTALLA
-    // =========================
+    // UI
     private TextView tvUsuarioPago, tvResumenDeuda;
     private ListView listPagos;
     private Button btnPagarCuota, btnPagarTotal;
 
-    // =========================
-    // 💾 DATOS EN MEMORIA
-    // =========================
+    // Datos
     private final ArrayList<Pago> listaPagos = new ArrayList<>();
     private PagoAdapter adapter;
-    private Pago pagoSeleccionado; // El pago que el usuario toca 👆
+    private Pago pagoSeleccionado;
 
-    // =========================
-    // ☁️ FIREBASE
-    // =========================
+    // Firebase
+    private DatabaseReference refUsuario;
     private DatabaseReference refPagos;
+    private DatabaseReference refDispositivos;
     private String uid;
 
     @Override
@@ -48,25 +44,19 @@ public class CentroPagos extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_centro_pagos);
 
-        // Ajustar márgenes para que no choque con la barra del celular 📱
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets bars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(bars.left, bars.top, bars.right, bars.bottom);
             return insets;
         });
 
-        // =========================
-        // 🔗 VINCULAR XML → JAVA
-        // =========================
+        // Vistas
         tvUsuarioPago = findViewById(R.id.tvUsuarioPago);
         tvResumenDeuda = findViewById(R.id.tvResumenDeuda);
         listPagos = findViewById(R.id.listPagos);
         btnPagarCuota = findViewById(R.id.btnPagarCuota);
         btnPagarTotal = findViewById(R.id.btnPagarTotal);
 
-        // =========================
-        // 🔐 USUARIO ACTUAL
-        // =========================
         if (FirebaseAuth.getInstance().getCurrentUser() == null) {
             Toast.makeText(this, "Usuario no autenticado ❌", Toast.LENGTH_LONG).show();
             finish();
@@ -74,23 +64,21 @@ public class CentroPagos extends AppCompatActivity {
         }
 
         uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
         tvUsuarioPago.setText(
                 "Usuario: " + FirebaseAuth.getInstance().getCurrentUser().getEmail()
         );
 
-        // Ruta correcta a los pagos del usuario
-        refPagos = FirebaseDatabase.getInstance()
+        refUsuario = FirebaseDatabase.getInstance()
                 .getReference("usuarios")
-                .child(uid)
-                .child("pagos");
+                .child(uid);
 
-        // =========================
-        // 📋 ADAPTADOR DE PAGOS
-        // =========================
+        refPagos = refUsuario.child("pagos");
+        refDispositivos = refUsuario.child("dispositivos");
+
         adapter = new PagoAdapter(this, listaPagos);
         listPagos.setAdapter(adapter);
 
-        // Cuando el usuario toca un pago 👇
         listPagos.setOnItemClickListener((parent, view, position, id) -> {
             pagoSeleccionado = listaPagos.get(position);
             Toast.makeText(this, "Pago seleccionado ✔️", Toast.LENGTH_SHORT).show();
@@ -100,9 +88,9 @@ public class CentroPagos extends AppCompatActivity {
         configurarBotones();
     }
 
-    // =========================================================
-    // 📥 CARGAR PAGOS DESDE FIREBASE
-    // =========================================================
+    // =====================================================
+    // 📥 CARGAR PAGOS
+    // =====================================================
     private void cargarPagos() {
 
         refPagos.addValueEventListener(new ValueEventListener() {
@@ -115,12 +103,10 @@ public class CentroPagos extends AppCompatActivity {
                 for (DataSnapshot s : snapshot.getChildren()) {
 
                     Pago pago = s.getValue(Pago.class);
-
                     if (pago == null) continue;
 
                     listaPagos.add(pago);
 
-                    // Solo sumamos deuda si NO está pagado 💰
                     if (!pago.isPagado()) {
                         deudaTotal += pago.getSaldoPendiente();
                     }
@@ -128,105 +114,123 @@ public class CentroPagos extends AppCompatActivity {
 
                 tvResumenDeuda.setText("Deuda total: $" + deudaTotal);
                 adapter.notifyDataSetChanged();
-
-                if (listaPagos.isEmpty()) {
-                    Toast.makeText(
-                            CentroPagos.this,
-                            "No tienes pagos registrados 📭",
-                            Toast.LENGTH_LONG
-                    ).show();
-                }
             }
 
             @Override
             public void onCancelled(DatabaseError error) {
-                Toast.makeText(
-                        CentroPagos.this,
+                Toast.makeText(CentroPagos.this,
                         "Error al leer pagos ❌",
-                        Toast.LENGTH_LONG
-                ).show();
+                        Toast.LENGTH_LONG).show();
             }
         });
     }
 
-    // =========================================================
-    // ⚙️ CONFIGURAR BOTONES
-    // =========================================================
+    // =====================================================
+    // ⚙️ BOTONES
+    // =====================================================
     private void configurarBotones() {
 
-        // =========================
         // ➗ PAGAR UNA CUOTA
-        // =========================
         btnPagarCuota.setOnClickListener(v -> {
 
             if (!pagoValidoSeleccionado()) return;
 
-            // Valor de UNA cuota 💡
-            int valorCuota = pagoSeleccionado.getPrecioTotal()
-                    / pagoSeleccionado.getCuotasTotales();
+            int valorCuota =
+                    pagoSeleccionado.getPrecioTotal()
+                            / pagoSeleccionado.getCuotasTotales();
 
-            // Sumamos una cuota pagada
             pagoSeleccionado.setCuotasPagadas(
                     pagoSeleccionado.getCuotasPagadas() + 1
             );
 
-            // Restamos saldo pendiente
             pagoSeleccionado.setSaldoPendiente(
-                    Math.max(0,
-                            pagoSeleccionado.getSaldoPendiente() - valorCuota)
+                    pagoSeleccionado.getSaldoPendiente() - valorCuota
             );
 
-            guardarPagoActualizado();
-            Toast.makeText(this, "Cuota pagada correctamente ✔️", Toast.LENGTH_LONG).show();
+            finalizarPagoSiCorresponde();
         });
 
-        // =========================
         // 💥 PAGAR TODO
-        // =========================
         btnPagarTotal.setOnClickListener(v -> {
 
             if (!pagoValidoSeleccionado()) return;
 
-            // Pagamos TODAS las cuotas
             pagoSeleccionado.setCuotasPagadas(
                     pagoSeleccionado.getCuotasTotales()
             );
 
-            // Dejamos saldo en 0 → el modelo se encarga del estado 😎
             pagoSeleccionado.setSaldoPendiente(0);
 
-            guardarPagoActualizado();
-            Toast.makeText(this, "Pago completado ✔️", Toast.LENGTH_LONG).show();
+            finalizarPagoSiCorresponde();
         });
     }
 
-    // =========================================================
-    // ✅ VALIDAR PAGO SELECCIONADO
-    // =========================================================
+    // =====================================================
+    // ✅ VALIDACIONES
+    // =====================================================
     private boolean pagoValidoSeleccionado() {
 
         if (pagoSeleccionado == null) {
-            Toast.makeText(this, "Seleccione un pago primero ☝️", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this,
+                    "Seleccione un pago primero ☝️",
+                    Toast.LENGTH_SHORT).show();
             return false;
         }
 
         if (pagoSeleccionado.isPagado()) {
-            Toast.makeText(this, "Este pago ya está completado ✔️", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this,
+                    "Este pago ya está completado ✔️",
+                    Toast.LENGTH_SHORT).show();
             return false;
         }
 
         return true;
     }
 
-    // =========================================================
-    // 💾 GUARDAR CAMBIOS EN FIREBASE
-    // =========================================================
+    // =====================================================
+    // 🧠 LÓGICA CLAVE: CREAR DISPOSITIVO SI SE PAGÓ
+    // =====================================================
+    private void finalizarPagoSiCorresponde() {
+
+        // Si el pago quedó COMPLETADO y aún no tiene dispositivo
+        if (pagoSeleccionado.isPagado()
+                && pagoSeleccionado.getIdDispositivo() == null) {
+
+            String idDispositivo = UUID.randomUUID().toString();
+
+            Dispositivo dispositivo = new Dispositivo(
+                    idDispositivo,
+                    7.0,
+                    500.0,
+                    1.0,
+                    1000.0
+            );
+
+            // Guardamos el dispositivo
+            refDispositivos.child(idDispositivo).setValue(dispositivo);
+
+            // Asociamos el dispositivo al pago
+            pagoSeleccionado.setIdDispositivo(idDispositivo);
+
+            Toast.makeText(this,
+                    "Pago completado. Dispositivo creado 🤖✅",
+                    Toast.LENGTH_LONG).show();
+        }
+
+        guardarPagoActualizado();
+    }
+
+    // =====================================================
+    // 💾 GUARDAR PAGO
+    // =====================================================
     private void guardarPagoActualizado() {
 
         refPagos.child(pagoSeleccionado.getIdPago())
                 .setValue(pagoSeleccionado)
                 .addOnSuccessListener(a ->
-                        Toast.makeText(this, "Pago actualizado ☁️", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this,
+                                "Pago actualizado ☁️",
+                                Toast.LENGTH_SHORT).show()
                 )
                 .addOnFailureListener(e ->
                         Toast.makeText(this,

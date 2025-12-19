@@ -1,6 +1,6 @@
 package com.example.appiot12;
 // 📦 Adaptador que convierte TanqueAgua → fila visual (item_tanque.xml)
-// Es como un traductor: datos técnicos → texto entendible 👶💧
+// Traductor de datos técnicos → texto entendible 👶💧
 
 import android.content.Context;
 import android.graphics.Color;
@@ -20,24 +20,10 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.List;
 
-/**
- * ⭐ TANQUE ADAPTER ⭐
- *
- * Explicado fácil:
- * 👉 Tenemos muchos tanques
- * 👉 Cada tanque puede o no tener sensores
- * 👉 Este adaptador los dibuja bonitos en una lista 📋✨
- *
- * Buenas prácticas:
- * ✔ ViewHolder (rápido)
- * ✔ Firebase solo una vez por fila
- * ✔ Sin crashes por reciclaje
- * ✔ Código claro y mantenible
- */
 public class TanqueAdapter extends ArrayAdapter<TanqueAgua> {
 
-    private final Context context;              // 🌍 Dónde se dibuja la lista
-    private final List<TanqueAgua> tanques;     // 🛢 Lista de tanques
+    private final Context context;
+    private final List<TanqueAgua> tanques;
 
     public TanqueAdapter(Context context, List<TanqueAgua> tanques) {
         super(context, R.layout.item_tanque, tanques);
@@ -49,46 +35,49 @@ public class TanqueAdapter extends ArrayAdapter<TanqueAgua> {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
 
+        View row;
         ViewHolder holder;
 
         // ======================================================
-        // ♻️ VIEW HOLDER (reciclaje inteligente)
+        // ♻️ ViewHolder pattern (rendimiento + seguridad)
         // ======================================================
         if (convertView == null) {
-            convertView = LayoutInflater.from(context)
+            row = LayoutInflater.from(context)
                     .inflate(R.layout.item_tanque, parent, false);
 
             holder = new ViewHolder();
-            holder.tvNombre = convertView.findViewById(R.id.tvNombreTanque);
-            holder.tvResumen = convertView.findViewById(R.id.tvResumenDatos);
+            holder.tvNombre = row.findViewById(R.id.tvNombreTanque);
+            holder.tvResumen = row.findViewById(R.id.tvResumenDatos);
 
-            convertView.setTag(holder);
+            row.setTag(holder);
         } else {
-            holder = (ViewHolder) convertView.getTag();
+            row = convertView;
+            holder = (ViewHolder) row.getTag();
         }
 
         TanqueAgua tanque = tanques.get(position);
 
-        // ======================================================
-        // 📝 NOMBRE DEL TANQUE
-        // ======================================================
+        // Nombre del tanque
         holder.tvNombre.setText("Nombre: " + tanque.getNombre());
 
         // ======================================================
-        // 🚫 TANQUE SIN DISPOSITIVO
+        // 🚫 Tanque sin dispositivo
         // ======================================================
         if (tanque.getIdDispositivo() == null || tanque.getIdDispositivo().isEmpty()) {
             mostrarSinDispositivo(holder);
-            return convertView;
+            return row;
         }
 
-        // Mientras Firebase responde ⏳
+        // Estado temporal
         holder.tvResumen.setText("Cargando sensores…");
         holder.tvResumen.setTextColor(Color.GRAY);
 
         // ======================================================
-        // ☁️ LEER DISPOSITIVO DESDE FIREBASE
+        // 🔐 CAPTURAS FINALES (CLAVE PARA NO CRASHEAR)
         // ======================================================
+        final View rowFinal = row;
+        final ViewHolder holderFinal = holder;
+
         String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
         String idDispositivo = tanque.getIdDispositivo();
 
@@ -102,38 +91,31 @@ public class TanqueAdapter extends ArrayAdapter<TanqueAgua> {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
 
-                        // Si la vista ya no existe → salimos (seguridad 🔐)
-                        if (convertView.getParent() == null) return;
+                        // 🛡️ Protección contra reciclaje de vistas
+                        if (rowFinal.getParent() == null) return;
 
                         if (!snapshot.exists()) {
-                            mostrarError(holder, "DISPOSITIVO NO ENCONTRADO");
+                            mostrarError(holderFinal, "DISPOSITIVO NO ENCONTRADO");
                             return;
                         }
 
                         Dispositivo d = snapshot.getValue(Dispositivo.class);
-
                         if (d == null) {
-                            mostrarError(holder, "ERROR DE LECTURA");
+                            mostrarError(holderFinal, "ERROR DE LECTURA");
                             return;
                         }
 
-                        // ======================================================
-                        // 🧪 EVALUAR SENSORES
-                        // ======================================================
+                        // ==========================
+                        // 🧪 Evaluación de sensores
+                        // ==========================
                         String phEstado   = evaluarRango(d.getPh(), 6.5, 8.5);
                         String condEstado = evaluarRango(d.getConductividad(), 0, 700);
                         String turbEstado = evaluarRango(d.getTurbidez(), 0, 5);
 
-                        // ======================================================
-                        // 💧 NIVEL DEL TANQUE
-                        // ======================================================
                         double capacidad = parseDoubleSeguro(tanque.getCapacidad());
                         double nivel = d.getUltrasonico();
                         String nivelEstado = evaluarNivel(nivel, capacidad);
 
-                        // ======================================================
-                        // 📊 TEXTO FINAL
-                        // ======================================================
                         String resumen = String.format(
                                 "pH %.1f (%s) | Cond %.0f (%s) | Turb %.1f (%s) | Agua %.0f L (%s)",
                                 d.getPh(), phEstado,
@@ -142,35 +124,33 @@ public class TanqueAdapter extends ArrayAdapter<TanqueAgua> {
                                 nivel, nivelEstado
                         );
 
-                        holder.tvResumen.setText(resumen);
+                        holderFinal.tvResumen.setText(resumen);
 
-                        // ======================================================
-                        // 🚦 COLOR DE ALERTA
-                        // ======================================================
                         boolean alerta =
                                 !"OK".equals(phEstado) ||
                                         !"OK".equals(condEstado) ||
                                         !"OK".equals(turbEstado) ||
                                         "BAJO".equals(nivelEstado);
 
-                        holder.tvResumen.setTextColor(
-                                alerta ? Color.parseColor("#8B0000") : Color.parseColor("#006400")
+                        holderFinal.tvResumen.setTextColor(
+                                alerta
+                                        ? Color.parseColor("#8B0000") // rojo alerta
+                                        : Color.parseColor("#006400") // verde ok
                         );
                     }
 
                     @Override
                     public void onCancelled(@NonNull DatabaseError error) {
-                        mostrarError(holder, "ERROR FIREBASE");
+                        mostrarError(holderFinal, "ERROR FIREBASE");
                     }
                 });
 
-        return convertView;
+        return row;
     }
 
     // ======================================================
-    // 🧠 HELPERS (lógica reutilizable)
+    // 🧠 HELPERS
     // ======================================================
-
     private void mostrarSinDispositivo(ViewHolder h) {
         h.tvResumen.setText("Estado: SIN DISPOSITIVO");
         h.tvResumen.setTextColor(Color.GRAY);
@@ -203,7 +183,7 @@ public class TanqueAdapter extends ArrayAdapter<TanqueAgua> {
     }
 
     // ======================================================
-    // 📦 VIEW HOLDER
+    // 📦 ViewHolder
     // ======================================================
     static class ViewHolder {
         TextView tvNombre;

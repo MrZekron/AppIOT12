@@ -1,245 +1,176 @@
 package com.example.appiot12;
-// 📦 Paquete raíz del proyecto Agua Segura.
-// Aquí viven las Activities que controlan pantallas y acciones del usuario 🏢📱
+// 📦 Pantalla para agregar un tanque nuevo 💧📦
+// Dirección opcional, pero si existe debe ser REAL 🌍✅
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
-// 🛠️ Herramientas básicas para interacción con el usuario
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-// 🎖️ Activity moderna compatible con versiones antiguas de Android
 
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-// ☁️ Firebase: autenticación + base de datos en tiempo real
 
 import java.util.UUID;
-// 🔑 Generador de IDs únicos (sin duplicados, sin dolores)
 
-/**
- * ➕ Agregar
- *
- * Esta pantalla permite:
- * 👉 Crear un nuevo tanque de agua
- * 👉 Asociarle un dispositivo
- * 👉 Guardar todo en Firebase
- * 👉 Registrar la acción en el historial
- *
- * En simple:
- * Es el formulario para agregar un tanque nuevo 💧📦
- */
 public class Agregar extends AppCompatActivity {
 
-    // ☁️ Firebase Database (una sola instancia, sin redundancia)
+    // ☁️ Firebase
     private DatabaseReference database;
 
-    // 📝 Campos del formulario
+    // 📝 Inputs
     private EditText txtNombre;
     private EditText txtCapacidad;
     private EditText txtColor;
-    private EditText txtDireccion;
+    private EditText txtDireccion; // 📍 OPCIONAL
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_agregar); // 🎨 Mostramos la pantalla
+        setContentView(R.layout.activity_agregar);
 
-        // 🔗 Conectamos los EditText con el XML
         inicializarVistas();
-
-        // 🔥 Inicializamos Firebase
         inicializarFirebase();
     }
 
-    /**
-     * 🔗 Conecta los campos del formulario con el XML
-     */
+    // =====================================================
+    // 🔗 VINCULAR XML → JAVA
+    // =====================================================
     private void inicializarVistas() {
         txtNombre = findViewById(R.id.txtNombre);
-        txtCapacidad = findViewById(R.id.txtCapasidad); // ⚠️ Se mantiene ID original del XML
+        txtCapacidad = findViewById(R.id.txtCapasidad);
         txtColor = findViewById(R.id.txtColor);
         txtDireccion = findViewById(R.id.txtDireccion);
     }
 
-    /**
-     * ☁️ Inicializa Firebase una sola vez
-     */
+    // =====================================================
+    // ☁️ FIREBASE
+    // =====================================================
     private void inicializarFirebase() {
-        FirebaseApp.initializeApp(this);          // ⚡ Arrancamos Firebase
-        database = FirebaseDatabase.getInstance()
-                .getReference();                  // 📂 Referencia raíz
+        FirebaseApp.initializeApp(this);
+        database = FirebaseDatabase.getInstance().getReference();
     }
 
-    /**
-     * 💾 Se ejecuta cuando el usuario presiona el botón "Guardar"
-     */
+    // =====================================================
+    // 💾 BOTÓN GUARDAR
+    // =====================================================
     public void enviarDatosUsuario(View view) {
 
-        // ✏️ Leemos los datos escritos por el usuario
         String nombre = txtNombre.getText().toString().trim();
-        String capacidad = txtCapacidad.getText().toString().trim();
+        String capacidadStr = txtCapacidad.getText().toString().trim();
         String color = txtColor.getText().toString().trim();
-        String direccion = txtDireccion.getText().toString().trim(); // (opcional por ahora)
+        String direccion = txtDireccion.getText().toString().trim();
 
-        // 🛑 Validamos que los campos importantes no estén vacíos
-        if (!camposValidos(nombre, capacidad, color)) {
-            Toast.makeText(this,
-                    "Completa todos los campos obligatorios.",
-                    Toast.LENGTH_SHORT).show();
+        // 🛑 Validaciones base
+        if (nombre.isEmpty() || capacidadStr.isEmpty() || color.isEmpty()) {
+            toast("Completa los campos obligatorios");
             return;
         }
 
-        // 👤 Obtenemos el usuario actual
+        // 🔢 Capacidad numérica
+        int capacidadLitros;
+        try {
+            capacidadLitros = Integer.parseInt(capacidadStr);
+            if (capacidadLitros <= 0) {
+                toast("La capacidad debe ser mayor a 0 litros 💧");
+                return;
+            }
+        } catch (NumberFormatException e) {
+            toast("La capacidad debe ser un número (ej: 500)");
+            return;
+        }
+
+        // 👤 Usuario
         String uid = obtenerUidUsuario();
-
         if (uid == null) {
-            Toast.makeText(this,
-                    "Error: usuario no autenticado.",
-                    Toast.LENGTH_SHORT).show();
+            toast("Usuario no autenticado");
             return;
         }
 
-        // 🆔 Generamos IDs únicos
-        String idTanque = UUID.randomUUID().toString();
-        String idDispositivo = UUID.randomUUID().toString();
+        // 📍 Validar dirección SI fue ingresada
+        if (!direccion.isEmpty()) {
 
-        // 🤖 Creamos un dispositivo con valores iniciales
-        Dispositivo dispositivo = crearDispositivoInicial(idDispositivo);
+            new Thread(() -> {
 
-        // 💧 Creamos el tanque y lo asociamos al dispositivo
-        TanqueAgua tanque = crearTanque(
-                idTanque,
-                nombre,
-                capacidad,
-                color,
-                idDispositivo
-        );
+                double[] coords =
+                        GeocodingService.obtenerCoordenadas(this, direccion);
 
-        // ☁️ Guardamos todo en Firebase
-        guardarEnFirebase(uid, dispositivo, tanque, nombre);
-    }
+                runOnUiThread(() -> {
+                    if (coords == null) {
+                        toast("La dirección no existe ❌\nIngresa una dirección real");
+                    } else {
+                        guardarTanque(uid, nombre, capacidadLitros, color, direccion);
+                    }
+                });
 
-    /**
-     * ✅ Revisa que los campos obligatorios estén completos
-     */
-    private boolean camposValidos(String nombre, String capacidad, String color) {
-        return !nombre.isEmpty() && !capacidad.isEmpty() && !color.isEmpty();
-    }
+            }).start();
 
-    /**
-     * 👤 Obtiene el UID del usuario logueado
-     */
-    private String obtenerUidUsuario() {
-        if (FirebaseAuth.getInstance().getCurrentUser() == null) {
-            return null;
+        } else {
+            // ✔ Dirección opcional
+            guardarTanque(uid, nombre, capacidadLitros, color, null);
         }
-        return FirebaseAuth.getInstance().getCurrentUser().getUid();
     }
 
-    /**
-     * 🤖 Crea un dispositivo con valores iniciales simulados
-     */
-    private Dispositivo crearDispositivoInicial(@NonNull String idDispositivo) {
+    // =====================================================
+    // 💾 GUARDAR TANQUE (SIN DISPOSITIVO)
+    // =====================================================
+    private void guardarTanque(String uid,
+                               String nombre,
+                               int capacidadLitros,
+                               String color,
+                               String direccion) {
 
-        // Valores iniciales seguros:
-        // pH = 7 (neutral)
-        // turbidez = 500
-        // conductividad = 1
-        // nivel = 150 cm
-        return new Dispositivo(
-                idDispositivo,
-                7.0,
-                500.0,
-                1.0,
-                150.0
-        );
-    }
+        String idTanque = UUID.randomUUID().toString();
 
-    /**
-     * 💧 Crea el objeto TanqueAgua
-     */
-    private TanqueAgua crearTanque(
-            String idTanque,
-            String nombre,
-            String capacidad,
-            String color,
-            String idDispositivo
-    ) {
-
+        // 💧 Tanque SIN dispositivo
         TanqueAgua tanque = new TanqueAgua();
+        tanque.setIdTanque(idTanque);
+        tanque.setNombre(nombre);
+        tanque.setCapacidad(String.valueOf(capacidadLitros));
+        tanque.setColor(color);
+        tanque.setDireccion(direccion);
+        tanque.setIdDispositivo(null); // 🚫 SE ASIGNA DESPUÉS
 
-        tanque.setIdTanque(idTanque);           // 🆔 ID único
-        tanque.setNombre(nombre);               // 📛 Nombre
-        tanque.setCapacidad(capacidad);         // 📦 Capacidad
-        tanque.setColor(color);                 // 🎨 Color
-        tanque.setIdDispositivo(idDispositivo); // 🔗 Asociación
-
-        return tanque;
-    }
-
-    /**
-     * ☁️ Guarda el dispositivo y el tanque en Firebase
-     */
-    private void guardarEnFirebase(
-            String uid,
-            Dispositivo dispositivo,
-            TanqueAgua tanque,
-            String nombreTanque
-    ) {
-
-        // 💾 Guardamos el dispositivo
-        database.child("usuarios")
-                .child(uid)
-                .child("dispositivos")
-                .child(dispositivo.getIdDispositivo())
-                .setValue(dispositivo);
-
-        // 💾 Guardamos el tanque
+        // ☁️ Firebase
         database.child("usuarios")
                 .child(uid)
                 .child("tanques")
-                .child(tanque.getIdTanque())
+                .child(idTanque)
                 .setValue(tanque)
                 .addOnSuccessListener(aVoid -> {
 
-                    // 🧾 Registramos la acción en el historial
                     HistorialLogger.registrarAccion(
                             "crear",
-                            "Se creó el tanque: " + nombreTanque
+                            "Se creó el tanque: " + nombre
                     );
 
-                    // 👍 Avisamos al usuario
-                    Toast.makeText(this,
-                            "Tanque creado correctamente.",
-                            Toast.LENGTH_SHORT).show();
-
-                    // 📋 Vamos a la lista de tanques
+                    toast("Tanque creado correctamente 💧");
                     startActivity(new Intent(this, Lista.class));
                     finish();
                 })
                 .addOnFailureListener(e ->
-                        Toast.makeText(this,
-                                "Error al guardar: " + e.getMessage(),
-                                Toast.LENGTH_SHORT).show()
+                        toast("Error al guardar: " + e.getMessage())
                 );
     }
 
-    /**
-     * 📋 Botón para ver la lista de tanques
-     */
-    public void verLista(View view) {
-        startActivity(new Intent(this, Lista.class));
+    // =====================================================
+    // 👤 UID
+    // =====================================================
+    private String obtenerUidUsuario() {
+        if (FirebaseAuth.getInstance().getCurrentUser() == null) return null;
+        return FirebaseAuth.getInstance().getCurrentUser().getUid();
     }
 
-    /**
-     * ❌ Cancela la operación y vuelve al menú
-     */
+    // 🍞 Toast simple
+    private void toast(String msg) {
+        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+    }
+
+    // ❌ Cancelar
     public void cancelar(View view) {
         startActivity(new Intent(this, Menu.class));
         finish();
