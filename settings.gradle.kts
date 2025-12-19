@@ -18,11 +18,8 @@ dependencyResolutionManagement {
         google()
         mavenCentral()
         maven("https://jitpack.io")
-        // Si necesitas resolver artefactos no disponibles en mavenCentral,
-        // descomenta la siguiente línea para añadir JitPack temporalmente:
-        // maven("https://jitpack.io")
     }
 }
 
-rootProject.name = "AppIOT1.2"
+rootProject.name = "AppIOT12"
 include(":app")
