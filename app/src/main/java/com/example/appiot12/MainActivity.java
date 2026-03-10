@@ -1,24 +1,29 @@
 package com.example.appiot12;
 // 📦 Activity inicial del sistema AguaSegura.
-// Es la pantalla de bienvenida: no hace lógica, solo redirige 👋💧
+// Pantalla de bienvenida + tareas de mantenimiento ligero 👋💧
 
-import android.content.Intent; // 🚪 Para cambiar de pantalla
-import android.os.Bundle; // 🎒 Datos del ciclo de vida
-import android.view.View; // 👆 Detectar clics
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.View;
 
-import androidx.activity.EdgeToEdge; // 📱 UI moderna sin bordes
-import androidx.appcompat.app.AppCompatActivity; // 🏛 Activity base
-import androidx.core.graphics.Insets; // 📐 Márgenes del sistema
+import androidx.activity.EdgeToEdge;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 /**
  * 🏠 MAIN ACTIVITY
  *
- * Explicado para un niño 👶:
- * 👉 Esta pantalla es como la puerta de entrada a una casa 🏡
- * 👉 Aquí no hacemos nada complicado
- * 👉 Solo mostramos bienvenida y enviamos al login 🔐
+ * Rol en la arquitectura:
+ * 👉 Pantalla de entrada
+ * 👉 No maneja lógica de negocio
+ * 👉 Ejecuta limpieza automática del historial (30 días)
+ *
+ * Principios:
+ * ✔ Simple
+ * ✔ Clara
+ * ✔ Sin sobrecargar responsabilidades
  */
 public class MainActivity extends AppCompatActivity {
 
@@ -26,14 +31,13 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // 📱 Activamos modo pantalla completa (edge-to-edge)
+        // 📱 Modo pantalla completa moderno
         EdgeToEdge.enable(this);
 
-        // 🎨 Cargamos el diseño visual de la pantalla principal
+        // 🎨 Layout principal
         setContentView(R.layout.activity_main);
 
-        // 🧩 Ajustamos la vista para que no quede debajo
-        // de la barra superior o inferior del celular
+        // 📐 Ajuste automático para barras del sistema
         ViewCompat.setOnApplyWindowInsetsListener(
                 findViewById(R.id.main),
                 (v, insets) -> {
@@ -41,7 +45,6 @@ public class MainActivity extends AppCompatActivity {
                     Insets systemBars =
                             insets.getInsets(WindowInsetsCompat.Type.systemBars());
 
-                    // 📏 Aplicamos los márgenes correctos
                     v.setPadding(
                             systemBars.left,
                             systemBars.top,
@@ -52,19 +55,24 @@ public class MainActivity extends AppCompatActivity {
                     return insets;
                 }
         );
+
+        // =========================
+        // 🧹 MANTENIMIENTO AUTOMÁTICO
+        // =========================
+        // Elimina eventos del historial con más de 30 días
+        // (sensores, pagos, compras, tanques antiguos)
+        HistorialService.limpiarHistorialAntiguo();
     }
 
     /**
      * ▶️ iniciar()
      *
-     * Método conectado al botón del XML:
+     * Conectado al botón del XML:
      * android:onClick="iniciar"
      *
-     * ¿Qué hace?
-     * 👉 Envía al usuario a la pantalla de inicio de sesión 🔐
+     * Redirige al login 🔐
      */
     public void iniciar(View view) {
         startActivity(new Intent(this, IniciarSesion.class));
-        // 🚀 Lanzamos la pantalla de login
     }
 }

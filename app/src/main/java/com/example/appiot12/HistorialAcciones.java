@@ -1,153 +1,190 @@
 package com.example.appiot12;
-// 📦 Pantalla de historial del proyecto Agua Segura.
-// Aquí se muestran las acciones recientes del usuario 📊🧾
 
-// ===== IMPORTS ANDROID =====
 import android.os.Bundle;
-import android.widget.ListView;
-import android.widget.Toast;
+import android.view.View;
+import android.widget.*;
 
 import androidx.appcompat.app.AppCompatActivity;
-// 🏛 Activity base estable
 
-// ===== IMPORTS FIREBASE =====
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
-// ☁️ Firebase Realtime Database
+import com.google.firebase.database.*;
 
-// ===== IMPORTS JAVA =====
-import java.util.ArrayList;
-import java.util.List;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * 📜 HistorialAcciones
- *
- * ¿Qué hace esta pantalla?
- * 👉 Muestra las acciones del usuario
- * 👉 Solo trae registros de los últimos 30 días
- * 👉 Usa un ListView con AccionAdapter
- *
- * Explicado para un niño:
- * 👉 Es como ver el cuaderno donde se anotan
- *    todas las cosas importantes que hiciste 📒🙂
+ * Muestra todas las acciones del sistema con filtro y exportación
  */
 public class HistorialAcciones extends AppCompatActivity {
 
-    // 📋 Lista visual
+    // UI
+    private Spinner spnFiltro;
     private ListView lvHistorial;
+    private Button btnPdf;
 
-    // 🗂️ Lista en memoria con las acciones
-    private final List<AccionLog> acciones = new ArrayList<>();
+    // Datos
+    private final List<HistorialEvento> eventos = new ArrayList<>();
+    private HistorialAdapter adapter;
 
-    // 🎨 Adaptador que convierte acciones → filas
-    private AccionAdapter adapter;
-
-    // ☁️ Referencia al historial en Firebase
+    // Firebase
     private DatabaseReference refHistorial;
+    private String uid;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_historial_acciones); // 🎨 Mostramos la pantalla
+        setContentView(R.layout.activity_historial_acciones);
 
-        // 🔗 Conectamos UI con el XML
-        inicializarVistas();
+        // Vincular UI
+        spnFiltro = findViewById(R.id.spnFiltro);
+        lvHistorial = findViewById(R.id.lvHistorial);
+        btnPdf = findViewById(R.id.btnPdf);
 
-        // 👤 Obtenemos UID del usuario
-        String uid = obtenerUidUsuario();
-
-        if (uid == null) {
-            Toast.makeText(this, "Usuario no autenticado ❌", Toast.LENGTH_SHORT).show();
+        if (FirebaseAuth.getInstance().getCurrentUser() == null) {
             finish();
             return;
         }
 
-        // ☁️ Apuntamos al historial del usuario
+        uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
         refHistorial = FirebaseDatabase.getInstance()
                 .getReference("usuarios")
                 .child(uid)
                 .child("historial");
 
-        // 🎨 Creamos el adaptador
-        adapter = new AccionAdapter(this, acciones);
+        adapter = new HistorialAdapter(this, eventos);
         lvHistorial.setAdapter(adapter);
 
-        // 📥 Cargamos historial
-        cargarHistorialUltimos30Dias();
+        configurarFiltro();
+        cargarHistorial(30); // por defecto 30 días
+
+        btnPdf.setOnClickListener(v -> exportarPdf());
     }
 
-    /**
-     * 🔗 Vincula el ListView con el XML
-     */
-    private void inicializarVistas() {
-        lvHistorial = findViewById(R.id.lvHistorial);
+    // =========================
+    // 🔽 FILTRO
+    // =========================
+    private void configurarFiltro() {
+
+        ArrayAdapter<CharSequence> filtroAdapter =
+                ArrayAdapter.createFromResource(
+                        this,
+                        R.array.filtro_historial,
+                        android.R.layout.simple_spinner_item
+                );
+
+        filtroAdapter.setDropDownViewResource(
+                android.R.layout.simple_spinner_dropdown_item
+        );
+
+        spnFiltro.setAdapter(filtroAdapter);
+
+        spnFiltro.setOnItemSelectedListener(
+                new AdapterView.OnItemSelectedListener() {
+
+                    @Override
+                    public void onItemSelected(
+                            AdapterView<?> parent,
+                            View view,
+                            int position,
+                            long id
+                    ) {
+                        if (position == 0) cargarHistorial(1);   // Hoy
+                        if (position == 1) cargarHistorial(7);   // 7 días
+                        if (position == 2) cargarHistorial(30);  // 30 días
+                    }
+
+                    @Override
+                    public void onNothingSelected(AdapterView<?> parent) {}
+                }
+        );
     }
 
-    /**
-     * 👤 Obtiene el UID del usuario autenticado
-     */
-    private String obtenerUidUsuario() {
-        if (FirebaseAuth.getInstance().getCurrentUser() == null) {
-            return null;
-        }
-        return FirebaseAuth.getInstance().getCurrentUser().getUid();
-    }
+    // =========================
+    // 📥 CARGAR HISTORIAL
+    // =========================
+    private void cargarHistorial(int dias) {
 
-    // =====================================================
-    // 📥 CARGAR HISTORIAL (ÚLTIMOS 30 DÍAS)
-    // =====================================================
-    private void cargarHistorialUltimos30Dias() {
+        long ahora = System.currentTimeMillis();
+        long limite = ahora - (dias * 24L * 60L * 60L * 1000L);
 
-        // 🧠 Calculamos la fecha de hace 30 días
-        long haceTreintaDias =
-                System.currentTimeMillis() - (30L * 24 * 60 * 60 * 1000);
-
-        // 🔍 Consultamos Firebase por timestamp
-        refHistorial
-                .orderByChild("timestamp")
-                .startAt(haceTreintaDias)
-                .addListenerForSingleValueEvent(new ValueEventListener() {
+        refHistorial.addListenerForSingleValueEvent(
+                new ValueEventListener() {
 
                     @Override
                     public void onDataChange(DataSnapshot snapshot) {
 
-                        acciones.clear(); // ♻️ Limpiamos lista
+                        eventos.clear();
 
-                        // 🔄 Recorremos cada acción
                         for (DataSnapshot s : snapshot.getChildren()) {
 
-                            AccionLog log = s.getValue(AccionLog.class);
+                            HistorialEvento e =
+                                    s.getValue(HistorialEvento.class);
 
-                            if (log != null) {
-                                acciones.add(log);
+                            if (e != null && e.fecha >= limite) {
+                                eventos.add(e);
                             }
                         }
 
-                        // 📭 Si no hay acciones recientes
-                        if (acciones.isEmpty()) {
-                            Toast.makeText(
-                                    HistorialAcciones.this,
-                                    "No hay acciones en los últimos 30 días 📭",
-                                    Toast.LENGTH_LONG
-                            ).show();
-                        }
+                        // Más reciente primero
+                        eventos.sort(
+                                (a, b) -> Long.compare(b.fecha, a.fecha)
+                        );
 
-                        // 🔄 Actualizamos la lista
                         adapter.notifyDataSetChanged();
                     }
 
                     @Override
-                    public void onCancelled(DatabaseError error) {
-                        Toast.makeText(
-                                HistorialAcciones.this,
-                                "Error al cargar historial ⚠️",
-                                Toast.LENGTH_SHORT
-                        ).show();
-                    }
-                });
+                    public void onCancelled(DatabaseError error) {}
+                }
+        );
+    }
+
+    // =========================
+    // 📄 EXPORTAR (TXT / BASE PDF)
+    // =========================
+    private void exportarPdf() {
+
+        try {
+            File file =
+                    new File(getExternalFilesDir(null), "historial.txt");
+
+            FileOutputStream fos = new FileOutputStream(file);
+
+            SimpleDateFormat sdf =
+                    new SimpleDateFormat(
+                            "dd/MM/yyyy HH:mm",
+                            Locale.getDefault()
+                    );
+
+            for (HistorialEvento e : eventos) {
+
+                String linea =
+                        "[" + e.tipo + "] " +
+                                e.descripcion + " - " +
+                                sdf.format(new Date(e.fecha)) + "\n";
+
+                fos.write(linea.getBytes());
+            }
+
+            fos.close();
+
+            Toast.makeText(
+                    this,
+                    "Historial exportado ✔️\n" +
+                            file.getAbsolutePath(),
+                    Toast.LENGTH_LONG
+            ).show();
+
+        } catch (Exception ex) {
+            Toast.makeText(
+                    this,
+                    "Error al exportar historial ❌",
+                    Toast.LENGTH_LONG
+            ).show();
+        }
     }
 }

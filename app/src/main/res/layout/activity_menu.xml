@@ -9,12 +9,14 @@
     android:background="@mipmap/fondo"
     tools:context=".Menu">
 
-    <!-- NAV SUPERIOR -->
+    <!-- ========================= -->
+    <!-- 🔝 BARRA SUPERIOR USUARIO -->
+    <!-- ========================= -->
     <LinearLayout
         android:id="@+id/navCuenta"
         android:layout_width="0dp"
-        android:layout_height="60dp"
-        android:padding="12dp"
+        android:layout_height="64dp"
+        android:padding="16dp"
         android:orientation="horizontal"
         android:gravity="center_vertical"
         android:background="#33000000"
@@ -25,8 +27,8 @@
 
         <ImageView
             android:id="@+id/ivUsuario"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
             android:src="@mipmap/ic_launcher"
             android:contentDescription="Usuario" />
 
@@ -37,127 +39,140 @@
             android:layout_marginStart="12dp"
             android:text="correo@ejemplo.com"
             android:textSize="16sp"
-            android:textColor="#FFFFFF" />
+            android:textColor="#FFFFFF"
+            android:textStyle="bold" />
     </LinearLayout>
 
-    <!-- TÍTULO -->
+    <!-- ========================= -->
+    <!-- 🏷️ TÍTULO -->
+    <!-- ========================= -->
     <TextView
         android:id="@+id/tvTitulo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Menú"
-        android:textSize="48sp"
-        android:textColor="#000"
-        android:layout_marginTop="32dp"
+        android:text="Menú Principal"
+        android:textSize="34sp"
+        android:textStyle="bold"
+        android:textColor="#263238"
+        android:layout_marginTop="24dp"
         app:layout_constraintTop_toBottomOf="@id/navCuenta"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
-    <!-- ========================== -->
-    <!--      CUADRÍCULA 2×2        -->
-    <!-- ========================== -->
-
-    <!-- FILA 1 BOTÓN: LISTA -->
+    <!-- ========================= -->
+    <!-- 📦 BOTONES – FILA 1 -->
+    <!-- ========================= -->
     <Button
         android:id="@+id/btnLista"
         android:layout_width="0dp"
-        android:layout_height="120dp"
-        android:text="Lista"
-        android:textColor="#fff"
-        android:background="#1E88E5"
+        android:layout_height="110dp"
+        android:text="Lista de Tanques"
+        android:textColor="#FFFFFF"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:background="#1565C0"
         android:onClick="lista"
-        android:textSize="18sp"
-        android:layout_margin="12dp"
+        android:layout_margin="10dp"
         app:layout_constraintTop_toBottomOf="@id/tvTitulo"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toStartOf="@id/btnAgregar"/>
 
-    <!-- FILA 1 BOTÓN: AGREGAR -->
     <Button
         android:id="@+id/btnAgregar"
         android:layout_width="0dp"
-        android:layout_height="120dp"
-        android:text="Agregar"
-        android:textColor="#fff"
-        android:background="#43A047"
+        android:layout_height="110dp"
+        android:text="Agregar Tanque"
+        android:textColor="#FFFFFF"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:background="#2E7D32"
         android:onClick="agregar"
-        android:textSize="18sp"
-        android:layout_margin="12dp"
+        android:layout_margin="10dp"
         app:layout_constraintTop_toBottomOf="@id/tvTitulo"
         app:layout_constraintStart_toEndOf="@id/btnLista"
         app:layout_constraintEnd_toEndOf="parent"/>
 
-    <!-- FILA 2 BOTÓN: MIS PAGOS -->
+    <!-- ========================= -->
+    <!-- 💳 BOTONES – FILA 2 -->
+    <!-- ========================= -->
     <Button
         android:id="@+id/btnPagosUsuario"
         android:layout_width="0dp"
-        android:layout_height="120dp"
+        android:layout_height="110dp"
         android:text="Mis Pagos"
-        android:textColor="#fff"
-        android:background="#00796B"
+        android:textColor="#FFFFFF"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:background="#00695C"
         android:onClick="pagos"
-        android:textSize="18sp"
-        android:layout_margin="12dp"
+        android:layout_margin="10dp"
         app:layout_constraintTop_toBottomOf="@id/btnLista"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toStartOf="@id/btnComprarDispositivo"/>
 
-    <!-- FILA 2 BOTÓN: COMPRAR DISPOSITIVO -->
     <Button
         android:id="@+id/btnComprarDispositivo"
         android:layout_width="0dp"
-        android:layout_height="120dp"
+        android:layout_height="110dp"
         android:text="Comprar Dispositivo"
-        android:textColor="#fff"
+        android:textColor="#FFFFFF"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:background="#283593"
         android:onClick="comprarDispositivo"
-        android:textSize="18sp"
-        android:background="#303F9F"
-        android:layout_margin="12dp"
+        android:layout_margin="10dp"
         app:layout_constraintTop_toBottomOf="@id/btnAgregar"
         app:layout_constraintStart_toEndOf="@id/btnPagosUsuario"
         app:layout_constraintEnd_toEndOf="parent"/>
 
-    <!-- FILA 3 BOTÓN: ASOCIAR -->
+    <!-- ========================= -->
+    <!-- 🔗 BOTONES – FILA 3 -->
+    <!-- ========================= -->
     <Button
         android:id="@+id/btnAsociarDispositivo"
         android:layout_width="0dp"
-        android:layout_height="120dp"
+        android:layout_height="110dp"
         android:text="Asociar Dispositivo"
-        android:textColor="#fff"
+        android:textColor="#FFFFFF"
+        android:textSize="16sp"
+        android:textStyle="bold"
         android:background="#6A1B9A"
         android:onClick="asociarDispositivo"
-        android:textSize="18sp"
-        android:layout_margin="12dp"
+        android:layout_margin="10dp"
         app:layout_constraintTop_toBottomOf="@id/btnPagosUsuario"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toStartOf="@id/btnCentroPagos"/>
 
-    <!-- FILA 3 BOTÓN: CENTRO DE PAGOS -->
     <Button
         android:id="@+id/btnCentroPagos"
         android:layout_width="0dp"
-        android:layout_height="120dp"
+        android:layout_height="110dp"
         android:text="Centro de Pagos"
-        android:textColor="#fff"
+        android:textColor="#FFFFFF"
+        android:textSize="16sp"
+        android:textStyle="bold"
         android:background="#00838F"
         android:onClick="centroPagos"
-        android:textSize="18sp"
-        android:layout_margin="12dp"
+        android:layout_margin="10dp"
         app:layout_constraintTop_toBottomOf="@id/btnComprarDispositivo"
         app:layout_constraintStart_toEndOf="@id/btnAsociarDispositivo"
         app:layout_constraintEnd_toEndOf="parent"/>
 
-    <!-- FILA FINAL: SALIR (CENTRADO) -->
+    <!-- ========================= -->
+    <!-- 🚪 SALIR -->
+    <!-- ========================= -->
     <Button
         android:id="@+id/btnSalir"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Salir"
+        android:text="Cerrar Sesión"
         android:textColor="#FFFFFF"
-        android:textSize="18sp"
-        android:background="#A33D60"
-        android:padding="12dp"
-        android:layout_marginTop="16dp"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:background="#C62828"
+        android:paddingHorizontal="24dp"
+        android:paddingVertical="12dp"
+        android:layout_marginTop="24dp"
         app:layout_constraintTop_toBottomOf="@id/btnCentroPagos"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>

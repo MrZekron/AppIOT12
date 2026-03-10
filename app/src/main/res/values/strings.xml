@@ -12,4 +12,9 @@
         <item>12 cuotas</item>
     </string-array>
 
+    <string-array name="filtro_historial">
+        <item>Hoy</item>
+        <item>Últimos 7 días</item>
+        <item>Últimos 30 días</item>
+    </string-array>
 </resources>
