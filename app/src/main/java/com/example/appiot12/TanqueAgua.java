@@ -1,39 +1,48 @@
 package com.example.appiot12;
-// 📦 Modelo que representa un tanque dentro del ecosistema AguaSegura.
-// Contiene SOLO metadata del tanque + referencia al dispositivo asociado.
 
 /**
- * ⭐ MODELO TANQUE DE AGUA ⭐
+ * 📦 Modelo que representa un tanque dentro del ecosistema AguaSegura.
  *
- * Rol en la arquitectura:
- * 👉 Representar el tanque como entidad lógica
- * 👉 NO manejar sensores (eso es responsabilidad de Dispositivo)
- * 👉 Servir como nodo estable en Firebase
+ * Responsabilidades de esta clase:
+ * - Representar la entidad lógica del tanque
+ * - Guardar su metadata principal
+ * - Mantener referencia al dispositivo asociado
+ * - Guardar estados de mantención
+ * - Entregar una prioridad para ordenar listas
  *
- * Principio aplicado:
- * ✔ Single Responsibility (SRP)
+ * Esta clase NO debe manejar sensores directamente.
+ * Esa responsabilidad sigue siendo del dispositivo.
  */
 public class TanqueAgua {
 
     // ======================================================
-    // 🔑 ATRIBUTOS DEL MODELO
+    // 🔑 ATRIBUTOS PRINCIPALES DEL TANQUE
     // ======================================================
 
-    private String idTanque;        // 🆔 ID único (key Firebase)
-    private String nombre;          // 🏷 Nombre asignado por el usuario
-    private String capacidad;       // 💧 Capacidad total en litros (String validado)
-    private String color;           // 🎨 Color físico del tanque
-    private String direccion;       // 📍 Dirección física (OPCIONAL)
-    private String idDispositivo;   // 📡 Dispositivo asociado (null = libre)
+    private String idTanque;              // 🆔 ID único del tanque (Firebase key)
+    private String nombre;                // 🏷 Nombre del tanque
+    private String capacidad;             // 💧 Capacidad total en litros
+    private String color;                 // 🎨 Color físico del tanque
+    private String direccion;             // 📍 Dirección física del tanque
+    private String idDispositivo;         // 📡 ID del dispositivo asociado
+
+    // ======================================================
+    // 🛠 ATRIBUTOS DE MANTENCIÓN
+    // ======================================================
+
+    private boolean mantencionTanque;         // true = el tanque necesita mantención
+    private boolean mantencionDispositivo;    // true = el dispositivo necesita mantención
 
     // ======================================================
     // 🧱 CONSTRUCTOR VACÍO
-    // Requerido obligatoriamente por Firebase
+    // Requerido por Firebase para deserializar objetos
     // ======================================================
-    public TanqueAgua() {}
+    public TanqueAgua() {
+    }
 
     // ======================================================
-    // 🏗 CONSTRUCTOR COMPLETO
+    // 🏗 CONSTRUCTOR PRINCIPAL
+    // Crea un tanque con valores por defecto para mantención
     // ======================================================
     public TanqueAgua(String idTanque,
                       String nombre,
@@ -46,12 +55,39 @@ public class TanqueAgua {
         this.nombre = nombre;
         this.capacidad = capacidad;
         this.color = color;
-        this.direccion = direccion;       // ✅ puede ser null o ""
+        this.direccion = direccion;
         this.idDispositivo = idDispositivo;
+
+        // Por defecto, un tanque nuevo parte sin mantenciones pendientes
+        this.mantencionTanque = false;
+        this.mantencionDispositivo = false;
     }
 
     // ======================================================
-    // 📌 GETTERS & SETTERS
+    // 🏗 CONSTRUCTOR COMPLETO
+    // Permite crear el tanque incluyendo estados de mantención
+    // ======================================================
+    public TanqueAgua(String idTanque,
+                      String nombre,
+                      String capacidad,
+                      String color,
+                      String direccion,
+                      String idDispositivo,
+                      boolean mantencionTanque,
+                      boolean mantencionDispositivo) {
+
+        this.idTanque = idTanque;
+        this.nombre = nombre;
+        this.capacidad = capacidad;
+        this.color = color;
+        this.direccion = direccion;
+        this.idDispositivo = idDispositivo;
+        this.mantencionTanque = mantencionTanque;
+        this.mantencionDispositivo = mantencionDispositivo;
+    }
+
+    // ======================================================
+    // 📌 GETTERS & SETTERS PRINCIPALES
     // ======================================================
 
     public String getIdTanque() {
@@ -86,14 +122,16 @@ public class TanqueAgua {
         this.color = color;
     }
 
-    // =========================
-    // 📍 DIRECCIÓN (OPCIONAL)
-    // =========================
-
+    /**
+     * Devuelve la dirección del tanque.
+     */
     public String getDireccion() {
         return direccion;
     }
 
+    /**
+     * Actualiza la dirección del tanque.
+     */
     public void setDireccion(String direccion) {
         this.direccion = direccion;
     }
@@ -107,19 +145,51 @@ public class TanqueAgua {
     }
 
     // ======================================================
-    // 🧠 MÉTODOS DE UTILIDAD (NEGOCIO LIGERO)
+    // 🛠 GETTERS & SETTERS DE MANTENCIÓN
     // ======================================================
 
     /**
-     * ✔ Indica si el tanque tiene un dispositivo asignado
+     * Indica si el tanque necesita mantención.
      */
-    public boolean tieneDispositivo() {
-        return idDispositivo != null && !idDispositivo.isEmpty();
+    public boolean isMantencionTanque() {
+        return mantencionTanque;
     }
 
     /**
-     * ✔ Devuelve la capacidad como número
-     * Evita parseos repetidos en adapters/controllers
+     * Marca si el tanque necesita mantención.
+     */
+    public void setMantencionTanque(boolean mantencionTanque) {
+        this.mantencionTanque = mantencionTanque;
+    }
+
+    /**
+     * Indica si el dispositivo necesita mantención.
+     */
+    public boolean isMantencionDispositivo() {
+        return mantencionDispositivo;
+    }
+
+    /**
+     * Marca si el dispositivo necesita mantención.
+     */
+    public void setMantencionDispositivo(boolean mantencionDispositivo) {
+        this.mantencionDispositivo = mantencionDispositivo;
+    }
+
+    // ======================================================
+    // 🧠 MÉTODOS DE NEGOCIO / UTILIDAD
+    // ======================================================
+
+    /**
+     * Indica si el tanque tiene un dispositivo asociado.
+     */
+    public boolean tieneDispositivo() {
+        return idDispositivo != null && !idDispositivo.trim().isEmpty();
+    }
+
+    /**
+     * Devuelve la capacidad como número.
+     * Útil para evitar parseos repetidos en adapters o controllers.
      */
     public double getCapacidadNumerica() {
         try {
@@ -130,11 +200,84 @@ public class TanqueAgua {
     }
 
     /**
-     * ✔ Indica si el tanque tiene dirección registrada
-     * Útil para mapas, filtros o reportes
+     * Indica si el tanque tiene dirección válida.
      */
     public boolean tieneDireccion() {
         return direccion != null && !direccion.trim().isEmpty();
+    }
+
+    /**
+     * Activa el estado de mantención del tanque.
+     */
+    public void activarMantencionTanque() {
+        this.mantencionTanque = true;
+    }
+
+    /**
+     * Desactiva el estado de mantención del tanque.
+     */
+    public void desactivarMantencionTanque() {
+        this.mantencionTanque = false;
+    }
+
+    /**
+     * Activa el estado de mantención del dispositivo.
+     */
+    public void activarMantencionDispositivo() {
+        this.mantencionDispositivo = true;
+    }
+
+    /**
+     * Desactiva el estado de mantención del dispositivo.
+     */
+    public void desactivarMantencionDispositivo() {
+        this.mantencionDispositivo = false;
+    }
+
+    /**
+     * Devuelve true si el tanque o el dispositivo necesitan mantención.
+     */
+    public boolean necesitaAlgunaMantencion() {
+        return mantencionTanque || mantencionDispositivo;
+    }
+
+    /**
+     * Calcula una prioridad para ordenar la lista de tanques.
+     *
+     * Regla:
+     * - 3 = tanque y dispositivo necesitan mantención
+     * - 2 = solo tanque necesita mantención
+     * - 1 = solo dispositivo necesita mantención
+     * - 0 = ninguno necesita mantención
+     *
+     * Mientras mayor sea el valor, más arriba debería aparecer en la lista.
+     */
+    public int getPrioridadMantencion() {
+        int prioridad = 0;
+
+        if (mantencionTanque) {
+            prioridad += 2;
+        }
+
+        if (mantencionDispositivo) {
+            prioridad += 1;
+        }
+
+        return prioridad;
+    }
+
+    /**
+     * Devuelve una descripción corta del estado de mantención del tanque.
+     */
+    public String getEstadoMantencionTanqueTexto() {
+        return mantencionTanque ? "Pendiente" : "Al día";
+    }
+
+    /**
+     * Devuelve una descripción corta del estado de mantención del dispositivo.
+     */
+    public String getEstadoMantencionDispositivoTexto() {
+        return mantencionDispositivo ? "Pendiente" : "Al día";
     }
 
     // ======================================================
@@ -142,7 +285,7 @@ public class TanqueAgua {
     // ======================================================
     @Override
     public String toString() {
-        return nombre != null && !nombre.isEmpty()
+        return nombre != null && !nombre.trim().isEmpty()
                 ? nombre
                 : "Tanque sin nombre";
     }
