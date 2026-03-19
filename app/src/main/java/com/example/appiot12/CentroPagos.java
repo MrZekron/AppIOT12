@@ -1,7 +1,7 @@
 package com.example.appiot12;
-// 📦 Centro de Pagos del usuario.
-// Aquí se pagan cuotas y, si corresponde, se CREA el dispositivo 🤖💳
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.ListView;
@@ -15,27 +15,52 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.*;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.database.GenericTypeIndicator;
 
 import java.util.ArrayList;
-import java.util.UUID;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
 
+/**
+ * Centro de pagos del usuario.
+ *
+ * Responsabilidades:
+ * - listar pagos registrados
+ * - seleccionar un pago
+ * - pagar una cuota
+ * - pagar todo
+ * - abrir checkout externo si existe link
+ *
+ * Esta versión deja listo el terreno para integrar Mercado Pago.
+ */
 public class CentroPagos extends AppCompatActivity {
 
+    // =========================
     // UI
-    private TextView tvUsuarioPago, tvResumenDeuda;
+    // =========================
+    private TextView tvUsuarioPago;
+    private TextView tvResumenDeuda;
     private ListView listPagos;
-    private Button btnPagarCuota, btnPagarTotal;
+    private Button btnPagarCuota;
+    private Button btnPagarTotal;
 
-    // Datos
+    // =========================
+    // DATOS
+    // =========================
     private final ArrayList<Pago> listaPagos = new ArrayList<>();
     private PagoAdapter adapter;
     private Pago pagoSeleccionado;
 
-    // Firebase
-    private DatabaseReference refUsuario;
+    // =========================
+    // FIREBASE
+    // =========================
     private DatabaseReference refPagos;
-    private DatabaseReference refDispositivos;
     private String uid;
 
     @Override
@@ -50,60 +75,88 @@ public class CentroPagos extends AppCompatActivity {
             return insets;
         });
 
-        // Vistas
-        tvUsuarioPago = findViewById(R.id.tvUsuarioPago);
-        tvResumenDeuda = findViewById(R.id.tvResumenDeuda);
-        listPagos = findViewById(R.id.listPagos);
-        btnPagarCuota = findViewById(R.id.btnPagarCuota);
-        btnPagarTotal = findViewById(R.id.btnPagarTotal);
-
         if (FirebaseAuth.getInstance().getCurrentUser() == null) {
-            Toast.makeText(this, "Usuario no autenticado ❌", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Usuario no autenticado", Toast.LENGTH_LONG).show();
             finish();
             return;
         }
 
         uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
-        tvUsuarioPago.setText(
-                "Usuario: " + FirebaseAuth.getInstance().getCurrentUser().getEmail()
-        );
+        inicializarVistas();
+        configurarFirebase();
+        configurarLista();
+        configurarBotones();
+        cargarPagos();
+    }
 
-        refUsuario = FirebaseDatabase.getInstance()
-                .getReference("usuarios")
-                .child(uid);
+    // =========================
+    // INICIALIZAR UI
+    // =========================
+    private void inicializarVistas() {
+        tvUsuarioPago = findViewById(R.id.tvUsuarioPago);
+        tvResumenDeuda = findViewById(R.id.tvResumenDeuda);
+        listPagos = findViewById(R.id.listPagos);
+        btnPagarCuota = findViewById(R.id.btnPagarCuota);
+        btnPagarTotal = findViewById(R.id.btnPagarTotal);
 
-        refPagos = refUsuario.child("pagos");
-        refDispositivos = refUsuario.child("dispositivos");
+        String email = FirebaseAuth.getInstance().getCurrentUser().getEmail();
+        tvUsuarioPago.setText("Usuario: " + (email == null ? "" : email));
 
         adapter = new PagoAdapter(this, listaPagos);
         listPagos.setAdapter(adapter);
-
-        listPagos.setOnItemClickListener((parent, view, position, id) -> {
-            pagoSeleccionado = listaPagos.get(position);
-            Toast.makeText(this, "Pago seleccionado ✔️", Toast.LENGTH_SHORT).show();
-        });
-
-        cargarPagos();
-        configurarBotones();
     }
 
-    // =====================================================
-    // 📥 CARGAR PAGOS
-    // =====================================================
-    private void cargarPagos() {
+    // =========================
+    // FIREBASE
+    // =========================
+    private void configurarFirebase() {
+        refPagos = FirebaseDatabase.getInstance()
+                .getReference("usuarios")
+                .child(uid)
+                .child("pagos");
+    }
 
+    // =========================
+    // CONFIGURAR LISTA
+    // =========================
+    private void configurarLista() {
+        listPagos.setOnItemClickListener((parent, view, position, id) -> {
+            pagoSeleccionado = listaPagos.get(position);
+
+            String nombre = pagoSeleccionado.getNombreProducto();
+            if (nombre == null || nombre.trim().isEmpty()) {
+                nombre = "Dispositivo";
+            }
+
+            Toast.makeText(
+                    this,
+                    "Seleccionado: " + nombre,
+                    Toast.LENGTH_SHORT
+            ).show();
+        });
+    }
+
+    // =========================
+    // CARGAR PAGOS
+    // =========================
+    private void cargarPagos() {
         refPagos.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot snapshot) {
-
                 listaPagos.clear();
                 int deudaTotal = 0;
 
                 for (DataSnapshot s : snapshot.getChildren()) {
+                    Pago pago = mapearPagoSeguro(s);
 
-                    Pago pago = s.getValue(Pago.class);
-                    if (pago == null) continue;
+                    if (pago == null) {
+                        continue;
+                    }
+
+                    if (pago.getIdPago() == null || pago.getIdPago().trim().isEmpty()) {
+                        pago.setIdPago(s.getKey());
+                    }
 
                     listaPagos.add(pago);
 
@@ -112,130 +165,220 @@ public class CentroPagos extends AppCompatActivity {
                     }
                 }
 
-                tvResumenDeuda.setText("Deuda total: $" + deudaTotal);
+                tvResumenDeuda.setText(String.format(
+                        Locale.getDefault(),
+                        "Deuda total: $%d",
+                        deudaTotal
+                ));
+
                 adapter.notifyDataSetChanged();
+
+                if (listaPagos.isEmpty()) {
+                    Toast.makeText(
+                            CentroPagos.this,
+                            "No tienes pagos registrados",
+                            Toast.LENGTH_LONG
+                    ).show();
+                }
             }
 
             @Override
             public void onCancelled(DatabaseError error) {
-                Toast.makeText(CentroPagos.this,
-                        "Error al leer pagos ❌",
-                        Toast.LENGTH_LONG).show();
+                Toast.makeText(
+                        CentroPagos.this,
+                        "Error al leer pagos: " + error.getMessage(),
+                        Toast.LENGTH_LONG
+                ).show();
             }
         });
     }
 
-    // =====================================================
-    // ⚙️ BOTONES
-    // =====================================================
+    // =========================
+    // BOTONES
+    // =========================
     private void configurarBotones() {
 
-        // ➗ PAGAR UNA CUOTA
         btnPagarCuota.setOnClickListener(v -> {
+            if (!validarPagoSeleccionado()) {
+                return;
+            }
 
-            if (!pagoValidoSeleccionado()) return;
+            if (pagoSeleccionado.isPagado()) {
+                Toast.makeText(this, "Este pago ya está completado", Toast.LENGTH_SHORT).show();
+                return;
+            }
 
-            int valorCuota =
-                    pagoSeleccionado.getPrecioTotal()
-                            / pagoSeleccionado.getCuotasTotales();
-
-            pagoSeleccionado.setCuotasPagadas(
-                    pagoSeleccionado.getCuotasPagadas() + 1
-            );
-
-            pagoSeleccionado.setSaldoPendiente(
-                    pagoSeleccionado.getSaldoPendiente() - valorCuota
-            );
-
-            finalizarPagoSiCorresponde();
+            // Si existe link real de checkout, lo abrimos.
+            // Si no existe, por ahora dejamos una actualización local demo.
+            if (tieneCheckoutExterno(pagoSeleccionado)) {
+                abrirCheckoutExterno(pagoSeleccionado.getCheckoutUrl());
+                Toast.makeText(this, "Abriendo pago de cuota...", Toast.LENGTH_SHORT).show();
+            } else {
+                pagoSeleccionado.pagarUnaCuota();
+                guardarPagoActualizado("Cuota pagada correctamente");
+            }
         });
 
-        // 💥 PAGAR TODO
         btnPagarTotal.setOnClickListener(v -> {
+            if (!validarPagoSeleccionado()) {
+                return;
+            }
 
-            if (!pagoValidoSeleccionado()) return;
+            if (pagoSeleccionado.isPagado()) {
+                Toast.makeText(this, "Este pago ya está completado", Toast.LENGTH_SHORT).show();
+                return;
+            }
 
-            pagoSeleccionado.setCuotasPagadas(
-                    pagoSeleccionado.getCuotasTotales()
-            );
-
-            pagoSeleccionado.setSaldoPendiente(0);
-
-            finalizarPagoSiCorresponde();
+            if (tieneCheckoutExterno(pagoSeleccionado)) {
+                abrirCheckoutExterno(pagoSeleccionado.getCheckoutUrl());
+                Toast.makeText(this, "Abriendo pago total...", Toast.LENGTH_SHORT).show();
+            } else {
+                pagoSeleccionado.pagarTodo();
+                guardarPagoActualizado("Pago completado");
+            }
         });
     }
 
-    // =====================================================
-    // ✅ VALIDACIONES
-    // =====================================================
-    private boolean pagoValidoSeleccionado() {
-
+    // =========================
+    // VALIDACIÓN
+    // =========================
+    private boolean validarPagoSeleccionado() {
         if (pagoSeleccionado == null) {
-            Toast.makeText(this,
-                    "Seleccione un pago primero ☝️",
-                    Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Seleccione un pago primero", Toast.LENGTH_LONG).show();
             return false;
         }
 
-        if (pagoSeleccionado.isPagado()) {
-            Toast.makeText(this,
-                    "Este pago ya está completado ✔️",
-                    Toast.LENGTH_SHORT).show();
+        if (pagoSeleccionado.getIdPago() == null || pagoSeleccionado.getIdPago().trim().isEmpty()) {
+            Toast.makeText(this, "El pago seleccionado no tiene ID válido", Toast.LENGTH_LONG).show();
             return false;
         }
 
         return true;
     }
 
-    // =====================================================
-    // 🧠 LÓGICA CLAVE: CREAR DISPOSITIVO SI SE PAGÓ
-    // =====================================================
-    private void finalizarPagoSiCorresponde() {
-
-        // Si el pago quedó COMPLETADO y aún no tiene dispositivo
-        if (pagoSeleccionado.isPagado()
-                && pagoSeleccionado.getIdDispositivo() == null) {
-
-            String idDispositivo = UUID.randomUUID().toString();
-
-            Dispositivo dispositivo = new Dispositivo(
-                    idDispositivo,
-                    7.0,
-                    500.0,
-                    1.0,
-                    1000.0
-            );
-
-            // Guardamos el dispositivo
-            refDispositivos.child(idDispositivo).setValue(dispositivo);
-
-            // Asociamos el dispositivo al pago
-            pagoSeleccionado.setIdDispositivo(idDispositivo);
-
-            Toast.makeText(this,
-                    "Pago completado. Dispositivo creado 🤖✅",
-                    Toast.LENGTH_LONG).show();
-        }
-
-        guardarPagoActualizado();
-    }
-
-    // =====================================================
-    // 💾 GUARDAR PAGO
-    // =====================================================
-    private void guardarPagoActualizado() {
+    // =========================
+    // GUARDAR PAGO
+    // =========================
+    private void guardarPagoActualizado(String mensajeExito) {
+        pagoSeleccionado.setUltimaActualizacion(System.currentTimeMillis());
 
         refPagos.child(pagoSeleccionado.getIdPago())
                 .setValue(pagoSeleccionado)
-                .addOnSuccessListener(a ->
-                        Toast.makeText(this,
-                                "Pago actualizado ☁️",
-                                Toast.LENGTH_SHORT).show()
-                )
+                .addOnSuccessListener(unused -> {
+                    Toast.makeText(this, mensajeExito, Toast.LENGTH_LONG).show();
+
+                    // Registrar en historial
+                    HistorialService.registrarPago(
+                            pagoSeleccionado.getPrecioTotal() - pagoSeleccionado.getSaldoPendiente(),
+                            pagoSeleccionado.getCuotasPagadas()
+                    );
+                })
                 .addOnFailureListener(e ->
-                        Toast.makeText(this,
-                                "Error al guardar ❌",
-                                Toast.LENGTH_LONG).show()
+                        Toast.makeText(
+                                this,
+                                "Error al actualizar pago: " + e.getMessage(),
+                                Toast.LENGTH_LONG
+                        ).show()
                 );
+    }
+
+    // =========================
+    // CHECKOUT EXTERNO
+    // =========================
+    private boolean tieneCheckoutExterno(Pago pago) {
+        return pago.getCheckoutUrl() != null && !pago.getCheckoutUrl().trim().isEmpty();
+    }
+
+    private void abrirCheckoutExterno(String url) {
+        try {
+            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+            startActivity(intent);
+        } catch (Exception e) {
+            Toast.makeText(this, "No se pudo abrir el link de pago", Toast.LENGTH_LONG).show();
+        }
+    }
+
+    // =========================
+    // MAPEO SEGURO DESDE FIREBASE
+    // =========================
+    private Pago mapearPagoSeguro(DataSnapshot snapshot) {
+        try {
+            Pago pago = snapshot.getValue(Pago.class);
+            if (pago != null) {
+                return pago;
+            }
+        } catch (Exception ignored) {
+        }
+
+        // fallback por si los datos vienen desordenados o antiguos
+        try {
+            GenericTypeIndicator<HashMap<String, Object>> t =
+                    new GenericTypeIndicator<HashMap<String, Object>>() {};
+            Map<String, Object> raw = snapshot.getValue(t);
+
+            if (raw == null) {
+                return null;
+            }
+
+            Pago pago = new Pago();
+            pago.setIdPago(snapshot.getKey());
+            pago.setIdTanque(asString(raw.get("idTanque")));
+            pago.setIdDispositivo(asString(raw.get("idDispositivo")));
+            pago.setNombreProducto(asString(raw.get("nombreProducto")));
+            pago.setPrecioTotal(asInt(raw.get("precioTotal")));
+            pago.setCuotasTotales(Math.max(1, asInt(raw.get("cuotasTotales"))));
+            pago.setCuotasPagadas(asInt(raw.get("cuotasPagadas")));
+            pago.setSaldoPendiente(asInt(raw.get("saldoPendiente")));
+            pago.setPagado(asBoolean(raw.get("pagado")));
+            pago.setEstadoPago(asString(raw.get("estadoPago")));
+            pago.setEstadoEnvio(asString(raw.get("estadoEnvio")));
+            pago.setCheckoutUrl(asString(raw.get("checkoutUrl")));
+            pago.setMpPreferenceId(asString(raw.get("mpPreferenceId")));
+            pago.setMpPaymentId(asString(raw.get("mpPaymentId")));
+            pago.setFechaCreacion(asLong(raw.get("fechaCreacion")));
+            pago.setUltimaActualizacion(asLong(raw.get("ultimaActualizacion")));
+            return pago;
+
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private String asString(Object value) {
+        return value == null ? "" : String.valueOf(value);
+    }
+
+    private int asInt(Object value) {
+        try {
+            if (value == null) return 0;
+            if (value instanceof Long) return ((Long) value).intValue();
+            if (value instanceof Double) return ((Double) value).intValue();
+            if (value instanceof Integer) return (Integer) value;
+            return Integer.parseInt(String.valueOf(value));
+        } catch (Exception e) {
+            return 0;
+        }
+    }
+
+    private long asLong(Object value) {
+        try {
+            if (value == null) return 0L;
+            if (value instanceof Long) return (Long) value;
+            if (value instanceof Double) return ((Double) value).longValue();
+            if (value instanceof Integer) return ((Integer) value).longValue();
+            return Long.parseLong(String.valueOf(value));
+        } catch (Exception e) {
+            return 0L;
+        }
+    }
+
+    private boolean asBoolean(Object value) {
+        try {
+            if (value == null) return false;
+            if (value instanceof Boolean) return (Boolean) value;
+            return Boolean.parseBoolean(String.valueOf(value));
+        } catch (Exception e) {
+            return false;
+        }
     }
 }

@@ -1,146 +1,121 @@
 package com.example.appiot12;
-// 📦 Adaptador que convierte objetos Pago en filas visibles (item_pago.xml)
-// Es el traductor visual del dinero 💸➡️👀
 
 import android.content.Context;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
 /**
- * ⭐ ADAPTADOR DE PAGOS ⭐
+ * Adaptador para mostrar pagos en ListView.
  *
- * Explicado para un niño 👶:
- * 👉 Tenemos muchos pagos guardados
- * 👉 El ListView no los entiende
- * 👉 Este adaptador se los explica y los dibuja en pantalla 🎨
- *
- * Muestra por cada pago:
- *   ✔ Qué es
- *   ✔ Cuánto falta por pagar
- *   ✔ Cuándo se compró
- *   ✔ Si ya está pagado o no
+ * Muestra:
+ * - nombre del producto
+ * - resumen de cuotas
+ * - saldo pendiente
+ * - estado del pago
+ * - estado de envío
  */
 public class PagoAdapter extends ArrayAdapter<Pago> {
 
-    private final Context context;      // 🌍 Dónde se dibuja la lista
-    private final List<Pago> pagos;     // 💰 Lista de pagos
-
     public PagoAdapter(Context context, List<Pago> pagos) {
-        super(context, R.layout.item_pago, pagos);
-        this.context = context;
-        this.pagos = pagos;
+        super(context, 0, pagos);
     }
 
-    @NonNull
     @Override
-    public View getView(int position,
-                        @Nullable View convertView,
-                        @NonNull ViewGroup parent) {
+    public View getView(int position, View convertView, ViewGroup parent) {
+        Pago pago = getItem(position);
 
-        ViewHolder holder;
-
-        // ============================================================
-        // ♻️ VIEW HOLDER PATTERN (rendimiento)
-        // ============================================================
         if (convertView == null) {
-            // No hay vista reciclable → crear una nueva
-            convertView = LayoutInflater.from(context)
-                    .inflate(R.layout.item_pago, parent, false);
-
-            holder = new ViewHolder();
-            holder.tvDescripcion = convertView.findViewById(R.id.tvDescripcionPago);
-            holder.tvMonto = convertView.findViewById(R.id.tvMontoPago);
-            holder.tvFecha = convertView.findViewById(R.id.tvFechaPago);
-            holder.tvEstado = convertView.findViewById(R.id.tvEstadoPago);
-
-            convertView.setTag(holder);
-        } else {
-            // Reutilizamos vista existente (rápido y eficiente 🚀)
-            holder = (ViewHolder) convertView.getTag();
+            convertView = LayoutInflater.from(getContext())
+                    .inflate(android.R.layout.simple_list_item_2, parent, false);
         }
 
-        // ============================================================
-        // 📦 OBTENER PAGO ACTUAL
-        // ============================================================
-        Pago pago = pagos.get(position);
+        TextView text1 = convertView.findViewById(android.R.id.text1);
+        TextView text2 = convertView.findViewById(android.R.id.text2);
 
         if (pago == null) {
-            // Caso extremadamente raro, pero seguro 🛡️
-            holder.tvDescripcion.setText("Pago no disponible");
-            holder.tvMonto.setText("-");
-            holder.tvFecha.setText("-");
-            holder.tvEstado.setText("-");
+            text1.setText("Pago no disponible");
+            text2.setText("");
             return convertView;
         }
 
-        // ============================================================
-        // 📝 DESCRIPCIÓN
-        // ============================================================
-        // Ejemplo: Compra de dispositivo (1/6 cuotas)
-        holder.tvDescripcion.setText(
-                "Compra de dispositivo (" +
-                        pago.getCuotasPagadas() +
-                        "/" +
-                        pago.getCuotasTotales() +
-                        " cuotas)"
+        String nombre = safe(pago.getNombreProducto());
+        if (nombre.isEmpty()) {
+            nombre = "Dispositivo";
+        }
+
+        String resumen1 = String.format(
+                Locale.getDefault(),
+                "%s | %s",
+                nombre,
+                formatearEstadoPago(pago.getEstadoPago())
         );
 
-        // ============================================================
-        // 💵 MONTO PENDIENTE
-        // ============================================================
-        holder.tvMonto.setText("$" + pago.getSaldoPendiente());
+        String resumen2 = String.format(
+                Locale.getDefault(),
+                "Cuotas: %d/%d | Saldo: $%d | Envío: %s",
+                pago.getCuotasPagadas(),
+                pago.getCuotasTotales(),
+                pago.getSaldoPendiente(),
+                formatearEstadoEnvio(pago.getEstadoEnvio())
+        );
 
-        // ============================================================
-        // 📅 FECHA DE COMPRA
-        // ============================================================
-        holder.tvFecha.setText(formatearFecha(pago.getFechaPago()));
+        text1.setText(resumen1);
+        text2.setText(resumen2);
 
-        // ============================================================
-        // 🚦 ESTADO DEL PAGO (SEMÁFORO FINANCIERO)
-        // ============================================================
-        if (pago.isPagado()) {
-            holder.tvEstado.setText("Pagado ✔");
-            holder.tvEstado.setTextColor(0xFF388E3C); // 🟢 Verde
-        } else {
-            holder.tvEstado.setText("Pendiente ❌");
-            holder.tvEstado.setTextColor(0xFFD32F2F); // 🔴 Rojo
+        // Color del estado principal
+        switch (safe(pago.getEstadoPago()).toLowerCase(Locale.ROOT)) {
+            case "pagado":
+                text1.setTextColor(Color.parseColor("#2E7D32"));
+                break;
+            case "parcial":
+                text1.setTextColor(Color.parseColor("#F9A825"));
+                break;
+            default:
+                text1.setTextColor(Color.parseColor("#C62828"));
+                break;
         }
 
         return convertView;
     }
 
-    // ============================================================
-    // 🗓 FORMATEAR FECHA (helper limpio)
-    // ============================================================
-    private String formatearFecha(long timestamp) {
-        try {
-            return "Fecha: " + new SimpleDateFormat(
-                    "dd/MM/yyyy",
-                    Locale.getDefault()
-            ).format(new Date(timestamp));
-        } catch (Exception e) {
-            return "Fecha: -";
+    private String safe(String valor) {
+        return valor == null ? "" : valor;
+    }
+
+    private String formatearEstadoPago(String estado) {
+        String e = safe(estado).toLowerCase(Locale.ROOT);
+
+        switch (e) {
+            case "pagado":
+                return "Pagado";
+            case "parcial":
+                return "Pago parcial";
+            case "fallido":
+                return "Fallido";
+            default:
+                return "Pendiente";
         }
     }
 
-    // ============================================================
-    // 📦 VIEW HOLDER (cajón de referencias)
-    // ============================================================
-    private static class ViewHolder {
-        TextView tvDescripcion;
-        TextView tvMonto;
-        TextView tvFecha;
-        TextView tvEstado;
+    private String formatearEstadoEnvio(String estado) {
+        String e = safe(estado).toLowerCase(Locale.ROOT);
+
+        switch (e) {
+            case "enviado":
+                return "Enviado";
+            case "entregado":
+                return "Entregado";
+            case "preparando":
+                return "Preparando";
+            default:
+                return "Preparando";
+        }
     }
 }
