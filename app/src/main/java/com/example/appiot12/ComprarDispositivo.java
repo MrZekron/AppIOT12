@@ -1,81 +1,38 @@
 package com.example.appiot12;
 
-// 🛒 Módulo de compra de dispositivos
-// Flujo: se crea un pago pendiente y luego se envía al centro de pagos.
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.Spinner;
-import android.widget.TextView;
-import android.widget.Toast;
-
+import android.widget.*;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.database.*;
 
+import org.json.JSONObject;
+
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.Locale;
 import java.util.UUID;
 
-/**
- * ComprarDispositivo
- *
- * Responsabilidades:
- * - mostrar el precio del dispositivo
- * - permitir elegir cuotas
- * - crear un pago pendiente en Firebase
- * - guardar el link de Mercado Pago
- * - enviar al usuario al centro de pagos
- *
- * Regla del flujo:
- * ✔ primero se crea el pago
- * ✔ después se paga
- * ✔ el dispositivo aún no se crea físicamente aquí
- *
- * Mejora aplicada:
- * ✔ el precio puede cambiar desde Firebase
- * ✔ si Firebase no tiene precio, usa uno por defecto
- */
 public class ComprarDispositivo extends AppCompatActivity {
 
-    // =====================================================
-    // 💰 CONFIGURACIÓN DE COMPRA
-    // =====================================================
-
-    // Precio por defecto si Firebase no responde o no tiene valor
     private static final int PRECIO_DEFAULT = 125000;
-
-    // Link real de Mercado Pago
-    private static final String CHECKOUT_URL_MP = "https://mpago.li/1ApKZgY";
-
-    // Nombre comercial del producto
     private static final String NOMBRE_PRODUCTO = "Dispositivo AguaSegura";
 
-    // =====================================================
-    // 🖥️ UI
-    // =====================================================
-    private TextView tvPrecio;
-    private TextView tvResumenCuota;
+    // 🔥 URL DE TU CLOUD FUNCTION (IMPORTANTE CAMBIAR)
+    private static final String URL_BACKEND =
+            "https://TU_REGION-TU_PROYECTO.cloudfunctions.net/crearPreferenciaPago";
+
+    private TextView tvPrecio, tvResumenCuota;
     private Spinner spnCuotas;
     private Button btnComprar;
 
-    // =====================================================
-    // 📦 ESTADO LOCAL
-    // =====================================================
     private int cuotasSeleccionadas = 1;
     private int precioActual = PRECIO_DEFAULT;
 
-    // =====================================================
-    // ☁️ FIREBASE
-    // =====================================================
     private DatabaseReference refUsuario;
     private String uid;
 
@@ -84,212 +41,130 @@ public class ComprarDispositivo extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_comprar_dispositivo);
 
-        inicializarVistas();
+        tvPrecio = findViewById(R.id.tvPrecio);
+        tvResumenCuota = findViewById(R.id.tvResumenCuota);
+        spnCuotas = findViewById(R.id.spnCuotas);
+        btnComprar = findViewById(R.id.btnComprar);
 
-        uid = obtenerUidUsuario();
-        if (uid == null) {
-            toast("Usuario no autenticado ❌");
-            finish();
-            return;
-        }
+        uid = FirebaseAuth.getInstance().getUid();
+        if (uid == null) finish();
 
         refUsuario = FirebaseDatabase.getInstance()
                 .getReference("usuarios")
                 .child(uid);
 
-        inicializarSpinnerCuotas();
-        cargarPrecioDesdeFirebase();
+        initSpinner();
+        cargarPrecio();
 
-        btnComprar.setOnClickListener(v -> procesarCompra());
+        btnComprar.setOnClickListener(v -> crearPagoYCheckout());
     }
 
-    // =====================================================
-    // 🔗 INICIALIZAR VISTAS
-    // =====================================================
-    private void inicializarVistas() {
-        tvPrecio = findViewById(R.id.tvPrecio);
-        tvResumenCuota = findViewById(R.id.tvResumenCuota);
-        spnCuotas = findViewById(R.id.spnCuotas);
-        btnComprar = findViewById(R.id.btnComprar);
+    private void cargarPrecio() {
+        FirebaseDatabase.getInstance()
+                .getReference("configuracion/precioDispositivo")
+                .get()
+                .addOnSuccessListener(snap -> {
+                    Integer p = snap.getValue(Integer.class);
+                    precioActual = (p != null) ? p : PRECIO_DEFAULT;
+                    actualizarUI();
+                });
     }
 
-    // =====================================================
-    // 🔐 OBTENER UID
-    // =====================================================
-    private String obtenerUidUsuario() {
-        if (FirebaseAuth.getInstance().getCurrentUser() == null) {
-            return null;
-        }
-        return FirebaseAuth.getInstance().getCurrentUser().getUid();
+    private void actualizarUI() {
+        tvPrecio.setText("Precio: $" + precioActual);
+
+        int cuota = (int) Math.ceil((double) precioActual / cuotasSeleccionadas);
+        tvResumenCuota.setText("Cuota: $" + cuota);
     }
 
-    // =====================================================
-    // 💰 CARGAR PRECIO DESDE FIREBASE
-    // =====================================================
-    /**
-     * Busca el precio del dispositivo en Firebase.
-     *
-     * Ruta esperada:
-     * configuracion/precioDispositivo
-     *
-     * Si no existe o falla, usa PRECIO_DEFAULT.
-     */
-    private void cargarPrecioDesdeFirebase() {
-
-        DatabaseReference refConfig = FirebaseDatabase.getInstance()
-                .getReference("configuracion")
-                .child("precioDispositivo");
-
-        refConfig.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot snapshot) {
-
-                Integer precio = snapshot.getValue(Integer.class);
-
-                if (precio != null && precio > 0) {
-                    precioActual = precio;
-                } else {
-                    precioActual = PRECIO_DEFAULT;
-                }
-
-                actualizarUIPrecio();
-            }
-
-            @Override
-            public void onCancelled(DatabaseError error) {
-                precioActual = PRECIO_DEFAULT;
-                actualizarUIPrecio();
-            }
-        });
-    }
-
-    // =====================================================
-    // 💰 ACTUALIZAR UI DEL PRECIO
-    // =====================================================
-    /**
-     * Refresca el precio total y el valor por cuota en pantalla.
-     */
-    private void actualizarUIPrecio() {
-        tvPrecio.setText(String.format(
-                Locale.getDefault(),
-                "Precio: $%,d CLP",
-                precioActual
-        ));
-
-        int valorCuota = (int) Math.ceil((double) precioActual / cuotasSeleccionadas);
-
-        tvResumenCuota.setText(String.format(
-                Locale.getDefault(),
-                "Valor por cuota: $%,d",
-                valorCuota
-        ));
-    }
-
-    // =====================================================
-    // 🔽 SPINNER DE CUOTAS
-    // =====================================================
-    private void inicializarSpinnerCuotas() {
-
+    private void initSpinner() {
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
                 this,
                 R.array.cuotas_array,
                 android.R.layout.simple_spinner_item
         );
 
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spnCuotas.setAdapter(adapter);
 
         spnCuotas.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                cuotasSeleccionadas = obtenerCuotasDesdePosicion(position);
-                actualizarUIPrecio();
+            public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
+                cuotasSeleccionadas = obtenerCuotas(pos);
+                actualizarUI();
             }
 
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-                // No se requiere acción
-            }
+            @Override public void onNothingSelected(AdapterView<?> parent) {}
         });
     }
 
-    /**
-     * Convierte la posición del spinner a número real de cuotas.
-     */
-    private int obtenerCuotasDesdePosicion(int position) {
-        switch (position) {
-            case 1:
-                return 3;
-            case 2:
-                return 6;
-            case 3:
-                return 12;
-            default:
-                return 1;
+    private int obtenerCuotas(int pos) {
+        switch (pos) {
+            case 1: return 3;
+            case 2: return 6;
+            case 3: return 12;
+            default: return 1;
         }
     }
 
     // =====================================================
-    // 🛒 PROCESAR COMPRA
+    // 🔥 CREAR PAGO + LLAMAR BACKEND
     // =====================================================
-    private void procesarCompra() {
+    private void crearPagoYCheckout() {
 
         String idPago = UUID.randomUUID().toString();
 
-        // Si después quieres asociar el pago a un tanque o dispositivo específico,
-        // aquí puedes reemplazar estos valores por los IDs reales.
-        String idTanque = "";
-        String idDispositivo = "";
-
-        // Crear el objeto pago con la estructura actual
         Pago pago = new Pago(
                 idPago,
-                idTanque,
-                idDispositivo,
+                "",
+                "",
                 NOMBRE_PRODUCTO,
                 precioActual,
                 cuotasSeleccionadas
         );
 
-        // Configuración inicial del flujo de pago
         pago.setEstadoPago("pendiente");
-        pago.setEstadoEnvio("preparando");
-        pago.setCheckoutUrl(CHECKOUT_URL_MP);
 
-        // IDs opcionales de Mercado Pago (vacíos por ahora)
-        pago.setMpPreferenceId("");
-        pago.setMpPaymentId("");
-
-        // Guardar en Firebase
-        refUsuario.child("pagos")
-                .child(idPago)
+        refUsuario.child("pagos").child(idPago)
                 .setValue(pago)
                 .addOnSuccessListener(unused -> {
 
-                    toast("Pago creado correctamente. Redirigiendo al centro de pagos 💳");
+                    // 🔥 LLAMAR BACKEND
+                    new Thread(() -> {
+                        try {
+                            URL url = new URL(URL_BACKEND);
+                            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 
-                    // Registrar en historial
-                    HistorialService.registrarEvento(
-                            "COMPRA",
-                            "Se creó un pago pendiente para " + NOMBRE_PRODUCTO
-                    );
+                            conn.setRequestMethod("POST");
+                            conn.setDoOutput(true);
+                            conn.setRequestProperty("Content-Type", "application/json");
 
-                    // Ir a la pantalla de pagos
-                    Intent intent = new Intent(this, CentroPagos.class);
-                    intent.putExtra("idPago", idPago);
-                    startActivity(intent);
+                            JSONObject json = new JSONObject();
+                            json.put("idPago", idPago);
+                            json.put("titulo", NOMBRE_PRODUCTO);
+                            json.put("precio", precioActual);
+                            json.put("uid", uid);
 
-                    finish();
-                })
-                .addOnFailureListener(e ->
-                        toast("Error al crear pago: " + e.getMessage())
-                );
-    }
+                            OutputStream os = conn.getOutputStream();
+                            os.write(json.toString().getBytes());
+                            os.flush();
 
-    // =====================================================
-    // 🍞 TOAST
-    // =====================================================
-    private void toast(String msg) {
-        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+                            if (conn.getResponseCode() == 200) {
+
+                                runOnUiThread(() -> {
+                                    Intent intent = new Intent(this, CentroPagos.class);
+                                    intent.putExtra("idPago", idPago);
+                                    startActivity(intent);
+                                    finish();
+                                });
+                            }
+
+                        } catch (Exception e) {
+                            runOnUiThread(() ->
+                                    Toast.makeText(this, "Error backend ❌", Toast.LENGTH_LONG).show()
+                            );
+                        }
+                    }).start();
+
+                });
     }
 }

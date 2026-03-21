@@ -1,6 +1,7 @@
 package com.example.appiot12;
+
 // 📦 Adaptador visual para el panel de administración.
-// Su misión es MOSTRAR información, no gobernar el sistema 👀🎨
+// SOLO muestra datos, no contiene lógica de negocio pesada.
 
 import android.content.Context;
 import android.graphics.Color;
@@ -21,16 +22,13 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.List;
 
 /**
- * 🌟 ADAPTADOR DE USUARIOS (ADMIN) 🌟
+ * 🌟 UsuarioAdapter 🌟
  *
- * Muestra por usuario:
- * ✔ Correo
- * ✔ Estado (activo / bloqueado)
- * ✔ Deuda pendiente
- * ✔ Días de atraso estimados
- *
- * ⚠️ NO contiene reglas de negocio complejas
- * ⚠️ NO decide políticas del sistema
+ * Muestra:
+ * ✔ correo
+ * ✔ estado de cuenta
+ * ✔ deuda
+ * ✔ días de atraso
  */
 public class UsuarioAdapter extends ArrayAdapter<Usuario> {
 
@@ -50,9 +48,9 @@ public class UsuarioAdapter extends ArrayAdapter<Usuario> {
         View row = convertView;
         ViewHolder holder;
 
-        // ============================================================
-        // 🧠 ViewHolder Pattern → rápido y seguro
-        // ============================================================
+        // =========================
+        // 🧠 ViewHolder pattern
+        // =========================
         if (row == null) {
 
             row = LayoutInflater.from(context)
@@ -72,14 +70,14 @@ public class UsuarioAdapter extends ArrayAdapter<Usuario> {
 
         Usuario usuario = usuarios.get(position);
 
-        // ============================================================
+        // =========================
         // 📧 Correo
-        // ============================================================
+        // =========================
         holder.tvCorreo.setText(usuario.getCorreo());
 
-        // ============================================================
-        // 🔐 Estado de cuenta
-        // ============================================================
+        // =========================
+        // 🔐 Estado
+        // =========================
         if (usuario.isBloqueado()) {
             holder.tvEstado.setText("Cuenta bloqueada ❌");
             holder.tvEstado.setTextColor(Color.RED);
@@ -90,21 +88,21 @@ public class UsuarioAdapter extends ArrayAdapter<Usuario> {
             holder.btnBloquear.setText("Bloquear");
         }
 
-        // ============================================================
-        // 💰 Estado financiero (placeholder mientras carga)
-        // ============================================================
+        // =========================
+        // 💰 Placeholder mientras carga
+        // =========================
         holder.tvDeuda.setText("Cargando…");
         holder.tvDeuda.setTextColor(Color.GRAY);
 
         holder.tvAtraso.setText("Calculando…");
         holder.tvAtraso.setTextColor(Color.GRAY);
 
-        // Cargar deuda real desde Firebase
+        // 🔄 Cargar datos reales
         cargarResumenFinanciero(usuario.getId(), holder);
 
-        // ============================================================
-        // 🚫 Bloquear / Desbloquear usuario
-        // ============================================================
+        // =========================
+        // 🚫 Bloquear / desbloquear
+        // =========================
         holder.btnBloquear.setOnClickListener(v -> {
 
             boolean nuevoEstado = !usuario.isBloqueado();
@@ -116,14 +114,14 @@ public class UsuarioAdapter extends ArrayAdapter<Usuario> {
                     .child("bloqueado")
                     .setValue(nuevoEstado);
 
-            notifyDataSetChanged(); // Refrescar vista
+            notifyDataSetChanged();
         });
 
         return row;
     }
 
     // ============================================================
-    // 📊 Cargar deuda + atraso (solo lectura)
+    // 📊 CARGAR DEUDA + ATRASO
     // ============================================================
     private void cargarResumenFinanciero(String userId, ViewHolder holder) {
 
@@ -149,14 +147,22 @@ public class UsuarioAdapter extends ArrayAdapter<Usuario> {
                         long ultimaFecha = 0;
 
                         for (DataSnapshot snap : snapshot.getChildren()) {
+
                             Pago pago = snap.getValue(Pago.class);
                             if (pago == null) continue;
 
                             deuda += pago.getSaldoPendiente();
-                            ultimaFecha = Math.max(ultimaFecha, pago.getFechaPago());
+
+                            // 🔥 CORRECCIÓN CLAVE
+                            long fecha = obtenerFechaMovimiento(pago);
+                            if (fecha > ultimaFecha) {
+                                ultimaFecha = fecha;
+                            }
                         }
 
-                        // 💰 Mostrar deuda
+                        // =========================
+                        // 💰 DEUDA
+                        // =========================
                         if (deuda == 0) {
                             holder.tvDeuda.setText("Al día ✔");
                             holder.tvDeuda.setTextColor(Color.GREEN);
@@ -165,9 +171,15 @@ public class UsuarioAdapter extends ArrayAdapter<Usuario> {
                             holder.tvDeuda.setTextColor(Color.RED);
                         }
 
-                        // 📅 Calcular atraso
-                        long dias = (System.currentTimeMillis() - ultimaFecha)
-                                / (1000 * 60 * 60 * 24);
+                        // =========================
+                        // 📅 ATRASO
+                        // =========================
+                        long dias = 0;
+
+                        if (ultimaFecha > 0 && deuda > 0) {
+                            dias = (System.currentTimeMillis() - ultimaFecha)
+                                    / (1000L * 60L * 60L * 24L);
+                        }
 
                         holder.tvAtraso.setText("Atraso: " + dias + " días");
 
@@ -192,7 +204,23 @@ public class UsuarioAdapter extends ArrayAdapter<Usuario> {
     }
 
     // ============================================================
-    // 🧱 ViewHolder
+    // 🕒 OBTENER FECHA VÁLIDA DEL PAGO
+    // ============================================================
+    private long obtenerFechaMovimiento(Pago pago) {
+
+        if (pago.getUltimaActualizacion() > 0) {
+            return pago.getUltimaActualizacion();
+        }
+
+        if (pago.getFechaCreacion() > 0) {
+            return pago.getFechaCreacion();
+        }
+
+        return 0;
+    }
+
+    // ============================================================
+    // 🧱 VIEW HOLDER
     // ============================================================
     static class ViewHolder {
         TextView tvCorreo, tvEstado, tvDeuda, tvAtraso;
