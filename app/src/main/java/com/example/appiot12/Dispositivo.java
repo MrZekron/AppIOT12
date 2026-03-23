@@ -1,37 +1,36 @@
-package com.example.appiot12;
+package com.example.appiot12; // 📦 Paquete del proyecto
 
 /**
- * 📦 Modelo central del proyecto Agua Segura.
- * Representa el dispositivo IoT que mide la calidad del agua.
+ * 📡 Modelo Dispositivo
  *
- * Responsabilidades de esta clase:
- * - Guardar datos crudos de sensores
- * - Evaluar estados legibles para el usuario
- * - Asociarse a un tanque
- *
- * Esta clase NO debe encargarse del orden de la lista de tanques.
- * Esa lógica pertenece al modelo TanqueAgua o a la capa que gestiona listas.
+ * Representa el dispositivo IoT que mide la calidad del agua 💧
  */
 public class Dispositivo {
 
     // =====================================================
-    // 🆔 IDENTIDAD DEL DISPOSITIVO
+    // 🆔 IDENTIDAD
     // =====================================================
 
-    private String id;          // ID único del dispositivo
-    private String idTanque;    // ID del tanque asociado (null o vacío = libre)
+    private String id; // 🆔 ID único
+    private String idTanque; // 📡 ID del tanque
 
     // =====================================================
-    // 📡 LECTURAS DE SENSORES
+    // 📡 SENSORES
     // =====================================================
 
-    private double ph;              // Acidez del agua
-    private double conductividad;   // Sales disueltas / conductividad
-    private double turbidez;        // Claridad del agua
-    private double ultrasonico;     // Nivel medido con sensor ultrasónico
+    private double ph; // ⚗️ pH
+    private double conductividad; // ⚡ conductividad
+    private double turbidez; // 🌫 turbidez
+    private double ultrasonico; // 📏 nivel
 
     // =====================================================
-    // 🚦 ESTADOS CALCULADOS
+    // 🆕 TIMESTAMP
+    // =====================================================
+
+    private long timestamp; // 🕒 momento de la medición
+
+    // =====================================================
+    // 🚦 ESTADOS
     // =====================================================
 
     private String estadoPH;
@@ -39,16 +38,16 @@ public class Dispositivo {
     private String estadoTurbidez;
 
     // =====================================================
-    // 🔄 CONSTRUCTOR VACÍO
-    // Obligatorio para Firebase
+    // 🔄 CONSTRUCTOR VACÍO (Firebase)
     // =====================================================
+
     public Dispositivo() {
-        // Constructor requerido por Firebase
     }
 
     // =====================================================
-    // 🛠️ CONSTRUCTOR PRINCIPAL
+    // 🏗 CONSTRUCTOR PRINCIPAL
     // =====================================================
+
     public Dispositivo(
             String id,
             double ph,
@@ -63,192 +62,127 @@ public class Dispositivo {
         this.turbidez = turbidez;
         this.ultrasonico = ultrasonico;
 
-        // Evaluamos estados de inmediato para que el objeto
-        // no quede con "N/A" si ya tiene datos reales.
-        actualizarEstados();
+        this.timestamp = System.currentTimeMillis(); // 🕒 guardar momento
+
+        actualizarEstados(); // 🔄 calcular estados
     }
 
     // =====================================================
-    // 📤 GETTERS Y SETTERS
+    // 📤 GETTERS & SETTERS
     // =====================================================
 
-    /**
-     * Devuelve el ID único del dispositivo.
-     */
-    public String getId() {
-        return id;
-    }
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
 
-    /**
-     * Actualiza el ID del dispositivo.
-     */
-    public void setId(String id) {
-        this.id = id;
-    }
+    public String getIdTanque() { return idTanque; }
+    public void setIdTanque(String idTanque) { this.idTanque = idTanque; }
 
-    /**
-     * Devuelve el ID del tanque asociado.
-     */
-    public String getIdTanque() {
-        return idTanque;
-    }
-
-    /**
-     * Asocia el dispositivo a un tanque mediante su ID.
-     */
-    public void setIdTanque(String idTanque) {
-        this.idTanque = idTanque;
-    }
-
-    /**
-     * Devuelve el valor actual de pH.
-     */
-    public double getPh() {
-        return ph;
-    }
-
-    /**
-     * Actualiza el pH y recalcula su estado.
-     */
+    public double getPh() { return ph; }
     public void setPh(double ph) {
         this.ph = ph;
         evaluarEstadoPH();
     }
 
-    /**
-     * Devuelve la conductividad actual.
-     */
-    public double getConductividad() {
-        return conductividad;
-    }
-
-    /**
-     * Actualiza la conductividad y recalcula su estado.
-     */
+    public double getConductividad() { return conductividad; }
     public void setConductividad(double conductividad) {
         this.conductividad = conductividad;
         evaluarEstadoConductividad();
     }
 
-    /**
-     * Devuelve la turbidez actual.
-     */
-    public double getTurbidez() {
-        return turbidez;
-    }
-
-    /**
-     * Actualiza la turbidez y recalcula su estado.
-     */
+    public double getTurbidez() { return turbidez; }
     public void setTurbidez(double turbidez) {
         this.turbidez = turbidez;
         evaluarEstadoTurbidez();
     }
 
-    /**
-     * Devuelve la lectura del sensor ultrasónico.
-     */
-    public double getUltrasonico() {
-        return ultrasonico;
-    }
+    public double getUltrasonico() { return ultrasonico; }
+    public void setUltrasonico(double ultrasonico) { this.ultrasonico = ultrasonico; }
 
-    /**
-     * Actualiza la lectura ultrasónica.
-     */
-    public void setUltrasonico(double ultrasonico) {
-        this.ultrasonico = ultrasonico;
-    }
+    public long getTimestamp() { return timestamp; }
+    public void setTimestamp(long timestamp) { this.timestamp = timestamp; }
 
-    /**
-     * Devuelve el estado evaluado del pH.
-     */
-    public String getEstadoPH() {
-        return estadoPH;
-    }
-
-    /**
-     * Devuelve el estado evaluado de la conductividad.
-     */
-    public String getEstadoConductividad() {
-        return estadoConductividad;
-    }
-
-    /**
-     * Devuelve el estado evaluado de la turbidez.
-     */
-    public String getEstadoTurbidez() {
-        return estadoTurbidez;
-    }
+    public String getEstadoPH() { return estadoPH; }
+    public String getEstadoConductividad() { return estadoConductividad; }
+    public String getEstadoTurbidez() { return estadoTurbidez; }
 
     // =====================================================
-    // 🧠 LÓGICA DE NEGOCIO
+    // 🧠 LÓGICA
     // =====================================================
 
-    /**
-     * Recalcula todos los estados de sensores.
-     * Útil cuando el dispositivo se crea con datos ya cargados.
-     */
     public void actualizarEstados() {
         evaluarEstadoPH();
         evaluarEstadoConductividad();
         evaluarEstadoTurbidez();
     }
 
-    /**
-     * Indica si el dispositivo está asociado a un tanque.
-     */
     public boolean estaAsociadoATanque() {
         return idTanque != null && !idTanque.trim().isEmpty();
     }
 
-    /**
-     * Desasocia el dispositivo del tanque actual.
-     */
     public void desasociarTanque() {
         this.idTanque = null;
     }
 
-    /**
-     * Evalúa el estado del pH.
-     */
+    // =====================================================
+    // 🚦 EVALUACIONES
+    // =====================================================
+
     private void evaluarEstadoPH() {
-        if (ph >= 6.5 && ph <= 8.5) {
-            estadoPH = "Normal 👍";
-        } else if ((ph >= 6.0 && ph < 6.5) || (ph > 8.5 && ph <= 9.0)) {
-            estadoPH = "Alerta ⚠️";
-        } else {
-            estadoPH = "Peligro 🔥";
-        }
+        if (ph >= 6.5 && ph <= 8.5) estadoPH = "Normal 👍";
+        else if ((ph >= 6.0 && ph < 6.5) || (ph > 8.5 && ph <= 9.0)) estadoPH = "Alerta ⚠️";
+        else estadoPH = "Peligro 🔥";
     }
 
-    /**
-     * Evalúa el estado de la conductividad.
-     */
     private void evaluarEstadoConductividad() {
-        if (conductividad <= 1500) {
-            estadoConductividad = "Normal 👍";
-        } else if (conductividad <= 2500) {
-            estadoConductividad = "Alerta ⚠️";
-        } else {
-            estadoConductividad = "Peligro 🔥";
-        }
+        if (conductividad <= 1500) estadoConductividad = "Normal 👍";
+        else if (conductividad <= 2500) estadoConductividad = "Alerta ⚠️";
+        else estadoConductividad = "Peligro 🔥";
     }
 
-    /**
-     * Evalúa el estado de la turbidez.
-     */
     private void evaluarEstadoTurbidez() {
-        if (turbidez <= 5) {
-            estadoTurbidez = "Normal 👍";
-        } else if (turbidez <= 10) {
-            estadoTurbidez = "Alerta ⚠️";
-        } else {
-            estadoTurbidez = "Peligro 🔥";
-        }
+        if (turbidez <= 5) estadoTurbidez = "Normal 👍";
+        else if (turbidez <= 10) estadoTurbidez = "Alerta ⚠️";
+        else estadoTurbidez = "Peligro 🔥";
     }
 
     // =====================================================
-    // 🧩 UTILIDAD PARA UI Y DEPURACIÓN
+    // 🆕 ESTADO GENERAL
+    // =====================================================
+
+    public String getEstadoGeneral() {
+
+        if (estadoPH.contains("Peligro") ||
+                estadoConductividad.contains("Peligro") ||
+                estadoTurbidez.contains("Peligro")) {
+
+            return "Peligro 🔥";
+        }
+
+        if (estadoPH.contains("Alerta") ||
+                estadoConductividad.contains("Alerta") ||
+                estadoTurbidez.contains("Alerta")) {
+
+            return "Alerta ⚠️";
+        }
+
+        return "Normal 👍";
+    }
+
+    // =====================================================
+    // 🧾 RESUMEN (para correo)
+    // =====================================================
+
+    public String generarResumen() {
+        return "📊 Estado del agua:\n" +
+                "- pH: " + ph + " (" + estadoPH + ")\n" +
+                "- Conductividad: " + conductividad + " (" + estadoConductividad + ")\n" +
+                "- Turbidez: " + turbidez + " (" + estadoTurbidez + ")\n" +
+                "- Nivel: " + ultrasonico + "\n" +
+                "- Estado general: " + getEstadoGeneral();
+    }
+
+    // =====================================================
+    // 🧩 DEBUG
     // =====================================================
 
     @Override

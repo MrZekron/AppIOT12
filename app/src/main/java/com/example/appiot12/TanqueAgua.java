@@ -1,49 +1,49 @@
-package com.example.appiot12;
+package com.example.appiot12; // 📦 Paquete del proyecto
 
 /**
- * 📦 Modelo que representa un tanque dentro del ecosistema AguaSegura.
+ * 📦 Modelo TanqueAgua
  *
- * Responsabilidades de esta clase:
- * - Representar la entidad lógica del tanque
- * - Guardar su metadata principal
- * - Mantener referencia al dispositivo asociado
- * - Guardar estados de mantención
- * - Entregar una prioridad para ordenar listas
- *
- * Esta clase NO debe manejar sensores directamente.
- * Esa responsabilidad sigue siendo del dispositivo.
+ * Representa un tanque dentro del sistema Agua Segura 💧
  */
 public class TanqueAgua {
 
     // ======================================================
-    // 🔑 ATRIBUTOS PRINCIPALES DEL TANQUE
+    // 🔑 ATRIBUTOS PRINCIPALES
     // ======================================================
 
-    private String idTanque;              // 🆔 ID único del tanque (Firebase key)
-    private String nombre;                // 🏷 Nombre del tanque
-    private String capacidad;             // 💧 Capacidad total en litros
-    private String color;                 // 🎨 Color físico del tanque
-    private String direccion;             // 📍 Dirección física del tanque
-    private String idDispositivo;         // 📡 ID del dispositivo asociado
+    private String idTanque; // 🆔 ID único
+    private String nombre; // 🏷 Nombre
+    private String capacidad; // 💧 Capacidad
+    private String color; // 🎨 Color
+    private String direccion; // 📍 Dirección
+    private String idDispositivo; // 📡 Dispositivo asociado
 
     // ======================================================
-    // 🛠 ATRIBUTOS DE MANTENCIÓN
+    // 🆕 CAMPOS PARA REPORTES
     // ======================================================
 
-    private boolean mantencionTanque;         // true = el tanque necesita mantención
-    private boolean mantencionDispositivo;    // true = el dispositivo necesita mantención
+    private long fechaCreacion; // 🕒 Cuándo se creó el tanque
+    private long ultimoCorreoEnviado; // 📧 Último envío de reporte
 
     // ======================================================
-    // 🧱 CONSTRUCTOR VACÍO
-    // Requerido por Firebase para deserializar objetos
+    // 🛠 MANTENCIÓN
     // ======================================================
+
+    private boolean mantencionTanque; // 🔧 Estado tanque
+    private boolean mantencionDispositivo; // ⚙️ Estado dispositivo
+
+    // ======================================================
+    // 🧱 CONSTRUCTOR VACÍO (Firebase)
+    // ======================================================
+
     public TanqueAgua() {
+        // ⚠️ Firebase necesita esto
     }
 
     // ======================================================
     // 🏗 CONSTRUCTOR PRINCIPAL
-    // Crea un tanque con valores por defecto para mantención
     // ======================================================
+
     public TanqueAgua(String idTanque,
                       String nombre,
                       String capacidad,
@@ -58,139 +58,86 @@ public class TanqueAgua {
         this.direccion = direccion;
         this.idDispositivo = idDispositivo;
 
-        // Por defecto, un tanque nuevo parte sin mantenciones pendientes
+        // 🆕 Inicialización automática
+        this.fechaCreacion = System.currentTimeMillis(); // 🕒 ahora
+        this.ultimoCorreoEnviado = 0; // 📧 aún no enviado
+
         this.mantencionTanque = false;
         this.mantencionDispositivo = false;
     }
 
     // ======================================================
-    // 🏗 CONSTRUCTOR COMPLETO
-    // Permite crear el tanque incluyendo estados de mantención
-    // ======================================================
-    public TanqueAgua(String idTanque,
-                      String nombre,
-                      String capacidad,
-                      String color,
-                      String direccion,
-                      String idDispositivo,
-                      boolean mantencionTanque,
-                      boolean mantencionDispositivo) {
-
-        this.idTanque = idTanque;
-        this.nombre = nombre;
-        this.capacidad = capacidad;
-        this.color = color;
-        this.direccion = direccion;
-        this.idDispositivo = idDispositivo;
-        this.mantencionTanque = mantencionTanque;
-        this.mantencionDispositivo = mantencionDispositivo;
-    }
-
-    // ======================================================
-    // 📌 GETTERS & SETTERS PRINCIPALES
+    // 📌 GETTERS & SETTERS
     // ======================================================
 
-    public String getIdTanque() {
-        return idTanque;
-    }
+    public String getIdTanque() { return idTanque; }
+    public void setIdTanque(String idTanque) { this.idTanque = idTanque; }
 
-    public void setIdTanque(String idTanque) {
-        this.idTanque = idTanque;
-    }
+    public String getNombre() { return nombre; }
+    public void setNombre(String nombre) { this.nombre = nombre; }
 
-    public String getNombre() {
-        return nombre;
-    }
+    public String getCapacidad() { return capacidad; }
+    public void setCapacidad(String capacidad) { this.capacidad = capacidad; }
 
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
-    }
+    public String getColor() { return color; }
+    public void setColor(String color) { this.color = color; }
 
-    public String getCapacidad() {
-        return capacidad;
-    }
+    public String getDireccion() { return direccion; }
+    public void setDireccion(String direccion) { this.direccion = direccion; }
 
-    public void setCapacidad(String capacidad) {
-        this.capacidad = capacidad;
-    }
+    public String getIdDispositivo() { return idDispositivo; }
+    public void setIdDispositivo(String idDispositivo) { this.idDispositivo = idDispositivo; }
 
-    public String getColor() {
-        return color;
-    }
+    // =========================
+    // 🆕 REPORTES
+    // =========================
 
-    public void setColor(String color) {
-        this.color = color;
+    public long getFechaCreacion() { return fechaCreacion; }
+    public void setFechaCreacion(long fechaCreacion) { this.fechaCreacion = fechaCreacion; }
+
+    public long getUltimoCorreoEnviado() { return ultimoCorreoEnviado; }
+    public void setUltimoCorreoEnviado(long ultimoCorreoEnviado) { this.ultimoCorreoEnviado = ultimoCorreoEnviado; }
+
+    /**
+     * 📆 Verifica si corresponde enviar correo
+     */
+    public boolean necesitaEnviarCorreo() {
+
+        long ahora = System.currentTimeMillis();
+        long DIAS_30 = 30L * 24 * 60 * 60 * 1000;
+
+        if (ultimoCorreoEnviado == 0) {
+            return (ahora - fechaCreacion) >= DIAS_30;
+        }
+
+        return (ahora - ultimoCorreoEnviado) >= DIAS_30;
     }
 
     /**
-     * Devuelve la dirección del tanque.
+     * 📧 Marca que se envió el correo
      */
-    public String getDireccion() {
-        return direccion;
-    }
-
-    /**
-     * Actualiza la dirección del tanque.
-     */
-    public void setDireccion(String direccion) {
-        this.direccion = direccion;
-    }
-
-    public String getIdDispositivo() {
-        return idDispositivo;
-    }
-
-    public void setIdDispositivo(String idDispositivo) {
-        this.idDispositivo = idDispositivo;
+    public void marcarCorreoEnviado() {
+        this.ultimoCorreoEnviado = System.currentTimeMillis();
     }
 
     // ======================================================
-    // 🛠 GETTERS & SETTERS DE MANTENCIÓN
+    // 🛠 MANTENCIÓN
     // ======================================================
 
-    /**
-     * Indica si el tanque necesita mantención.
-     */
-    public boolean isMantencionTanque() {
-        return mantencionTanque;
-    }
+    public boolean isMantencionTanque() { return mantencionTanque; }
+    public void setMantencionTanque(boolean mantencionTanque) { this.mantencionTanque = mantencionTanque; }
 
-    /**
-     * Marca si el tanque necesita mantención.
-     */
-    public void setMantencionTanque(boolean mantencionTanque) {
-        this.mantencionTanque = mantencionTanque;
-    }
-
-    /**
-     * Indica si el dispositivo necesita mantención.
-     */
-    public boolean isMantencionDispositivo() {
-        return mantencionDispositivo;
-    }
-
-    /**
-     * Marca si el dispositivo necesita mantención.
-     */
-    public void setMantencionDispositivo(boolean mantencionDispositivo) {
-        this.mantencionDispositivo = mantencionDispositivo;
-    }
+    public boolean isMantencionDispositivo() { return mantencionDispositivo; }
+    public void setMantencionDispositivo(boolean mantencionDispositivo) { this.mantencionDispositivo = mantencionDispositivo; }
 
     // ======================================================
-    // 🧠 MÉTODOS DE NEGOCIO / UTILIDAD
+    // 🧠 UTILIDAD
     // ======================================================
 
-    /**
-     * Indica si el tanque tiene un dispositivo asociado.
-     */
     public boolean tieneDispositivo() {
         return idDispositivo != null && !idDispositivo.trim().isEmpty();
     }
 
-    /**
-     * Devuelve la capacidad como número.
-     * Útil para evitar parseos repetidos en adapters o controllers.
-     */
     public double getCapacidadNumerica() {
         try {
             return Double.parseDouble(capacidad);
@@ -199,90 +146,18 @@ public class TanqueAgua {
         }
     }
 
-    /**
-     * Indica si el tanque tiene dirección válida.
-     */
     public boolean tieneDireccion() {
         return direccion != null && !direccion.trim().isEmpty();
     }
 
-    /**
-     * Activa el estado de mantención del tanque.
-     */
-    public void activarMantencionTanque() {
-        this.mantencionTanque = true;
-    }
-
-    /**
-     * Desactiva el estado de mantención del tanque.
-     */
-    public void desactivarMantencionTanque() {
-        this.mantencionTanque = false;
-    }
-
-    /**
-     * Activa el estado de mantención del dispositivo.
-     */
-    public void activarMantencionDispositivo() {
-        this.mantencionDispositivo = true;
-    }
-
-    /**
-     * Desactiva el estado de mantención del dispositivo.
-     */
-    public void desactivarMantencionDispositivo() {
-        this.mantencionDispositivo = false;
-    }
-
-    /**
-     * Devuelve true si el tanque o el dispositivo necesitan mantención.
-     */
     public boolean necesitaAlgunaMantencion() {
         return mantencionTanque || mantencionDispositivo;
     }
 
-    /**
-     * Calcula una prioridad para ordenar la lista de tanques.
-     *
-     * Regla:
-     * - 3 = tanque y dispositivo necesitan mantención
-     * - 2 = solo tanque necesita mantención
-     * - 1 = solo dispositivo necesita mantención
-     * - 0 = ninguno necesita mantención
-     *
-     * Mientras mayor sea el valor, más arriba debería aparecer en la lista.
-     */
-    public int getPrioridadMantencion() {
-        int prioridad = 0;
-
-        if (mantencionTanque) {
-            prioridad += 2;
-        }
-
-        if (mantencionDispositivo) {
-            prioridad += 1;
-        }
-
-        return prioridad;
-    }
-
-    /**
-     * Devuelve una descripción corta del estado de mantención del tanque.
-     */
-    public String getEstadoMantencionTanqueTexto() {
-        return mantencionTanque ? "Pendiente" : "Al día";
-    }
-
-    /**
-     * Devuelve una descripción corta del estado de mantención del dispositivo.
-     */
-    public String getEstadoMantencionDispositivoTexto() {
-        return mantencionDispositivo ? "Pendiente" : "Al día";
-    }
-
     // ======================================================
-    // 🧩 UTILIDAD DE DEPURACIÓN / UI
+    // 🧩 DEBUG
     // ======================================================
+
     @Override
     public String toString() {
         return nombre != null && !nombre.trim().isEmpty()
