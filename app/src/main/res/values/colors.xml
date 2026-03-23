@@ -1,13 +1,49 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="black">#FF000000</color>
+
+    <!-- ============================= -->
+    <!-- 🎯 PALETA OFICIAL AGUA SEGURA -->
+    <!-- ============================= -->
+
+    <!-- 1: Texto principal -->
+    <color name="color_text_primary">#4B65A9</color>
+
+    <!-- 2: Botones, navbar, acciones principales -->
+    <color name="color_primary">#1D8EC1</color>
+
+    <!-- Variante oscura del primary (status bar, sombras) -->
+    <color name="color_primary_dark">#156A91</color>
+
+    <!-- 3: Elementos secundarios -->
+    <color name="color_secondary">#5FCAE0</color>
+
+    <!-- 4: Fondo general de la app -->
+    <color name="color_background">#C8EFED</color>
+
+    <!-- 5: Superficies (cards, cajas, iconos claros) -->
+    <color name="color_surface">#F8EFED</color>
+
+    <!-- ============================= -->
+    <!-- 🎨 COLORES BASE -->
+    <!-- ============================= -->
+
+    <!-- Blanco -->
     <color name="white">#FFFFFFFF</color>
-    <color name="purple_200">#FFBB86FC</color>
-    <color name="purple_500">#FF6200EE</color>
-    <color name="purple_700">#FF3700B3</color>
-    <color name="teal_200">#FF03DAC5</color>
-    <color name="teal_700">#FF018786</color>
+
+    <!-- Negro -->
+    <color name="black">#FF000000</color>
+
+    <!-- Transparente -->
     <color name="transparente">#00FFFFFF</color>
-    <color name="red">#DF1616</color>
-    <color name="verde">#5FEA09</color>
+
+    <!-- ============================= -->
+    <!-- 🚨 ESTADOS DEL SISTEMA -->
+    <!-- ============================= -->
+
+    <!-- Error -->
+    <color name="color_error">#DF1616</color>
+
+    <!-- OK / éxito -->
+    <color name="color_success">#5FEA09</color>
+
 </resources>

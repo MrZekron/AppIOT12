@@ -70,6 +70,7 @@ dependencies {
     implementation("com.github.PhilJay:MPAndroidChart:3.1.0")
 
     implementation("com.itextpdf:itext7-core:7.2.5")
+    implementation(libs.androidx.constraintlayout)
 
     // ===============================
     // TESTING
