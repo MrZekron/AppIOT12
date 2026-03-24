@@ -12,7 +12,7 @@ plugins {
 
 android {
     namespace = "com.example.appiot12" // 🏷️ Namespace del proyecto
-    compileSdk = 34 // 🔨 SDK de compilación
+    compileSdk = 35 // 🔥 SDK de compilación actualizado para compatibilidad con WorkManager
 
     defaultConfig {
         applicationId = "com.example.appiot12" // 📱 ID único de la app
@@ -36,6 +36,15 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11 // ☕ Compatibilidad Java 11
         targetCompatibility = JavaVersion.VERSION_11 // ☕ Objetivo Java 11
+    }
+
+    packaging {
+        resources {
+            excludes += "META-INF/LICENSE.md" // 🚫 Evita conflicto de licencias duplicadas
+            excludes += "META-INF/LICENSE-notice.md" // 🚫 Evita conflicto adicional común
+            excludes += "META-INF/NOTICE.md" // 🚫 Evita conflicto adicional
+            excludes += "META-INF/NOTICE-notice.md" // 🚫 Evita conflicto adicional
+        }
     }
 }
 

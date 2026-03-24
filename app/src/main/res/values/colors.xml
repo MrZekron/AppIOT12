@@ -11,39 +11,38 @@
     <!-- 2: Botones, navbar, acciones principales -->
     <color name="color_primary">#1D8EC1</color>
 
-    <!-- Variante oscura del primary (status bar, sombras) -->
+    <!-- Variante oscura del primary -->
     <color name="color_primary_dark">#156A91</color>
 
     <!-- 3: Elementos secundarios -->
     <color name="color_secondary">#5FCAE0</color>
 
-    <!-- 4: Fondo general de la app -->
+    <!-- 4: Fondo general -->
     <color name="color_background">#C8EFED</color>
 
-    <!-- 5: Superficies (cards, cajas, iconos claros) -->
+    <!-- 5: Superficies -->
     <color name="color_surface">#F8EFED</color>
 
     <!-- ============================= -->
     <!-- 🎨 COLORES BASE -->
     <!-- ============================= -->
 
-    <!-- Blanco -->
-    <color name="white">#FFFFFFFF</color>
-
-    <!-- Negro -->
-    <color name="black">#FF000000</color>
-
-    <!-- Transparente -->
-    <color name="transparente">#00FFFFFF</color>
+    <color name="white">#FFFFFFFF</color> <!-- ⚪ Blanco -->
+    <color name="black">#FF000000</color> <!-- ⚫ Negro -->
+    <color name="transparente">#00FFFFFF</color> <!-- 🫥 Transparente -->
 
     <!-- ============================= -->
     <!-- 🚨 ESTADOS DEL SISTEMA -->
     <!-- ============================= -->
 
-    <!-- Error -->
-    <color name="color_error">#DF1616</color>
+    <color name="color_error">#DF1616</color> <!-- 🔴 Error -->
+    <color name="color_success">#5FEA09</color> <!-- 🟢 OK -->
 
-    <!-- OK / éxito -->
-    <color name="color_success">#5FEA09</color>
+    <!-- ============================= -->
+    <!-- 🆕 FIX ERROR (IMPORTANTE) -->
+    <!-- ============================= -->
+
+    <!-- 👇 ESTE ERA EL QUE FALTABA -->
+    <color name="verde">#4CAF50</color> <!-- ✅ Verde estándar -->
 
 </resources>
