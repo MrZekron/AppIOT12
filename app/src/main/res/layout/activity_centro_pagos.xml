@@ -1,113 +1,167 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main"
+<!--
+    Pantalla de pagos por transferencia.
+    Muestra los datos de la compra, los datos bancarios
+    y un botón para enviar comprobante por WhatsApp.
+-->
+
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp"
     android:background="@mipmap/fondo"
-    tools:context=".CentroPagos">
+    android:fillViewport="true">
 
-    <!-- 🧾 TÍTULO -->
-    <TextView
-        android:id="@+id/tvTituloPagos"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Centro de Pagos"
-        android:textSize="28sp"
-        android:textColor="#000000"
-        android:textStyle="bold"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
-
-
-    <!-- 🟦 TARJETA DE INFORMACIÓN DEL USUARIO -->
     <LinearLayout
-        android:id="@+id/cardUsuario"
-        android:layout_width="0dp"
+        android:id="@+id/main"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="16dp"
         android:orientation="vertical"
-        android:background="@drawable/bg_card"
-        android:elevation="4dp"
-        app:layout_constraintTop_toBottomOf="@id/tvTituloPagos"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="16dp">
+        android:padding="16dp">
 
+        <!-- Título principal -->
         <TextView
-            android:id="@+id/tvUsuarioPago"
+            android:id="@+id/tvTituloPagos"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Usuario: correo@correo.com"
-            android:textSize="16sp"
-            android:textColor="#000"/>
+            android:layout_gravity="center"
+            android:text="Centro de Pagos"
+            android:textColor="#000000"
+            android:textSize="28sp"
+            android:textStyle="bold" />
 
-        <TextView
-            android:id="@+id/tvResumenDeuda"
-            android:layout_width="wrap_content"
+        <!-- Tarjeta con datos de la compra -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Deuda total: $0"
-            android:textSize="16sp"
-            android:layout_marginTop="6dp"
-            android:textColor="#000"/>
+            android:layout_marginTop="16dp"
+            android:background="@drawable/bg_card"
+            android:elevation="4dp"
+            android:orientation="vertical"
+            android:padding="16dp">
 
-    </LinearLayout>
+            <TextView
+                android:id="@+id/tvProductoPago"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Producto: Dispositivo AguaSegura"
+                android:textColor="#000"
+                android:textSize="16sp" />
 
+            <TextView
+                android:id="@+id/tvMontoPago"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Monto: $0"
+                android:textColor="#000"
+                android:textSize="16sp" />
 
-    <!-- 📋 LISTA DE PAGOS -->
-    <ListView
-        android:id="@+id/listPagos"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:dividerHeight="10dp"
-        android:padding="6dp"
-        app:layout_constraintTop_toBottomOf="@id/cardUsuario"
-        app:layout_constraintBottom_toTopOf="@id/layoutBotones"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:background="@android:color/transparent"/>
+            <TextView
+                android:id="@+id/tvCodigoPedido"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Código de pedido: AGS-0000"
+                android:textColor="#000"
+                android:textSize="16sp" />
+        </LinearLayout>
 
+        <!-- Tarjeta con datos de transferencia -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/bg_card"
+            android:elevation="4dp"
+            android:orientation="vertical"
+            android:padding="16dp">
 
-    <!-- 🟩 BOTONES DE ACCIÓN EN 2 COLUMNAS -->
-    <LinearLayout
-        android:id="@+id/layoutBotones"
-        android:orientation="horizontal"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Datos para transferencia"
+                android:textColor="#000"
+                android:textSize="18sp"
+                android:textStyle="bold" />
 
-        <!-- 🔹 PAGAR CUOTA -->
+            <TextView
+                android:id="@+id/tvBanco"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="Banco: Mercado Pago"
+                android:textColor="#000"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/tvTipoCuenta"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Tipo de cuenta: Cuenta Vista"
+                android:textColor="#000"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/tvNumeroCuenta"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="N° de cuenta: 1085751669"
+                android:textColor="#000"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/tvTitular"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Titular: Moisés Bensaid Cid Valenzuela"
+                android:textColor="#000"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/tvRut"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="RUT: 21.503.331-7"
+                android:textColor="#000"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/tvCorreoPago"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Correo: cidm3965@gmail.com"
+                android:textColor="#000"
+                android:textSize="16sp" />
+        </LinearLayout>
+
+        <!-- Botón para abrir WhatsApp -->
         <Button
-            android:id="@+id/btnPagarCuota"
-            android:layout_width="0dp"
+            android:id="@+id/btnEnviarWhatsapp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Pagar Cuota"
+            android:layout_marginTop="20dp"
+            android:background="#25D366"
+            android:padding="12dp"
+            android:text="Enviar comprobante por WhatsApp"
             android:textColor="@android:color/white"
+            android:textStyle="bold" />
+
+        <!-- Botón para volver -->
+        <Button
+            android:id="@+id/btnVolverMenu"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
             android:background="#1976D2"
-            android:padding="12dp"/>
-
-        <View
-            android:layout_width="12dp"
-            android:layout_height="0dp"/>
-
-        <!-- 🔹 PAGAR COMPLETO -->
-        <Button
-            android:id="@+id/btnPagarTotal"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Pagar Total"
+            android:padding="12dp"
+            android:text="Volver"
             android:textColor="@android:color/white"
-            android:background="#D32F2F"
-            android:padding="12dp"/>
-    </LinearLayout>
+            android:textStyle="bold" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    </LinearLayout>
+</ScrollView>

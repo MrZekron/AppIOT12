@@ -1,6 +1,6 @@
 package com.example.appiot12;
-// 📦 Pantalla “Olvidé mi contraseña”
-// Aquí ayudamos al usuario a recuperar el acceso a su cuenta 🔐✉️
+
+// Pantalla para enviar el correo de recuperación de contraseña.
 
 import android.app.ProgressDialog;
 import android.os.Bundle;
@@ -10,121 +10,96 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
 import com.google.firebase.auth.FirebaseAuth;
 
-/**
- * ⭐ OLVIDÉ MI CONTRASEÑA ⭐
- *
- * Explicado para un niño 👶:
- * 👉 Escribes tu correo
- * 👉 La app le pide a Firebase que te mande un email ✉️
- * 👉 Si el correo existe → llega el mensaje
- * 👉 Si no existe → Firebase avisa
- *
- * REGLA DE ORO:
- * 👉 NO revisamos la base de datos
- * 👉 Firebase Auth ya sabe todo lo necesario 🧠
- */
 public class OlvideContrasenaActivity extends AppCompatActivity {
 
-    // ✉️ Campo donde el usuario escribe su correo
+    // Campo de correo y botones.
     private EditText etEmail;
-
-    // 🔘 Botones
     private Button btnEnviar, btnCancelar;
 
-    // 🔐 Firebase Authentication
+    // Firebase Auth.
     private FirebaseAuth auth;
 
-    // ⏳ Ventana de progreso
-    private ProgressDialog progressDialog;
+    // Diálogo de carga.
+    private ProgressDialog progress;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        // 📱 Activar pantalla completa moderna
-        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_olvide_contrasena);
 
-        // 📐 Ajustar márgenes para no chocar con barras del sistema
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets bars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(bars.left, bars.top, bars.right, bars.bottom);
-            return insets;
-        });
-
-        // 🔗 Vincular UI
+        // Vincula vistas del XML.
         etEmail = findViewById(R.id.etEmailOlvide);
         btnEnviar = findViewById(R.id.btnEnviar);
         btnCancelar = findViewById(R.id.btnCancelarOlvide);
 
-        // 🔐 Inicializar Firebase Auth
+        // Inicializa Firebase.
         auth = FirebaseAuth.getInstance();
 
-        // ⏳ Configurar diálogo de carga
-        progressDialog = new ProgressDialog(this);
-        progressDialog.setCancelable(false);
+        // Configura diálogo de carga.
+        progress = new ProgressDialog(this);
+        progress.setCancelable(false);
+        progress.setMessage("Enviando enlace de recuperación...");
 
-        // 🎯 Acciones de botones
+        // Eventos.
         btnEnviar.setOnClickListener(this::enviarCorreoReset);
         btnCancelar.setOnClickListener(v -> finish());
     }
 
-    // ============================================================
-    // ✉️ ENVIAR CORREO DE RECUPERACIÓN
-    // ============================================================
+    // Valida correo y envía email de recuperación.
     private void enviarCorreoReset(View view) {
-
         String email = etEmail.getText().toString().trim();
 
-        // 🚨 Validaciones básicas
+        if (!validarEmail(email)) return;
+
+        bloquearUI(true);
+
+        auth.sendPasswordResetEmail(email).addOnCompleteListener(task -> {
+            bloquearUI(false);
+
+            if (task.isSuccessful()) {
+                toast("Revisa tu correo para restablecer la contraseña");
+                finish();
+            } else {
+                String msg = task.getException() != null
+                        ? task.getException().getMessage()
+                        : "No se pudo enviar el correo";
+                toast(msg);
+            }
+        });
+    }
+
+    // Valida que el correo no esté vacío y tenga formato correcto.
+    private boolean validarEmail(String email) {
         if (email.isEmpty()) {
-            Toast.makeText(this, "Ingrese su correo", Toast.LENGTH_SHORT).show();
-            return;
+            etEmail.setError("Ingrese su correo");
+            etEmail.requestFocus();
+            return false;
         }
 
         if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            Toast.makeText(this, "Ingrese un correo válido", Toast.LENGTH_SHORT).show();
-            return;
+            etEmail.setError("Ingrese un correo válido");
+            etEmail.requestFocus();
+            return false;
         }
 
-        // ⏳ Mostrar progreso
-        progressDialog.setMessage("Enviando enlace de recuperación... ✉️");
-        progressDialog.show();
-        btnEnviar.setEnabled(false);
+        return true;
+    }
 
-        // 🔐 Firebase se encarga de todo
-        auth.sendPasswordResetEmail(email)
-                .addOnCompleteListener(task -> {
+    // Bloquea o desbloquea la interfaz mientras se procesa.
+    private void bloquearUI(boolean bloquear) {
+        btnEnviar.setEnabled(!bloquear);
+        btnCancelar.setEnabled(!bloquear);
 
-                    progressDialog.dismiss();
-                    btnEnviar.setEnabled(true);
+        if (bloquear) progress.show();
+        else progress.dismiss();
+    }
 
-                    if (task.isSuccessful()) {
-                        Toast.makeText(
-                                this,
-                                "Revisa tu correo para restablecer la contraseña 📬",
-                                Toast.LENGTH_LONG
-                        ).show();
-                        finish();
-                    } else {
-                        String msg = (task.getException() != null)
-                                ? task.getException().getMessage()
-                                : "Error desconocido";
-
-                        Toast.makeText(
-                                this,
-                                "No se pudo enviar el correo ❌\n" + msg,
-                                Toast.LENGTH_LONG
-                        ).show();
-                    }
-                });
+    // Muestra un mensaje al usuario.
+    private void toast(String mensaje) {
+        Toast.makeText(this, mensaje, Toast.LENGTH_LONG).show();
     }
 }

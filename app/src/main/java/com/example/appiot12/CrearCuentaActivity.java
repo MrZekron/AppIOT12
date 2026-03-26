@@ -1,273 +1,193 @@
 package com.example.appiot12;
-// 📦 Paquete base del proyecto Agua Segura.
-// Aquí vive la pantalla para crear cuentas nuevas 👤✨
 
-// ===== IMPORTS ANDROID =====
-import android.app.ProgressDialog;      // ⏳ Ventanita de “cargando…”
-import android.content.Intent;          // 🚪 Navegación entre pantallas
-import android.os.Bundle;               // 🎒 Estado de la Activity
-import android.util.Patterns;           // 🔍 Validación de correos
-import android.view.View;               // 👆 Eventos de clic
-import android.widget.Button;           // 🔘 Botones
-import android.widget.EditText;         // 📝 Campos de texto
-import android.widget.Toast;            // 🍞 Mensajes rápidos
+// Pantalla para crear una cuenta nueva en Agua Segura.
 
-import androidx.appcompat.app.AppCompatActivity; // 🏛 Activity base
+import android.app.ProgressDialog;
+import android.content.Intent;
+import android.os.Bundle;
+import android.util.Patterns;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Toast;
 
-// ===== IMPORTS FIREBASE =====
-import com.google.android.gms.tasks.Task;        // 📦 Resultado de tareas
-import com.google.firebase.auth.AuthResult;      // 🔐 Resultado de Auth
-import com.google.firebase.auth.FirebaseAuth;    // 🔐 Autenticación
-import com.google.firebase.auth.FirebaseAuthUserCollisionException; // 💥 Correo duplicado
-import com.google.firebase.auth.FirebaseUser;    // 👤 Usuario
-import com.google.firebase.auth.UserProfileChangeRequest; // 🎨 Nombre de perfil
-import com.google.firebase.database.FirebaseDatabase; // ☁️ Base de datos
+import androidx.appcompat.app.AppCompatActivity;
+
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthUserCollisionException;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.UserProfileChangeRequest;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.HashMap;
 import java.util.Map;
-// 🧱 Mapas para guardar datos del usuario
 
-/**
- * 🎇 CrearCuentaActivity 🎇
- *
- * Esta pantalla permite:
- * 👉 Crear una cuenta nueva
- * 👉 Validar datos básicos
- * 👉 Registrar el usuario en Firebase
- * 👉 Asignar rol (admin o usuario)
- *
- * En simple:
- * Es la puerta de entrada a Agua Segura 🚪💧
- */
 public class CrearCuentaActivity extends AppCompatActivity {
 
-    // 📝 Campos del formulario
-    private EditText etNombre;
-    private EditText etEmail;
-    private EditText etPass;
-    private EditText etPassConfirm;
+    // Campos del formulario.
+    private EditText etNombre, etEmail, etPass, etPassConfirm;
 
-    // 🔘 Botón principal
+    // Botón para registrar.
     private Button btnCrear;
 
-    // 🔐 Firebase Auth
+    // Firebase Auth para crear usuarios.
     private FirebaseAuth auth;
 
-    // ⏳ Diálogo de carga
+    // Ventana de carga.
     private ProgressDialog progressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_crear_cuenta); // 🎨 Mostramos la pantalla
+        setContentView(R.layout.activity_crear_cuenta);
 
-        // 🔗 Conectamos la UI con el XML
-        inicializarVistas();
-
-        // 🔐 Inicializamos Firebase Auth
-        auth = FirebaseAuth.getInstance();
-
-        // ⏳ Configuramos el diálogo de carga
-        progressDialog = new ProgressDialog(this);
-        progressDialog.setCancelable(false);
-
-        // 🔘 Acción principal: crear cuenta
-        btnCrear.setOnClickListener(this::crearCuenta);
-    }
-
-    /**
-     * 🔗 Conecta los EditText y botones con el XML
-     */
-    private void inicializarVistas() {
+        // Conecta variables con el XML.
         etNombre = findViewById(R.id.etNombre);
         etEmail = findViewById(R.id.etEmailCrear);
         etPass = findViewById(R.id.etPassCrear);
         etPassConfirm = findViewById(R.id.etPassConfirm);
         btnCrear = findViewById(R.id.btnCrearCuenta);
+
+        // Inicializa Firebase.
+        auth = FirebaseAuth.getInstance();
+
+        // Configura diálogo de carga.
+        progressDialog = new ProgressDialog(this);
+        progressDialog.setMessage("Creando cuenta...");
+        progressDialog.setCancelable(false);
+
+        // Evento del botón crear cuenta.
+        btnCrear.setOnClickListener(this::crearCuenta);
     }
 
-    // =====================================================
-    // 🧠 VALIDAR DATOS Y COMENZAR REGISTRO
-    // =====================================================
+    // Lee datos, valida y crea la cuenta.
     private void crearCuenta(View view) {
-
-        // ✏️ Leemos lo que escribió el usuario
         String nombre = etNombre.getText().toString().trim();
         String email = etEmail.getText().toString().trim().toLowerCase();
         String pass = etPass.getText().toString().trim();
-        String passConfirm = etPassConfirm.getText().toString().trim();
+        String confirmPass = etPassConfirm.getText().toString().trim();
 
-        // 🛑 Validaciones básicas
-        if (!datosValidos(nombre, email, pass, passConfirm)) {
-            return; // ❌ Algo estaba mal
-        }
+        if (!validarCampos(nombre, email, pass, confirmPass)) return;
 
-        // ⏳ Mostramos carga
-        progressDialog.setMessage("Creando cuenta... ⏳");
-        progressDialog.show();
-        btnCrear.setEnabled(false);
+        bloquearUI(true);
 
-        // 🔍 Verificamos si el correo ya existe
-        auth.fetchSignInMethodsForEmail(email)
-                .addOnCompleteListener(task -> {
+        auth.createUserWithEmailAndPassword(email, pass).addOnCompleteListener(task -> {
+            if (!task.isSuccessful()) {
+                bloquearUI(false);
 
-                    if (!task.isSuccessful() || task.getResult() == null) {
-                        crearUsuarioFirebase(nombre, email, pass);
-                        return;
-                    }
+                String mensaje = "No se pudo crear la cuenta";
+                if (task.getException() instanceof FirebaseAuthUserCollisionException) {
+                    mensaje = "Ese correo ya está registrado";
+                } else if (task.getException() != null) {
+                    mensaje = task.getException().getMessage();
+                }
 
-                    if (task.getResult().getSignInMethods() != null &&
-                            !task.getResult().getSignInMethods().isEmpty()) {
+                Toast.makeText(this, mensaje, Toast.LENGTH_LONG).show();
+                return;
+            }
 
-                        // 💥 Correo ya registrado
-                        restaurarUI();
-                        Toast.makeText(
-                                this,
-                                "El correo ya está registrado ❌",
-                                Toast.LENGTH_LONG
-                        ).show();
-                    } else {
-                        crearUsuarioFirebase(nombre, email, pass);
-                    }
-                });
+            FirebaseUser user = auth.getCurrentUser();
+            if (user == null) {
+                bloquearUI(false);
+                Toast.makeText(this, "Error al obtener el usuario", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // Guarda el nombre en el perfil de Firebase.
+            UserProfileChangeRequest profile = new UserProfileChangeRequest.Builder()
+                    .setDisplayName(nombre)
+                    .build();
+            user.updateProfile(profile);
+
+            // Envía verificación al correo.
+            user.sendEmailVerification();
+
+            // Define rol según el dominio del correo.
+            boolean esAdmin = email.endsWith("@aguasegura.cl");
+            String rol = esAdmin ? "admin" : "usuario";
+
+            guardarUsuario(user.getUid(), nombre, email, rol, esAdmin);
+        });
     }
 
-    /**
-     * ✅ Valida los datos del formulario
-     */
-    private boolean datosValidos(
-            String nombre,
-            String email,
-            String pass,
-            String passConfirm
-    ) {
+    // Valida todos los campos del formulario.
+    private boolean validarCampos(String nombre, String email, String pass, String confirmPass) {
 
-        if (nombre.isEmpty() || email.isEmpty() ||
-                pass.isEmpty() || passConfirm.isEmpty()) {
+        if (nombre.isEmpty()) {
+            etNombre.setError("Ingresa tu nombre");
+            etNombre.requestFocus();
+            return false;
+        }
 
-            Toast.makeText(
-                    this,
-                    "Completa todos los campos 📝",
-                    Toast.LENGTH_SHORT
-            ).show();
+        if (email.isEmpty()) {
+            etEmail.setError("Ingresa tu correo");
+            etEmail.requestFocus();
             return false;
         }
 
         if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            Toast.makeText(
-                    this,
-                    "Correo inválido 📧❌",
-                    Toast.LENGTH_SHORT
-            ).show();
+            etEmail.setError("Correo no válido");
+            etEmail.requestFocus();
             return false;
         }
 
-        if (!pass.equals(passConfirm)) {
-            Toast.makeText(
-                    this,
-                    "Las contraseñas no coinciden 🔐",
-                    Toast.LENGTH_SHORT
-            ).show();
+        if (pass.isEmpty()) {
+            etPass.setError("Ingresa una contraseña");
+            etPass.requestFocus();
             return false;
         }
 
-        if (pass.length() < 6) {
-            Toast.makeText(
-                    this,
-                    "La contraseña debe tener al menos 6 caracteres",
-                    Toast.LENGTH_SHORT
-            ).show();
+        if (!passwordValida(pass)) {
+            etPass.setError("Debe tener 8-20 caracteres, mayúscula, minúscula, número y carácter especial");
+            etPass.requestFocus();
             return false;
         }
 
-        return true; // ✔️ Todo bien
+        if (confirmPass.isEmpty()) {
+            etPassConfirm.setError("Confirma la contraseña");
+            etPassConfirm.requestFocus();
+            return false;
+        }
+
+        if (!pass.equals(confirmPass)) {
+            etPassConfirm.setError("Las contraseñas no coinciden");
+            etPassConfirm.requestFocus();
+            return false;
+        }
+
+        return true;
     }
 
-    // =====================================================
-    // 🔐 CREAR USUARIO EN FIREBASE AUTH
-    // =====================================================
-    private void crearUsuarioFirebase(String nombre, String email, String pass) {
-
-        auth.createUserWithEmailAndPassword(email, pass)
-                .addOnCompleteListener(this, task -> {
-
-                    if (!task.isSuccessful()) {
-                        manejarErrorRegistro(task);
-                        return;
-                    }
-
-                    FirebaseUser user = auth.getCurrentUser();
-
-                    if (user == null) {
-                        restaurarUI();
-                        Toast.makeText(
-                                this,
-                                "Error interno 😢",
-                                Toast.LENGTH_SHORT
-                        ).show();
-                        return;
-                    }
-
-                    // 🎨 Asignamos nombre al perfil
-                    UserProfileChangeRequest profile =
-                            new UserProfileChangeRequest.Builder()
-                                    .setDisplayName(nombre)
-                                    .build();
-                    user.updateProfile(profile);
-
-                    // 📧 Enviamos correo de verificación
-                    user.sendEmailVerification();
-
-                    // 🏷️ Asignamos rol
-                    boolean esAdmin = email.endsWith("@aguasegura.cl");
-                    String rol = esAdmin ? "admin" : "usuario";
-
-                    // ☁️ Guardamos datos en la base
-                    guardarUsuarioEnDatabase(user.getUid(), email, rol, esAdmin);
-                });
+    // Regla de contraseña de Agua Segura.
+    private boolean passwordValida(String pass) {
+        return pass.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@#$%^&+=!¡?*._-]).{8,20}$");
     }
 
-    /**
-     * ☁️ Guarda la información del usuario en Realtime Database
-     */
-    private void guardarUsuarioEnDatabase(
-            String uid,
-            String email,
-            String rol,
-            boolean esAdmin
-    ) {
-
-        Map<String, Object> datosUsuario = new HashMap<>();
-        datosUsuario.put("id", uid);
-        datosUsuario.put("correo", email);
-        datosUsuario.put("rol", rol);
-        datosUsuario.put("tanques", new HashMap<>());
-        datosUsuario.put("createdAt", System.currentTimeMillis());
+    // Guarda usuario en Realtime Database.
+    private void guardarUsuario(String uid, String nombre, String email, String rol, boolean esAdmin) {
+        Map<String, Object> usuario = new HashMap<>();
+        usuario.put("id", uid);
+        usuario.put("nombre", nombre);
+        usuario.put("correo", email);
+        usuario.put("rol", rol);
+        usuario.put("tanques", new HashMap<>());
+        usuario.put("createdAt", System.currentTimeMillis());
 
         FirebaseDatabase.getInstance()
                 .getReference("usuarios")
                 .child(uid)
-                .setValue(datosUsuario)
-                .addOnCompleteListener(dbTask -> {
+                .setValue(usuario)
+                .addOnCompleteListener(task -> {
+                    bloquearUI(false);
 
-                    restaurarUI();
-
-                    if (!dbTask.isSuccessful()) {
-                        Toast.makeText(
-                                this,
-                                "Error al guardar usuario ❌",
-                                Toast.LENGTH_LONG
-                        ).show();
+                    if (!task.isSuccessful()) {
+                        Toast.makeText(this, "Cuenta creada, pero hubo un error al guardar los datos", Toast.LENGTH_LONG).show();
                         return;
                     }
 
-                    Toast.makeText(
-                            this,
-                            "Cuenta creada correctamente 🎉",
-                            Toast.LENGTH_LONG
-                    ).show();
+                    Toast.makeText(this, "Cuenta creada correctamente", Toast.LENGTH_LONG).show();
 
-                    // 🚪 Redirigimos según rol
+                    // Redirige según rol.
                     Intent intent = esAdmin
                             ? new Intent(this, MenuAdmin.class)
                             : new Intent(this, Menu.class);
@@ -277,42 +197,15 @@ public class CrearCuentaActivity extends AppCompatActivity {
                 });
     }
 
-    /**
-     * ⚠️ Maneja errores al crear cuenta
-     */
-    private void manejarErrorRegistro(Task<AuthResult> task) {
-
-        restaurarUI();
-
-        String mensaje;
-
-        if (task.getException() instanceof FirebaseAuthUserCollisionException) {
-            mensaje = "El correo ya está registrado ❌";
-        } else if (task.getException() != null) {
-            mensaje = task.getException().getMessage();
-        } else {
-            mensaje = "Error desconocido 😢";
-        }
-
-        Toast.makeText(
-                this,
-                "Registro fallido: " + mensaje,
-                Toast.LENGTH_LONG
-        ).show();
+    // Bloquea o desbloquea botón y diálogo de carga.
+    private void bloquearUI(boolean bloquear) {
+        btnCrear.setEnabled(!bloquear);
+        if (bloquear) progressDialog.show();
+        else progressDialog.dismiss();
     }
 
-    /**
-     * ♻️ Restaura la UI luego de una operación
-     */
-    private void restaurarUI() {
-        progressDialog.dismiss();
-        btnCrear.setEnabled(true);
-    }
-
-    // =====================================================
-    // ❌ CANCELAR REGISTRO
-    // =====================================================
+    // Cierra la pantalla al cancelar.
     public void cancelCreateAccount(View view) {
-        finish(); // 🚪 Cerramos pantalla
+        finish();
     }
 }
