@@ -1,8 +1,8 @@
 package com.example.appiot12;
-// 📦 Módulo de administración del proyecto Agua Segura.
-// Aquí el ADMIN ve, ordena y analiza usuarios 👥📊
 
-// ===== IMPORTS ANDROID =====
+// Pantalla de administración de usuarios.
+// El admin puede ver usuarios, ordenarlos y calcular datos de compras.
+
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -11,192 +11,168 @@ import android.widget.ListView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.PopupMenu;
 
-// ===== IMPORTS FIREBASE =====
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-// ===== IMPORTS JAVA =====
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * 👥 GESTIÓN DE USUARIOS (ADMIN)
- *
- * Explicado fácil 👶:
- * 👉 Esta pantalla es una lista de personas
- * 👉 El admin puede:
- *    - Ver todos los usuarios
- *    - Ordenarlos por nombre
- *    - Ver quién tiene más o menos tanques
- *
- * Arquitectura correcta 🧱:
- * ✔ Modelo Usuario LIMPIO
- * ✔ Datos extra (tanques) se calculan desde Firebase
- * ✔ Filtros SIN volver a llamar Firebase
- */
 public class GestionUsuarios extends AppCompatActivity {
 
-    // ============================
-    // 📋 UI
-    // ============================
-    private ListView listUsuarios;          // Lista visual
-    private Button btnFiltrarUsuarios;      // Botón de filtros
+    // Vistas.
+    private ListView listUsuarios;
+    private Button btnFiltrarUsuarios;
 
-    // ============================
-    // 🎨 ADAPTADOR
-    // ============================
+    // Adaptador.
     private UsuarioAdapter adapter;
 
-    // ============================
-    // 🗂 LISTAS
-    // ============================
-
-    // Lista ORIGINAL (datos crudos desde Firebase)
+    // Listas base y visual.
     private final List<Usuario> usuariosOriginales = new ArrayList<>();
-
-    // Lista FILTRADA (lo que se muestra en pantalla)
     private final List<Usuario> usuariosFiltrados = new ArrayList<>();
 
-    // ============================
-    // 🧮 DATOS DERIVADOS (NO viven en Usuario)
-    // ============================
-
-    // uid → cantidad de tanques
+    // Datos calculados por usuario.
     private final Map<String, Integer> tanquesPorUsuario = new HashMap<>();
+    private final Map<String, Integer> dispositivosPorUsuario = new HashMap<>();
+    private final Map<String, Integer> deudaPorUsuario = new HashMap<>();
 
-    // ============================
-    // ☁️ FIREBASE
-    // ============================
+    // Firebase.
     private DatabaseReference refUsuarios;
+    private DatabaseReference refCompras;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_gestion_usuarios);
 
-        // 🔗 Conectamos XML con Java
-        inicializarVistas();
+        // Vincula XML.
+        listUsuarios = findViewById(R.id.listUsuarios);
+        btnFiltrarUsuarios = findViewById(R.id.btnFiltrarUsuarios);
 
-        // ☁️ Referencia raíz: /usuarios
-        refUsuarios = FirebaseDatabase.getInstance()
-                .getReference("usuarios");
+        // Referencias Firebase.
+        refUsuarios = FirebaseDatabase.getInstance().getReference("usuarios");
+        refCompras = FirebaseDatabase.getInstance().getReference("compras");
 
-        // 🎨 Adaptador usa SOLO la lista filtrada
+        // Adaptador.
         adapter = new UsuarioAdapter(this, usuariosFiltrados);
         listUsuarios.setAdapter(adapter);
 
-        // 📥 Cargar usuarios desde Firebase
+        // Carga datos.
         cargarUsuarios();
+        cargarCompras();
 
-        // 🔽 Botón para mostrar filtros
+        // Filtros.
         btnFiltrarUsuarios.setOnClickListener(this::mostrarMenuFiltros);
     }
 
-    /**
-     * 🔗 Conecta variables Java con XML
-     */
-    private void inicializarVistas() {
-        listUsuarios = findViewById(R.id.listUsuarios);
-        btnFiltrarUsuarios = findViewById(R.id.btnFiltrarUsuarios);
-    }
-
-    // =====================================================
-    // 📥 CARGAR USUARIOS DESDE FIREBASE
-    // =====================================================
+    // Carga usuarios desde Firebase.
     private void cargarUsuarios() {
-
         refUsuarios.addValueEventListener(new ValueEventListener() {
-
             @Override
             public void onDataChange(DataSnapshot snapshot) {
-
                 usuariosOriginales.clear();
                 usuariosFiltrados.clear();
                 tanquesPorUsuario.clear();
 
-                // 🔄 Recorremos TODOS los usuarios
                 for (DataSnapshot snap : snapshot.getChildren()) {
+                    Usuario u = snap.getValue(Usuario.class);
+                    if (u == null) continue;
 
-                    Usuario usuario = snap.getValue(Usuario.class);
-                    if (usuario == null) continue; // 🛑 Seguridad
+                    u.setId(snap.getKey());
 
-                    // 🆔 Firebase no llena el ID automáticamente
-                    usuario.setId(snap.getKey());
-
-                    // ⭐ SOLO usuarios normales (no admin)
-                    if ("usuario".equalsIgnoreCase(usuario.getRol())) {
-
-                        usuariosOriginales.add(usuario);
-
-                        // 🔢 Contamos tanques reales desde Firebase
-                        calcularTanquesUsuario(usuario.getId());
+                    if ("usuario".equalsIgnoreCase(u.getRol())) {
+                        usuariosOriginales.add(u);
+                        calcularTanquesUsuario(u.getId());
                     }
                 }
 
-                // 📋 Por defecto mostramos TODO
                 usuariosFiltrados.addAll(usuariosOriginales);
                 adapter.notifyDataSetChanged();
             }
 
             @Override
-            public void onCancelled(DatabaseError error) {
-                // (Opcional) Toast o Log
-            }
+            public void onCancelled(DatabaseError error) {}
         });
     }
 
-    // =====================================================
-    // 🧮 CONTAR TANQUES DE UN USUARIO (Firebase real)
-    // =====================================================
+    // Cuenta tanques por usuario.
     private void calcularTanquesUsuario(String uid) {
-
-        FirebaseDatabase.getInstance()
-                .getReference("usuarios")
-                .child(uid)
-                .child("tanques")
+        refUsuarios.child(uid).child("tanques")
                 .addListenerForSingleValueEvent(new ValueEventListener() {
-
                     @Override
                     public void onDataChange(DataSnapshot snapshot) {
-
-                        // Cantidad de tanques del usuario
                         tanquesPorUsuario.put(uid, (int) snapshot.getChildrenCount());
-
-                        // Refrescamos UI si está visible
                         adapter.notifyDataSetChanged();
                     }
 
                     @Override
                     public void onCancelled(DatabaseError error) {
-                        // Si falla, asumimos 0 tanques
                         tanquesPorUsuario.put(uid, 0);
                     }
                 });
     }
 
-    // =====================================================
-    // 🔽 MENÚ DE FILTROS (Popup)
-    // =====================================================
-    private void mostrarMenuFiltros(View view) {
+    // Carga compras y calcula dispositivos y deuda por usuario.
+    private void cargarCompras() {
+        refCompras.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                dispositivosPorUsuario.clear();
+                deudaPorUsuario.clear();
 
+                for (DataSnapshot snap : snapshot.getChildren()) {
+                    String uid = snap.child("uidUsuario").getValue(String.class);
+                    Integer monto = snap.child("monto").getValue(Integer.class);
+                    String estado = snap.child("estado").getValue(String.class);
+
+                    if (uid == null) continue;
+
+                    // Cuenta dispositivos comprados, excepto cancelados.
+                    if (!"cancelado".equalsIgnoreCase(estado)) {
+                        int total = dispositivosPorUsuario.getOrDefault(uid, 0);
+                        dispositivosPorUsuario.put(uid, total + 1);
+                    }
+
+                    // Suma deuda solo si la compra aún no está pagada.
+                    if (monto != null && esDeudaPendiente(estado)) {
+                        int deuda = deudaPorUsuario.getOrDefault(uid, 0);
+                        deudaPorUsuario.put(uid, deuda + monto);
+                    }
+                }
+
+                adapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onCancelled(DatabaseError error) {}
+        });
+    }
+
+    // Define si una compra sigue contando como deuda.
+    private boolean esDeudaPendiente(String estado) {
+        if (estado == null) return false;
+
+        return estado.equalsIgnoreCase("pendiente_pago")
+                || estado.equalsIgnoreCase("comprobante_enviado");
+    }
+
+    // Muestra menú de filtros.
+    private void mostrarMenuFiltros(View view) {
         PopupMenu menu = new PopupMenu(this, view);
 
-        // Filtros FUNCIONALES
         menu.getMenu().add("Nombre A-Z");
         menu.getMenu().add("Nombre Z-A");
         menu.getMenu().add("Más tanques");
         menu.getMenu().add("Menos tanques");
-
-        // Filtros FUTUROS (no rompen nada)
-        menu.getMenu().add("Pago al día (próximo)");
-        menu.getMenu().add("Dispositivos adquiridos (próximo)");
-        menu.getMenu().add("Fecha de creación (próximo)");
+        menu.getMenu().add("Más dispositivos");
+        menu.getMenu().add("Menos dispositivos");
+        menu.getMenu().add("Mayor deuda");
+        menu.getMenu().add("Menor deuda");
 
         menu.setOnMenuItemClickListener(item -> {
             aplicarFiltro(item.getTitle().toString());
@@ -206,61 +182,81 @@ public class GestionUsuarios extends AppCompatActivity {
         menu.show();
     }
 
-    // =====================================================
-    // 🎯 APLICAR FILTRO SIN VOLVER A FIREBASE
-    // =====================================================
+    // Aplica filtro a la lista visible.
     private void aplicarFiltro(String filtro) {
-
         usuariosFiltrados.clear();
         usuariosFiltrados.addAll(usuariosOriginales);
 
         switch (filtro) {
-
             case "Nombre A-Z":
-                usuariosFiltrados.sort(
-                        Comparator.comparing(u -> safe(u.getCorreo()).toLowerCase())
-                );
+                usuariosFiltrados.sort(Comparator.comparing(u -> safe(u.getCorreo()).toLowerCase()));
                 break;
 
             case "Nombre Z-A":
                 usuariosFiltrados.sort((a, b) ->
-                        safe(b.getCorreo()).compareToIgnoreCase(safe(a.getCorreo()))
-                );
+                        safe(b.getCorreo()).compareToIgnoreCase(safe(a.getCorreo())));
                 break;
 
             case "Más tanques":
                 usuariosFiltrados.sort((a, b) ->
                         tanquesPorUsuario.getOrDefault(b.getId(), 0)
-                                - tanquesPorUsuario.getOrDefault(a.getId(), 0)
-                );
+                                - tanquesPorUsuario.getOrDefault(a.getId(), 0));
                 break;
 
             case "Menos tanques":
                 usuariosFiltrados.sort((a, b) ->
                         tanquesPorUsuario.getOrDefault(a.getId(), 0)
-                                - tanquesPorUsuario.getOrDefault(b.getId(), 0)
-                );
+                                - tanquesPorUsuario.getOrDefault(b.getId(), 0));
                 break;
 
-            default:
-                // Filtros futuros → no hacen nada aún
+            case "Más dispositivos":
+                usuariosFiltrados.sort((a, b) ->
+                        dispositivosPorUsuario.getOrDefault(b.getId(), 0)
+                                - dispositivosPorUsuario.getOrDefault(a.getId(), 0));
+                break;
+
+            case "Menos dispositivos":
+                usuariosFiltrados.sort((a, b) ->
+                        dispositivosPorUsuario.getOrDefault(a.getId(), 0)
+                                - dispositivosPorUsuario.getOrDefault(b.getId(), 0));
+                break;
+
+            case "Mayor deuda":
+                usuariosFiltrados.sort((a, b) ->
+                        deudaPorUsuario.getOrDefault(b.getId(), 0)
+                                - deudaPorUsuario.getOrDefault(a.getId(), 0));
+                break;
+
+            case "Menor deuda":
+                usuariosFiltrados.sort((a, b) ->
+                        deudaPorUsuario.getOrDefault(a.getId(), 0)
+                                - deudaPorUsuario.getOrDefault(b.getId(), 0));
                 break;
         }
 
         adapter.notifyDataSetChanged();
     }
 
-    // =====================================================
-    // 🧹 UTILIDAD PARA EVITAR NULL
-    // =====================================================
+    // Evita null.
     private String safe(String s) {
         return s == null ? "" : s;
     }
 
-    // =====================================================
-    // 🔙 VOLVER AL MENÚ ADMIN
-    // =====================================================
+    // Métodos públicos para que el adapter pueda mostrar datos calculados.
+    public int getTanquesUsuario(String uid) {
+        return tanquesPorUsuario.getOrDefault(uid, 0);
+    }
+
+    public int getDispositivosUsuario(String uid) {
+        return dispositivosPorUsuario.getOrDefault(uid, 0);
+    }
+
+    public int getDeudaUsuario(String uid) {
+        return deudaPorUsuario.getOrDefault(uid, 0);
+    }
+
+    // Cierra pantalla.
     public void volver(View view) {
-        finish(); // 🚪 Cerramos pantalla
+        finish();
     }
 }

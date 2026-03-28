@@ -9,19 +9,22 @@
     tools:context=".HistorialCompra">
 
     <!-- 🏷️ TÍTULO -->
+
+    <!-- 📜 LISTA DE PAGOS -->
+
     <TextView
         android:id="@+id/tvTituloHistorial"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Historial de Pagos"
-        android:textSize="32sp"
-        android:textColor="#000"
         android:layout_marginTop="40dp"
-        app:layout_constraintTop_toTopOf="parent"
+        android:text="Historial de Pagos admin"
+        android:textColor="#000"
+        android:textSize="32sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.496"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- 📜 LISTA DE PAGOS -->
     <ListView
         android:id="@+id/lvPagos"
         android:layout_width="0dp"
