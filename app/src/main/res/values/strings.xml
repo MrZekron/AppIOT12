@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">AppIOT1.2</string>
+    <string name="app_name" translatable="false">AppIOT1.2</string>
     <string name="descripción_salir" />
     <string name="editar" />
     <string name="borrar" />

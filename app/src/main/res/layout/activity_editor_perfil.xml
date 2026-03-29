@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Pantalla para editar el perfil del usuario.
+    Por ahora permite:
+    - ver y editar el nombre
+    - ver el correo
+    - guardar cambios
+    - cancelar y volver
+-->
+
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@mipmap/fondo"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:id="@+id/main"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <!-- Título principal -->
+        <TextView
+            android:id="@+id/tvTituloEditorPerfil"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="Editar Perfil"
+            android:textColor="#000000"
+            android:textSize="28sp"
+            android:textStyle="bold" />
+
+        <!-- Tarjeta con datos del perfil -->
+        <LinearLayout
+            android:id="@+id/cardEditorPerfil"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:background="@drawable/bg_card"
+            android:elevation="4dp"
+            android:orientation="vertical"
+            android:padding="18dp">
+
+            <!-- Etiqueta nombre -->
+            <TextView
+                android:id="@+id/tvLabelNombrePerfil"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Nombre"
+                android:textColor="#000000"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <!-- Campo para editar el nombre -->
+            <EditText
+                android:id="@+id/etNombrePerfil"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:background="@android:color/white"
+                android:hint="Ingrese su nombre"
+                android:inputType="textPersonName"
+                android:padding="12dp"
+                android:textColor="#000000"
+                android:textColorHint="#666666" />
+
+            <!-- Etiqueta correo -->
+            <TextView
+                android:id="@+id/tvLabelCorreoPerfil"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:text="Correo"
+                android:textColor="#000000"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <!-- Campo correo solo lectura -->
+            <EditText
+                android:id="@+id/etCorreoPerfil"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:background="@android:color/white"
+                android:enabled="false"
+                android:focusable="false"
+                android:hint="correo@ejemplo.com"
+                android:inputType="textEmailAddress"
+                android:padding="12dp"
+                android:textColor="#444444"
+                android:textColorHint="#666666" />
+
+            <!-- Nota informativa -->
+            <TextView
+                android:id="@+id/tvNotaPerfil"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="Por ahora solo puedes modificar tu nombre. El cambio de correo se gestionará más adelante."
+                android:textColor="#444444"
+                android:textSize="14sp" />
+        </LinearLayout>
+
+        <!-- Botón guardar cambios -->
+        <Button
+            android:id="@+id/btnGuardarPerfil"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:background="#2E7D32"
+            android:padding="14dp"
+            android:text="Guardar cambios"
+            android:textColor="@android:color/white"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <!-- Botón cancelar -->
+        <Button
+            android:id="@+id/btnCancelarPerfil"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:background="#A33D60"
+            android:padding="14dp"
+            android:text="Cancelar"
+            android:textColor="@android:color/white"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+</ScrollView>
