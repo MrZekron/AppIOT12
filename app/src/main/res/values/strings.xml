@@ -1,10 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name" translatable="false">AppIOT1.2</string>
-    <string name="descripción_salir" />
-    <string name="editar" />
-    <string name="borrar" />
 
-    <!-- ⭐ ARRAY PARA LAS CUOTAS (NECESARIO PARA COMPRAR DISPOSITIVO) ⭐ -->
+    <!-- ===================================================== -->
+    <!-- 📱 NOMBRE DE LA APP -->
+    <!-- ===================================================== -->
+    <!-- Nombre visible de la aplicación -->
+    <string name="app_name" translatable="false">AppIOT1.2</string>
+
+    <!-- ===================================================== -->
+    <!-- 🗺️ API KEY GOOGLE MAPS / GOOGLE PLACES -->
+    <!-- ===================================================== -->
+    <!--
+         Esta clave se usa para el autocompletado de direcciones reales.
+         IMPORTANTE:
+         - Reemplaza el valor por tu API key real
+         - No dejes "TU_API_KEY_AQUI"
+    -->
+    <string name="google_maps_key">AQUI_VA_TU_API_KEY_REAL</string>
+
+    <!-- ===================================================== -->
+    <!-- 🧩 TEXTOS GENERALES -->
+    <!-- ===================================================== -->
+    <!-- Textos reservados para accesibilidad o acciones -->
+    <string name="descripción_salir"></string>
+    <string name="editar"></string>
+    <string name="borrar"></string>
+
+    <!-- ===================================================== -->
+    <!-- 💳 ARRAY DE CUOTAS -->
+    <!-- ===================================================== -->
+    <!-- Opciones de cuotas para compra de dispositivo -->
     <string-array name="cuotas_array">
         <item>1 cuota (Pago completo)</item>
         <item>3 cuotas</item>
@@ -12,9 +37,14 @@
         <item>12 cuotas</item>
     </string-array>
 
+    <!-- ===================================================== -->
+    <!-- 📜 FILTROS DE HISTORIAL -->
+    <!-- ===================================================== -->
+    <!-- Opciones de filtro para el historial -->
     <string-array name="filtro_historial">
         <item>Hoy</item>
         <item>Últimos 7 días</item>
         <item>Últimos 30 días</item>
     </string-array>
+
 </resources>

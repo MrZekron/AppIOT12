@@ -1,4 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Pantalla para agregar un tanque.
+
+    ¿Qué hace este XML?
+    1. Muestra formulario para crear un tanque
+    2. Permite escribir nombre y capacidad
+    3. Permite elegir color desde Spinner
+    4. La dirección NO se escribe manualmente
+    5. La dirección se selecciona tocando el campo
+    6. El teclado NO debe abrirse en el campo dirección
+-->
+
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -6,98 +18,105 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/color_background"
+    android:padding="16dp"
     tools:context=".Agregar">
 
+    <!-- Título principal -->
     <TextView
         android:id="@+id/tvTituloAdd"
-        android:layout_width="324dp"
-        android:layout_height="43dp"
-        android:layout_marginTop="32dp"
-        android:text="Agregar Tanque de agua"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:text="Agregar Tanque de Agua"
         android:textColor="@color/color_text_primary"
         android:textSize="28sp"
         android:textStyle="bold"
-        app:layout_constraintBottom_toTopOf="@+id/linearLayout"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:ignore="MissingConstraints" />
+        app:layout_constraintTop_toTopOf="parent" />
 
+    <!-- Contenedor principal -->
     <LinearLayout
         android:id="@+id/linearLayout"
-        android:layout_width="356dp"
-        android:layout_height="232dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="32dp"
-        android:layout_marginEnd="16dp"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
         android:orientation="vertical"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.478"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tvTituloAdd">
+        app:layout_constraintTop_toBottomOf="@id/tvTituloAdd">
 
+        <!-- Nombre -->
         <EditText
             android:id="@+id/txtNombre"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:ems="10"
+            android:layout_marginTop="12dp"
             android:hint="Nombre"
-            android:inputType="text"
+            android:inputType="textCapSentences"
             android:minHeight="48dp"
+            android:padding="12dp"
             android:textColor="@color/color_secondary"
             android:textSize="16sp" />
 
+        <!-- Capacidad -->
         <EditText
             android:id="@+id/txtCapasidad"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:ems="10"
+            android:layout_marginTop="12dp"
             android:hint="Capacidad Volumétrica"
-            android:inputType="text"
+            android:inputType="number"
+            android:maxLength="6"
             android:minHeight="48dp"
-            android:textColor="@color/color_secondary" />
-
-        <!-- Campo opcional de dirección -->
-        <EditText
-            android:id="@+id/txtColor"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:ems="10"
-            android:hint="Color"
-            android:inputType="text"
-            android:minHeight="48dp"
-            android:textColor="@color/color_secondary" />
-
-        <EditText
-            android:id="@+id/txtDireccion"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:ems="10"
-            android:hint="Dirección del tanque (opcional)"
-            android:inputType="textPostalAddress"
-            android:minHeight="48dp"
+            android:padding="12dp"
             android:textColor="@color/color_secondary"
             android:textSize="16sp" />
 
+        <!-- Color -->
+        <Spinner
+            android:id="@+id/spnColor"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:minHeight="48dp" />
+
+        <!-- Dirección -->
+        <!-- Este campo solo muestra la dirección seleccionada -->
+        <!-- No debe abrir teclado -->
+        <TextView
+            android:id="@+id/txtDireccion"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:background="@android:drawable/edit_text"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground"
+            android:gravity="center_vertical"
+            android:minHeight="48dp"
+            android:padding="12dp"
+            android:text="Selecciona una dirección real"
+            android:textColor="@color/color_secondary"
+            android:textSize="16sp" />
     </LinearLayout>
 
+    <!-- Botones -->
     <LinearLayout
-        android:layout_width="354dp"
-        android:layout_height="49dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="16dp"
+        android:id="@+id/layoutBotones"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
         android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/linearLayout">
+        app:layout_constraintTop_toBottomOf="@id/linearLayout">
 
         <Button
             android:id="@+id/btnVolver"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
             android:layout_weight="1"
             android:backgroundTint="@color/color_primary"
             android:onClick="cancelar"
@@ -109,6 +128,7 @@
             android:id="@+id/btnAgregar"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
             android:layout_weight="1"
             android:backgroundTint="@color/color_primary"
             android:onClick="enviarDatosUsuario"

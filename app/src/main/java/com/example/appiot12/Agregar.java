@@ -3,142 +3,229 @@ package com.example.appiot12;
 // =====================================================
 // 📦 PANTALLA AGREGAR TANQUE
 // =====================================================
-// Esta pantalla permite crear un nuevo tanque de agua.
+// Esta pantalla permite crear un nuevo tanque.
 //
-// ¿Qué hace?
-// 1. Lee los datos escritos por el usuario
-// 2. Valida que los campos obligatorios estén completos
-// 3. Valida que la capacidad tenga solo números
-// 4. Crea un dispositivo inicial para el tanque
-// 5. Guarda dispositivo y tanque en Firebase
-// 6. Registra la acción en el historial
-// 7. Redirige a la lista de tanques
-//
-// IMPORTANTE:
-// La capacidad del tanque ahora solo puede contener números.
-// No acepta letras, espacios vacíos raros ni signos.
+// ¿Qué hace este código?
+// 1. Lee nombre, capacidad, color y dirección
+// 2. La dirección se selecciona con Google Places
+// 3. La dirección ya no usa teclado manual
+// 4. Valida que la dirección sea real
+// 5. Guarda tanque y dispositivo en Firebase
+// 6. Guarda además latitud, longitud y placeId
 // =====================================================
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.android.libraries.places.api.Places;
+import com.google.android.libraries.places.api.model.Place;
+import com.google.android.libraries.places.widget.Autocomplete;
+import com.google.android.libraries.places.widget.model.AutocompleteActivityMode;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public class Agregar extends AppCompatActivity {
 
-    // =====================================================
-    // ☁️ FIREBASE
-    // =====================================================
-    // Base de datos y referencia raíz.
-    private FirebaseDatabase firebaseDatabase;
     private DatabaseReference databaseReference;
 
-    // =====================================================
-    // 📝 CAMPOS DEL FORMULARIO
-    // =====================================================
-    // txtNombre     -> nombre del tanque
-    // txtCapasidad  -> capacidad del tanque (solo números)
-    // txtColor      -> color del tanque
-    // txtDireccion  -> dirección o ubicación
-    private EditText txtNombre, txtCapasidad, txtColor, txtDireccion;
+    // Campos del formulario
+    private EditText txtNombre, txtCapasidad;
+    private TextView txtDireccion;
+    private Spinner spnColor;
+
+    // Dirección validada
+    private boolean direccionValidada = false;
+    private String direccionFormateada = "";
+    private String placeIdDireccion = "";
+    private double latitudDireccion = 0.0;
+    private double longitudDireccion = 0.0;
+
+    // Launcher de autocompletado
+    private final ActivityResultLauncher<Intent> autocompleteLauncher =
+            registerForActivityResult(
+                    new ActivityResultContracts.StartActivityForResult(),
+                    result -> {
+                        if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+
+                            Place place = Autocomplete.getPlaceFromIntent(result.getData());
+
+                            if (place.getAddress() != null && place.getLatLng() != null) {
+                                direccionFormateada = place.getAddress();
+                                placeIdDireccion = place.getId() != null ? place.getId() : "";
+                                latitudDireccion = place.getLatLng().latitude;
+                                longitudDireccion = place.getLatLng().longitude;
+                                direccionValidada = true;
+
+                                txtDireccion.setText(direccionFormateada);
+                                toast("Dirección validada correctamente");
+                            } else {
+                                limpiarDireccionValidada();
+                                txtDireccion.setText("Selecciona una dirección real");
+                                toast("No se pudo validar la dirección");
+                            }
+                        }
+                    });
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_agregar);
 
-        // Conecta los EditText del XML con Java.
         txtNombre = findViewById(R.id.txtNombre);
         txtCapasidad = findViewById(R.id.txtCapasidad);
-        txtColor = findViewById(R.id.txtColor);
         txtDireccion = findViewById(R.id.txtDireccion);
+        spnColor = findViewById(R.id.spnColor);
 
-        // Inicializa Firebase.
         iniciarFirebase();
+        iniciarPlaces();
+        cargarColores();
+        configurarCampoDireccion();
     }
 
-    // =====================================================
-    // 🔗 INICIALIZAR FIREBASE
-    // =====================================================
-    // Prepara Firebase Realtime Database para poder guardar datos.
+    // Inicializa Firebase
     private void iniciarFirebase() {
         FirebaseApp.initializeApp(this);
-        firebaseDatabase = FirebaseDatabase.getInstance();
+        // Firebase
+        FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
         databaseReference = firebaseDatabase.getReference();
     }
 
-    // =====================================================
-    // 💾 ENVIAR DATOS DEL TANQUE
-    // =====================================================
-    // Este método:
-    // 1. Lee los campos
-    // 2. Valida datos
-    // 3. Obtiene el usuario actual
-    // 4. Crea IDs únicos
-    // 5. Guarda dispositivo y tanque
-    public void enviarDatosUsuario(View view) {
+    // Inicializa Google Places
+    private void iniciarPlaces() {
+        String apiKey = getString(R.string.google_maps_key);
 
-        // Lee y limpia espacios.
-        String nombre = txtNombre.getText().toString().trim();
-        String capacidad = txtCapasidad.getText().toString().trim();
-        String color = txtColor.getText().toString().trim();
-        String direccion = txtDireccion.getText().toString().trim();
-
-        // Valida campos obligatorios.
-        if (!validarCampos(nombre, capacidad, color)) return;
-
-        // Obtiene usuario autenticado.
-        FirebaseUser usuarioActual = FirebaseAuth.getInstance().getCurrentUser();
-
-        // Si no hay usuario logueado, no se puede guardar.
-        if (usuarioActual == null) {
-            toast("Error: usuario no autenticado.");
+        if (TextUtils.isEmpty(apiKey) || "TU_API_KEY_AQUI".equals(apiKey)) {
+            toast("Configura tu API Key de Google Places");
             return;
         }
 
-        // UID del usuario actual.
-        String uid = usuarioActual.getUid();
+        if (!Places.isInitialized()) {
+            Places.initialize(getApplicationContext(), apiKey);
+        }
+    }
 
-        // Crea un ID único para el tanque.
-        String idTanque = UUID.randomUUID().toString();
+    // Carga colores en el spinner
+    private void cargarColores() {
+        String[] colores = {
+                "Seleccione un color",
+                "Azul",
+                "Celeste",
+                "Verde",
+                "Rojo",
+                "Amarillo",
+                "Naranjo",
+                "Blanco",
+                "Negro",
+                "Gris",
+                "Café",
+                "Morado",
+                "Rosado"
+        };
 
-        // Crea un ID único para el dispositivo inicial.
-        String idDispositivo = UUID.randomUUID().toString();
-
-        // =================================================
-        // 📡 CREAR DISPOSITIVO INICIAL
-        // =================================================
-        // Valores iniciales de ejemplo para el dispositivo.
-        Dispositivo dispositivo = new Dispositivo(
-                idDispositivo,
-                7.0,    // pH inicial
-                500.0,  // conductividad inicial
-                1.0,    // turbidez inicial
-                150.0   // nivel inicial
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                this,
+                android.R.layout.simple_spinner_item,
+                colores
         );
 
-        // Guarda el dispositivo dentro del usuario.
-        databaseReference.child("usuarios")
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spnColor.setAdapter(adapter);
+    }
+
+    // Configura el campo dirección
+    private void configurarCampoDireccion() {
+        txtDireccion.setOnClickListener(v -> abrirAutocompletadoDireccion());
+    }
+
+    // Abre Google Places
+    private void abrirAutocompletadoDireccion() {
+        List<Place.Field> fields = Arrays.asList(
+                Place.Field.ID,
+                Place.Field.NAME,
+                Place.Field.ADDRESS,
+                Place.Field.LAT_LNG
+        );
+
+        Intent intent = new Autocomplete.IntentBuilder(
+                AutocompleteActivityMode.OVERLAY,
+                fields
+        )
+                .setCountries(Arrays.asList("CL"))
+                .build(this);
+
+        autocompleteLauncher.launch(intent);
+    }
+
+    // Limpia dirección validada
+    private void limpiarDireccionValidada() {
+        direccionValidada = false;
+        direccionFormateada = "";
+        placeIdDireccion = "";
+        latitudDireccion = 0.0;
+        longitudDireccion = 0.0;
+    }
+
+    // Guarda tanque
+    public void enviarDatosUsuario(View view) {
+        String nombre = txtNombre.getText().toString().trim();
+        String capacidad = txtCapasidad.getText().toString().trim();
+        String color = spnColor.getSelectedItem().toString();
+        String direccionVisible = txtDireccion.getText().toString().trim();
+
+        if (!validarCampos(nombre, capacidad, color, direccionVisible)) {
+            return;
+        }
+
+        FirebaseUser usuarioActual = FirebaseAuth.getInstance().getCurrentUser();
+
+        if (usuarioActual == null) {
+            toast("Error: usuario no autenticado");
+            return;
+        }
+
+        String uid = usuarioActual.getUid();
+        String idTanque = UUID.randomUUID().toString();
+        String idDispositivo = UUID.randomUUID().toString();
+
+        Dispositivo dispositivo = new Dispositivo(
+                idDispositivo,
+                7.0,
+                500.0,
+                1.0,
+                150.0
+        );
+
+        DatabaseReference dispositivoRef = databaseReference.child("usuarios")
                 .child(uid)
                 .child("dispositivos")
-                .child(idDispositivo)
-                .setValue(dispositivo);
+                .child(idDispositivo);
 
-        // =================================================
-        // 🚰 CREAR TANQUE
-        // =================================================
-        // Crea el objeto tanque y le asigna datos.
+        DatabaseReference tanqueRef = databaseReference.child("usuarios")
+                .child(uid)
+                .child("tanques")
+                .child(idTanque);
+
         TanqueAgua tanque = new TanqueAgua();
         tanque.setIdTanque(idTanque);
         tanque.setNombre(nombre);
@@ -146,68 +233,64 @@ public class Agregar extends AppCompatActivity {
         tanque.setColor(color);
         tanque.setIdDispositivo(idDispositivo);
 
-        // Si tu clase TanqueAgua tiene setDireccion(), descomenta esta línea:
-        // tanque.setDireccion(direccion);
+        dispositivoRef.setValue(dispositivo)
+                .addOnSuccessListener(aVoid ->
+                        tanqueRef.setValue(tanque)
+                                .addOnSuccessListener(aVoid1 -> {
+                                    Map<String, Object> datosDireccion = new HashMap<>();
+                                    datosDireccion.put("direccion", direccionFormateada);
+                                    datosDireccion.put("latitud", latitudDireccion);
+                                    datosDireccion.put("longitud", longitudDireccion);
+                                    datosDireccion.put("placeIdDireccion", placeIdDireccion);
 
-        // =================================================
-        // ☁️ GUARDAR TANQUE EN FIREBASE
-        // =================================================
-        databaseReference.child("usuarios")
-                .child(uid)
-                .child("tanques")
-                .child(idTanque)
-                .setValue(tanque)
-                .addOnSuccessListener(aVoid -> {
+                                    tanqueRef.updateChildren(datosDireccion)
+                                            .addOnSuccessListener(aVoid2 -> {
+                                                HistorialLogger.registrarAccion(
+                                                        "crear",
+                                                        "Se creó el tanque: " + nombre
+                                                );
 
-                    // Registra en historial que se creó un tanque.
-                    HistorialLogger.registrarAccion(
-                            "crear",
-                            "Se creó el tanque: " + nombre
-                    );
-
-                    toast("Tanque creado correctamente.");
-
-                    // Abre la lista de tanques.
-                    startActivity(new Intent(Agregar.this, Lista.class));
-                    finish();
-                })
+                                                toast("Tanque creado correctamente");
+                                                startActivity(new Intent(Agregar.this, Lista.class));
+                                                finish();
+                                            })
+                                            .addOnFailureListener(e ->
+                                                    toast("Tanque creado, pero falló la dirección: " + e.getMessage())
+                                            );
+                                })
+                                .addOnFailureListener(e ->
+                                        toast("Error al guardar tanque: " + e.getMessage())
+                                )
+                )
                 .addOnFailureListener(e ->
-                        toast("Error al enviar datos: " + e.getMessage()));
+                        toast("Error al guardar dispositivo: " + e.getMessage())
+                );
     }
 
-    // =====================================================
-    // ✅ VALIDAR CAMPOS
-    // =====================================================
-    // Valida:
-    // - nombre obligatorio
-    // - capacidad obligatoria
-    // - color obligatorio
-    // - capacidad solo numérica
-    // - capacidad mayor a cero
-    private boolean validarCampos(String nombre, String capacidad, String color) {
+    // Validaciones
+    private boolean validarCampos(String nombre,
+                                  String capacidad,
+                                  String color,
+                                  String direccionVisible) {
 
-        // Valida nombre.
         if (nombre.isEmpty()) {
             txtNombre.setError("Ingrese el nombre del tanque");
             txtNombre.requestFocus();
             return false;
         }
 
-        // Valida capacidad.
         if (capacidad.isEmpty()) {
             txtCapasidad.setError("Ingrese la capacidad del tanque");
             txtCapasidad.requestFocus();
             return false;
         }
 
-        // Solo se permiten números enteros.
         if (!capacidad.matches("\\d+")) {
             txtCapasidad.setError("Solo se permiten números");
             txtCapasidad.requestFocus();
             return false;
         }
 
-        // Convierte la capacidad a número para validar que sea mayor a 0.
         int capacidadNumero = Integer.parseInt(capacidad);
         if (capacidadNumero <= 0) {
             txtCapasidad.setError("La capacidad debe ser mayor a 0");
@@ -215,38 +298,37 @@ public class Agregar extends AppCompatActivity {
             return false;
         }
 
-        // Valida color.
-        if (color.isEmpty()) {
-            txtColor.setError("Ingrese el color del tanque");
-            txtColor.requestFocus();
+        if ("Seleccione un color".equals(color)) {
+            toast("Seleccione un color para el tanque");
+            return false;
+        }
+
+        if (direccionVisible.isEmpty() || "Selecciona una dirección real".equals(direccionVisible)) {
+            toast("Seleccione una dirección real");
+            return false;
+        }
+
+        if (!direccionValidada || !direccionVisible.equals(direccionFormateada)) {
+            toast("Debe seleccionar una dirección real desde el autocompletado");
             return false;
         }
 
         return true;
     }
 
-    // =====================================================
-    // 📋 IR A LA LISTA
-    // =====================================================
-    // Abre la pantalla donde se listan los tanques.
+    // Ir a lista
     public void verLista(View v) {
         startActivity(new Intent(this, Lista.class));
     }
 
-    // =====================================================
-    // ❌ CANCELAR
-    // =====================================================
-    // Cancela la creación y vuelve al menú.
+    // Cancelar
     public void cancelar(View view) {
         startActivity(new Intent(this, Menu.class));
         finish();
     }
 
-    // =====================================================
-    // 🍞 TOAST
-    // =====================================================
-    // Método auxiliar para mostrar mensajes rápidos.
-    private void toast(String mensaje) {
+    // Toast
+    private void toast(@NonNull String mensaje) {
         Toast.makeText(this, mensaje, Toast.LENGTH_SHORT).show();
     }
 }

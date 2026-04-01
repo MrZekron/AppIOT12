@@ -1,49 +1,60 @@
 // app/build.gradle.kts
+// =====================================================
 // 📦 Módulo app del proyecto Agua Segura
-// 🚀 Configuración principal del módulo Android
-// 🗺️ Usa OpenStreetMap con OSMDroid
-// ☁️ Usa Firebase
-// 📧 Incluye soporte para WorkManager + envío de correo temporal con JavaMail
+// =====================================================
+// ¿Qué hace este archivo?
+// 1. Configura el módulo principal de Android
+// 2. Activa Firebase con Google Services
+// 3. Define versiones de SDK
+// 4. Configura compatibilidad con Java 11
+// 5. Agrega librerías de UI, Firebase, mapas, gráficos, PDF y correo
+// 6. Agrega Google Places para autocompletado de direcciones reales
+//
+// IMPORTANTE:
+// - Se usa OpenStreetMap con OSMDroid para mapas
+// - Se usa Google Places SOLO para autocompletar direcciones reales
+// - La API Key de Google Places se puede leer desde strings.xml
+// =====================================================
 
 plugins {
-    alias(libs.plugins.android.application) // 📦 Plugin principal de aplicación Android
-    id("com.google.gms.google-services") // ☁️ Plugin de Google Services para Firebase
+    alias(libs.plugins.android.application) // Plugin principal Android
+    id("com.google.gms.google-services")    // Plugin de Firebase / Google Services
 }
 
 android {
-    namespace = "com.example.appiot12" // 🏷️ Namespace del proyecto
-    compileSdk = 35 // 🔥 SDK de compilación actualizado para compatibilidad con WorkManager
+    namespace = "com.example.appiot12"
+    compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.appiot12" // 📱 ID único de la app
-        minSdk = 24 // 📉 Versión mínima de Android soportada
-        targetSdk = 34 // 🎯 SDK objetivo
-        versionCode = 1 // 🔢 Versión interna
-        versionName = "1.0" // 🏷️ Versión visible
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner" // 🧪 Runner de tests instrumentados
+        applicationId = "com.example.appiot12"
+        minSdk = 24
+        targetSdk = 34
+        versionCode = 1
+        versionName = "1.0"
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
         release {
-            isMinifyEnabled = false // 🚫 No minificar en release por ahora
+            isMinifyEnabled = false
             proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"), // ⚙️ Config base de ProGuard
-                "proguard-rules.pro" // 🛡️ Reglas personalizadas
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
             )
         }
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11 // ☕ Compatibilidad Java 11
-        targetCompatibility = JavaVersion.VERSION_11 // ☕ Objetivo Java 11
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
 
     packaging {
         resources {
-            excludes += "META-INF/LICENSE.md" // 🚫 Evita conflicto de licencias duplicadas
-            excludes += "META-INF/LICENSE-notice.md" // 🚫 Evita conflicto adicional común
-            excludes += "META-INF/NOTICE.md" // 🚫 Evita conflicto adicional
-            excludes += "META-INF/NOTICE-notice.md" // 🚫 Evita conflicto adicional
+            excludes += "META-INF/LICENSE.md"
+            excludes += "META-INF/LICENSE-notice.md"
+            excludes += "META-INF/NOTICE.md"
+            excludes += "META-INF/NOTICE-notice.md"
         }
     }
 }
@@ -53,51 +64,62 @@ dependencies {
     // ===============================
     // 📱 ANDROIDX / UI
     // ===============================
-    implementation(libs.appcompat) // 🧱 Compatibilidad de AppCompat
-    implementation(libs.material) // 🎨 Material Design
-    implementation(libs.activity) // 🖥️ Soporte Activity
-    implementation(libs.constraintlayout) // 📐 Layout flexible
-    implementation(libs.gridlayout) // 🧩 GridLayout
+    implementation(libs.appcompat)
+    implementation(libs.material)
+    implementation(libs.activity)
+    implementation(libs.constraintlayout)
+    implementation(libs.gridlayout)
 
     // ===============================
     // ☁️ FIREBASE (BOM)
     // ===============================
-    implementation(platform("com.google.firebase:firebase-bom:34.5.0")) // 📦 BOM de Firebase
-    implementation("com.google.firebase:firebase-auth") // 👤 Autenticación
-    implementation("com.google.firebase:firebase-database") // 🗄️ Realtime Database
-    implementation("com.google.firebase:firebase-analytics") // 📊 Analytics
+    implementation(platform("com.google.firebase:firebase-bom:34.5.0"))
+    implementation("com.google.firebase:firebase-auth")
+    implementation("com.google.firebase:firebase-database")
+    implementation("com.google.firebase:firebase-analytics")
 
     // ===============================
     // 🗺️ MAPAS GRATIS (OpenStreetMap)
     // ===============================
-    implementation("org.osmdroid:osmdroid-android:6.1.18") // 🌍 Mapas con OSMDroid
+    implementation("org.osmdroid:osmdroid-android:6.1.18")
+
+    // ===============================
+    // 📍 GOOGLE PLACES
+    // ===============================
+    // Esta librería permite autocompletar direcciones reales.
+    implementation("com.google.android.libraries.places:places:3.5.0")
 
     // ===============================
     // 📈 GRÁFICOS (sensores)
     // ===============================
-    implementation("com.github.PhilJay:MPAndroidChart:3.1.0") // 📊 Gráficos para sensores
+    implementation("com.github.PhilJay:MPAndroidChart:3.1.0")
 
     // ===============================
     // 📄 PDF
     // ===============================
-    implementation("com.itextpdf:itext7-core:7.2.5") // 🧾 Generación de PDF
+    implementation("com.itextpdf:itext7-core:7.2.5")
 
     // ===============================
     // 🤖 WORKMANAGER
     // ===============================
-    implementation(libs.androidx.work.runtime) // 🔄 Tareas en segundo plano
+    implementation(libs.androidx.work.runtime)
 
     // ===============================
-    // 📧 JAVAMAIL (envío temporal de correos desde Android)
+    // 📧 JAVAMAIL
     // ===============================
-    implementation("com.sun.mail:android-mail:1.6.7") // 📨 Soporte mail
-    implementation("com.sun.mail:android-activation:1.6.7") // ⚙️ Activación MIME
-    implementation("com.google.android.gms:play-services-tasks:18.2.0") // ⏳ Tasks.await para Firebase
+    implementation("com.sun.mail:android-mail:1.6.7")
+    implementation("com.sun.mail:android-activation:1.6.7")
+
+    // ===============================
+    // ⚙️ GOOGLE TASKS
+    // ===============================
+    // Esta librería es para tareas de Google Play Services.
+    implementation("com.google.android.gms:play-services-tasks:18.2.0")
 
     // ===============================
     // 🧪 TESTING
     // ===============================
-    testImplementation(libs.junit) // ✅ Tests unitarios
-    androidTestImplementation(libs.ext.junit) // ✅ Tests instrumentados JUnit
-    androidTestImplementation(libs.espresso.core) // ✅ Espresso UI tests
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.ext.junit)
+    androidTestImplementation(libs.espresso.core)
 }
