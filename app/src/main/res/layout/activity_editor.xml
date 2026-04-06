@@ -1,76 +1,123 @@
 <?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Pantalla de edición de tanque.
+    - El formulario está dentro de un contenedor con margen.
+    - Los botones están fuera del formulario para que puedas
+      moverlos y ajustar su tamaño más fácilmente.
+-->
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@mipmap/fondo"
+    android:background="@color/color_background"
     tools:context=".Editor">
 
-    <!-- Nombre del tanque -->
-    <androidx.appcompat.widget.AppCompatEditText
-        android:id="@+id/etNombre"
-        android:layout_width="0dp"
+    <TextView
+        android:id="@+id/tvTituloConfig"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:hint="Nombre del Tanque"
-        android:inputType="text"
-        android:minHeight="48dp"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:text="Editor de Tanque"
+        android:textSize="36sp"
+        android:textColor="@color/color_text_primary"
+        android:layout_marginTop="40dp"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- Capacidad del tanque -->
-    <androidx.appcompat.widget.AppCompatEditText
-        android:id="@+id/etCapacidad"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:hint="Capacidad (L)"
-        android:inputType="number"
-        android:minHeight="48dp"
+    <!--
+        CONTENEDOR DEL FORMULARIO
+        Aquí se agrupan los campos para que tengan un margen general
+        respecto a los bordes de la pantalla.
+    -->
+
+    <!--
+        BOTÓN GUARDAR
+        Está fuera del formulario para que puedas moverlo o cambiarle
+        el tamaño manualmente sin afectar el contenedor.
+    -->
+
+    <LinearLayout
+        android:id="@+id/contenedorFormulario"
+        android:layout_width="334dp"
+        android:layout_height="224dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="132dp"
+        android:layout_marginEnd="24dp"
+        android:background="@android:color/transparent"
+        android:orientation="vertical"
+        android:padding="16dp"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.482"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/etNombre" />
+        app:layout_constraintTop_toTopOf="parent">
 
-    <!-- Color del tanque (Editable, NO spinner) -->
-    <androidx.appcompat.widget.AppCompatEditText
-        android:id="@+id/etColor"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:hint="Color del Tanque"
-        android:inputType="text"
-        android:minHeight="48dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/etCapacidad" />
+        <!--
+            Campo para ingresar o editar el nombre del tanque.
+        -->
+        <androidx.appcompat.widget.AppCompatEditText
+            android:id="@+id/etNombre"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:hint="Nombre del Tanque"
+            android:inputType="text"
+            android:minHeight="48dp" />
 
-    <!-- Botón Guardar -->
+        <!--
+            Campo para ingresar o editar la capacidad del tanque en litros.
+        -->
+        <androidx.appcompat.widget.AppCompatEditText
+            android:id="@+id/etCapacidad"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:hint="Capacidad (L)"
+            android:inputType="number"
+            android:minHeight="48dp" />
+
+        <!--
+            Campo para ingresar o editar el color del tanque.
+        -->
+        <androidx.appcompat.widget.AppCompatEditText
+            android:id="@+id/etColor"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:hint="Color del Tanque"
+            android:inputType="text"
+            android:minHeight="48dp" />
+
+    </LinearLayout>
+
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/btnGuardar"
-        android:layout_width="0dp"
+        android:layout_width="220dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:text="Guardar Cambios"
+        android:layout_marginTop="32dp"
         android:onClick="guardarTanque"
-        android:backgroundTint="@color/verde"
+        android:backgroundTint="@color/color_primary"
+        android:text="Guardar Cambios"
         android:textColor="@android:color/white"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/contenedorFormulario"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/etColor" />
+        app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- Botón Volver -->
+    <!--
+        BOTÓN VOLVER
+        También está fuera del formulario para que lo puedas ajustar
+        libremente después.
+    -->
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/btnVolver"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_width="203dp"
+        android:layout_height="43dp"
         android:layout_marginTop="16dp"
-        android:layout_marginBottom="16dp"
-        android:text="Volver"
+        android:backgroundTint="@color/color_secondary"
         android:onClick="volverAlMenu"
-        android:backgroundTint="#E11B1B"
+        android:text="Volver"
         android:textColor="@android:color/white"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

@@ -11,7 +11,7 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@mipmap/fondo"
+    android:background="@color/color_background"
     android:fillViewport="true">
 
     <LinearLayout
@@ -28,7 +28,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:text="Editar Perfil"
-            android:textColor="#000000"
+            android:textColor="@color/color_text_primary"
             android:textSize="28sp"
             android:textStyle="bold" />
 
@@ -38,7 +38,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            android:background="@drawable/bg_card"
+            android:background="@color/color_secondary"
             android:elevation="4dp"
             android:orientation="vertical"
             android:padding="18dp">
@@ -49,7 +49,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Nombre"
-                android:textColor="#000000"
+                android:textColor="@color/color_text_primary"
                 android:textSize="16sp"
                 android:textStyle="bold" />
 
@@ -73,7 +73,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
                 android:text="Correo"
-                android:textColor="#000000"
+                android:textColor="@color/color_text_primary"
                 android:textSize="16sp"
                 android:textStyle="bold" />
 
@@ -104,25 +104,26 @@
         </LinearLayout>
 
         <!-- Botón guardar cambios -->
+
+        <!-- Botón cancelar -->
         <Button
             android:id="@+id/btnGuardarPerfil"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            android:background="#2E7D32"
+            android:backgroundTint="@color/color_primary"
             android:padding="14dp"
             android:text="Guardar cambios"
             android:textColor="@android:color/white"
             android:textSize="18sp"
             android:textStyle="bold" />
 
-        <!-- Botón cancelar -->
         <Button
             android:id="@+id/btnCancelarPerfil"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            android:background="#A33D60"
+            android:backgroundTint="@color/color_secondary"
             android:padding="14dp"
             android:text="Cancelar"
             android:textColor="@android:color/white"
