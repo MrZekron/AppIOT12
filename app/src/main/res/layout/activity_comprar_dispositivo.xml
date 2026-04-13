@@ -79,7 +79,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:entries="@array/cuotas_array" />
+            android:entries="@array/cuotas_array"
+            android:minHeight="48dp" />
 
         <!-- Resumen -->
         <TextView

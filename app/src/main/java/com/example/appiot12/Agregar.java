@@ -3,25 +3,26 @@ package com.example.appiot12;
 // =====================================================
 // 📦 PANTALLA AGREGAR TANQUE
 // =====================================================
-// Esta pantalla permite crear un nuevo tanque.
-//
 // ¿Qué hace este código?
-// 1. Lee nombre, capacidad, color y dirección
-// 2. La dirección se selecciona con Google Places
-// 3. La dirección ya no usa teclado manual
-// 4. Valida que la dirección sea real
-// 5. Guarda tanque y dispositivo en Firebase
-// 6. Guarda además latitud, longitud y placeId
+// 1. Permite ingresar nombre, capacidad, color y dirección
+// 2. La dirección se escribe manualmente
+// 3. Solo se valida cuando el usuario toca el botón
+//    "Validar dirección"
+// 4. Guarda tanque y dispositivo en Firebase
+// 5. Guarda dirección, latitud, longitud y placeId
+// 6. Si el usuario cambia la dirección luego de validarla,
+//    se invalida automáticamente
 // =====================================================
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Spinner;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -47,71 +48,92 @@ import java.util.UUID;
 
 public class Agregar extends AppCompatActivity {
 
+    // Referencia a Firebase
     private DatabaseReference databaseReference;
 
     // Campos del formulario
-    private EditText txtNombre, txtCapasidad;
-    private TextView txtDireccion;
+    private EditText txtNombre, txtCapasidad, txtDireccion;
     private Spinner spnColor;
 
-    // Dirección validada
+    // Datos de dirección validada por Google Places
     private boolean direccionValidada = false;
     private String direccionFormateada = "";
     private String placeIdDireccion = "";
     private double latitudDireccion = 0.0;
     private double longitudDireccion = 0.0;
 
-    // Launcher de autocompletado
+    // =====================================================
+    // 🚀 LAUNCHER PARA RECIBIR RESULTADO DE GOOGLE PLACES
+    // =====================================================
+    // Este bloque recibe la dirección elegida por el usuario
     private final ActivityResultLauncher<Intent> autocompleteLauncher =
             registerForActivityResult(
                     new ActivityResultContracts.StartActivityForResult(),
                     result -> {
-                        if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                        try {
+                            if (result.getResultCode() == RESULT_OK && result.getData() != null) {
 
-                            Place place = Autocomplete.getPlaceFromIntent(result.getData());
+                                Place place = Autocomplete.getPlaceFromIntent(result.getData());
 
-                            if (place.getAddress() != null && place.getLatLng() != null) {
-                                direccionFormateada = place.getAddress();
-                                placeIdDireccion = place.getId() != null ? place.getId() : "";
-                                latitudDireccion = place.getLatLng().latitude;
-                                longitudDireccion = place.getLatLng().longitude;
-                                direccionValidada = true;
+                                if (place.getAddress() != null && place.getLatLng() != null) {
+                                    direccionFormateada = place.getAddress();
+                                    placeIdDireccion = place.getId() != null ? place.getId() : "";
+                                    latitudDireccion = place.getLatLng().latitude;
+                                    longitudDireccion = place.getLatLng().longitude;
+                                    direccionValidada = true;
 
-                                txtDireccion.setText(direccionFormateada);
-                                toast("Dirección validada correctamente");
-                            } else {
-                                limpiarDireccionValidada();
-                                txtDireccion.setText("Selecciona una dirección real");
-                                toast("No se pudo validar la dirección");
+                                    txtDireccion.setText(direccionFormateada);
+                                    txtDireccion.setSelection(txtDireccion.getText().length());
+
+                                    toast("Dirección validada correctamente");
+                                } else {
+                                    limpiarDireccionValidada();
+                                    toast("No se pudo validar la dirección");
+                                }
                             }
+                        } catch (Exception e) {
+                            limpiarDireccionValidada();
+                            toast("Error al validar dirección: " + e.getMessage());
                         }
                     });
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_agregar);
 
-        txtNombre = findViewById(R.id.txtNombre);
-        txtCapasidad = findViewById(R.id.txtCapasidad);
-        txtDireccion = findViewById(R.id.txtDireccion);
-        spnColor = findViewById(R.id.spnColor);
+        try {
+            setContentView(R.layout.activity_agregar);
 
-        iniciarFirebase();
-        iniciarPlaces();
-        cargarColores();
-        configurarCampoDireccion();
+            // Enlace de vistas
+            txtNombre = findViewById(R.id.txtNombre);
+            txtCapasidad = findViewById(R.id.txtCapasidad);
+            txtDireccion = findViewById(R.id.txtDireccion);
+            spnColor = findViewById(R.id.spnColor);
+
+            // Inicializaciones
+            iniciarFirebase();
+            iniciarPlaces();
+            cargarColores();
+            configurarCampoDireccion();
+
+        } catch (Exception e) {
+            toast("Error al abrir Agregar: " + e.getMessage());
+            finish();
+        }
     }
 
-    // Inicializa Firebase
+    // =====================================================
+    // 🔥 INICIALIZA FIREBASE
+    // =====================================================
     private void iniciarFirebase() {
         FirebaseApp.initializeApp(this);
-        // Firebase
         FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
         databaseReference = firebaseDatabase.getReference();
     }
 
-    // Inicializa Google Places
+    // =====================================================
+    // 🗺️ INICIALIZA GOOGLE PLACES
+    // =====================================================
     private void iniciarPlaces() {
         String apiKey = getString(R.string.google_maps_key);
 
@@ -125,7 +147,9 @@ public class Agregar extends AppCompatActivity {
         }
     }
 
-    // Carga colores en el spinner
+    // =====================================================
+    // 🎨 CARGA LOS COLORES EN EL SPINNER
+    // =====================================================
     private void cargarColores() {
         String[] colores = {
                 "Seleccione un color",
@@ -153,31 +177,79 @@ public class Agregar extends AppCompatActivity {
         spnColor.setAdapter(adapter);
     }
 
-    // Configura el campo dirección
+    // =====================================================
+    // 📝 CONFIGURA EL CAMPO DIRECCIÓN
+    // =====================================================
+    // Si el usuario cambia una dirección ya validada,
+    // se borra la validación para evitar inconsistencias
     private void configurarCampoDireccion() {
-        txtDireccion.setOnClickListener(v -> abrirAutocompletadoDireccion());
+        txtDireccion.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                // No se usa
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                String textoActual = s.toString();
+
+                if (direccionValidada && !textoActual.equals(direccionFormateada)) {
+                    limpiarDireccionValidada();
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                // No se usa
+            }
+        });
     }
 
-    // Abre Google Places
-    private void abrirAutocompletadoDireccion() {
-        List<Place.Field> fields = Arrays.asList(
-                Place.Field.ID,
-                Place.Field.NAME,
-                Place.Field.ADDRESS,
-                Place.Field.LAT_LNG
-        );
+    // =====================================================
+    // 📍 BOTÓN VALIDAR DIRECCIÓN
+    // =====================================================
+    // Solo aquí se abre Google Places
+    public void validarDireccion(View view) {
+        String consultaInicial = txtDireccion.getText().toString().trim();
 
-        Intent intent = new Autocomplete.IntentBuilder(
-                AutocompleteActivityMode.OVERLAY,
-                fields
-        )
-                .setCountries(Arrays.asList("CL"))
-                .build(this);
+        if (consultaInicial.isEmpty()) {
+            txtDireccion.setError("Ingrese una dirección");
+            txtDireccion.requestFocus();
+            return;
+        }
 
-        autocompleteLauncher.launch(intent);
+        String apiKey = getString(R.string.google_maps_key);
+        if (TextUtils.isEmpty(apiKey) || "TU_API_KEY_AQUI".equals(apiKey)) {
+            toast("Debes configurar la API Key de Google Places");
+            return;
+        }
+
+        try {
+            List<Place.Field> fields = Arrays.asList(
+                    Place.Field.ID,
+                    Place.Field.NAME,
+                    Place.Field.ADDRESS,
+                    Place.Field.LAT_LNG
+            );
+
+            Intent intent = new Autocomplete.IntentBuilder(
+                    AutocompleteActivityMode.OVERLAY,
+                    fields
+            )
+                    .setCountries(Arrays.asList("CL"))
+                    .setInitialQuery(consultaInicial)
+                    .build(this);
+
+            autocompleteLauncher.launch(intent);
+
+        } catch (Exception e) {
+            toast("Error al abrir Google Places: " + e.getMessage());
+        }
     }
 
-    // Limpia dirección validada
+    // =====================================================
+    // 🧹 LIMPIA DATOS DE DIRECCIÓN VALIDADA
+    // =====================================================
     private void limpiarDireccionValidada() {
         direccionValidada = false;
         direccionFormateada = "";
@@ -186,7 +258,9 @@ public class Agregar extends AppCompatActivity {
         longitudDireccion = 0.0;
     }
 
-    // Guarda tanque
+    // =====================================================
+    // 💾 GUARDA EL TANQUE Y SU DISPOSITIVO
+    // =====================================================
     public void enviarDatosUsuario(View view) {
         String nombre = txtNombre.getText().toString().trim();
         String capacidad = txtCapasidad.getText().toString().trim();
@@ -208,6 +282,7 @@ public class Agregar extends AppCompatActivity {
         String idTanque = UUID.randomUUID().toString();
         String idDispositivo = UUID.randomUUID().toString();
 
+        // Dispositivo base asociado al tanque
         Dispositivo dispositivo = new Dispositivo(
                 idDispositivo,
                 7.0,
@@ -267,7 +342,9 @@ public class Agregar extends AppCompatActivity {
                 );
     }
 
-    // Validaciones
+    // =====================================================
+    // ✅ VALIDA LOS CAMPOS DEL FORMULARIO
+    // =====================================================
     private boolean validarCampos(String nombre,
                                   String capacidad,
                                   String color,
@@ -303,31 +380,40 @@ public class Agregar extends AppCompatActivity {
             return false;
         }
 
-        if (direccionVisible.isEmpty() || "Selecciona una dirección real".equals(direccionVisible)) {
-            toast("Seleccione una dirección real");
+        if (direccionVisible.isEmpty()) {
+            txtDireccion.setError("Ingrese una dirección");
+            txtDireccion.requestFocus();
             return false;
         }
 
         if (!direccionValidada || !direccionVisible.equals(direccionFormateada)) {
-            toast("Debe seleccionar una dirección real desde el autocompletado");
+            txtDireccion.setError("Debe validar la dirección con el botón");
+            txtDireccion.requestFocus();
+            toast("Primero valida la dirección");
             return false;
         }
 
         return true;
     }
 
-    // Ir a lista
+    // =====================================================
+    // 📄 IR A LA LISTA
+    // =====================================================
     public void verLista(View v) {
         startActivity(new Intent(this, Lista.class));
     }
 
-    // Cancelar
+    // =====================================================
+    // ❌ CANCELAR Y VOLVER AL MENÚ
+    // =====================================================
     public void cancelar(View view) {
         startActivity(new Intent(this, Menu.class));
         finish();
     }
 
-    // Toast
+    // =====================================================
+    // 🔔 MENSAJE RÁPIDO
+    // =====================================================
     private void toast(@NonNull String mensaje) {
         Toast.makeText(this, mensaje, Toast.LENGTH_SHORT).show();
     }

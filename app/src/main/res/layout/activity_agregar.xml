@@ -4,11 +4,11 @@
 
     ¿Qué hace este XML?
     1. Muestra formulario para crear un tanque
-    2. Permite escribir nombre y capacidad
-    3. Permite elegir color desde Spinner
-    4. La dirección NO se escribe manualmente
-    5. La dirección se selecciona tocando el campo
-    6. El teclado NO debe abrirse en el campo dirección
+    2. Permite ingresar nombre y capacidad
+    3. Permite elegir color con Spinner
+    4. Permite escribir una dirección manualmente
+    5. Tiene un botón para validar dirección con Google Places
+    6. Tiene botones para volver o agregar
 -->
 
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -35,7 +35,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- Contenedor principal -->
+    <!-- Formulario principal -->
     <LinearLayout
         android:id="@+id/linearLayout"
         android:layout_width="0dp"
@@ -46,7 +46,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tvTituloAdd">
 
-        <!-- Nombre -->
+        <!-- Nombre del tanque -->
         <EditText
             android:id="@+id/txtNombre"
             android:layout_width="match_parent"
@@ -82,26 +82,32 @@
             android:minHeight="48dp" />
 
         <!-- Dirección -->
-        <!-- Este campo solo muestra la dirección seleccionada -->
-        <!-- No debe abrir teclado -->
-        <TextView
+        <EditText
             android:id="@+id/txtDireccion"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            android:background="@android:drawable/edit_text"
-            android:clickable="true"
-            android:focusable="true"
-            android:foreground="?attr/selectableItemBackground"
-            android:gravity="center_vertical"
+            android:hint="Ingrese dirección real"
+            android:inputType="textPostalAddress"
             android:minHeight="48dp"
             android:padding="12dp"
-            android:text="Selecciona una dirección real"
             android:textColor="@color/color_secondary"
+            android:textSize="16sp" />
+
+        <!-- Botón validar dirección -->
+        <Button
+            android:id="@+id/btnValidarDireccion"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:backgroundTint="@color/color_primary"
+            android:onClick="validarDireccion"
+            android:text="Validar dirección"
+            android:textColor="@color/color_surface"
             android:textSize="16sp" />
     </LinearLayout>
 
-    <!-- Botones -->
+    <!-- Botones inferiores -->
     <LinearLayout
         android:id="@+id/layoutBotones"
         android:layout_width="0dp"
@@ -112,6 +118,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/linearLayout">
 
+        <!-- Volver -->
         <Button
             android:id="@+id/btnVolver"
             android:layout_width="0dp"
@@ -124,6 +131,7 @@
             android:textColor="@color/color_surface"
             android:textSize="16sp" />
 
+        <!-- Agregar -->
         <Button
             android:id="@+id/btnAgregar"
             android:layout_width="0dp"
