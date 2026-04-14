@@ -5,7 +5,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@mipmap/fondo"
+    android:background="@color/color_background"
     tools:context=".HistorialCompra">
 
     <!-- 🏷️ TÍTULO -->
@@ -18,7 +18,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="40dp"
         android:text="Historial de Pagos admin"
-        android:textColor="#000"
+        android:textColor="@color/color_text_primary"
         android:textSize="32sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.496"
@@ -42,8 +42,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Volver"
-        android:backgroundTint="#999"
-        android:textColor="#000"
+        android:backgroundTint="@color/color_primary"
+        android:textColor="@color/white"
         android:layout_marginBottom="25dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"

@@ -5,7 +5,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@mipmap/fondo"
+    android:background="@color/color_background"
     tools:context=".MainActivity">
 
 
@@ -53,6 +53,7 @@
         android:text="Iniciar Sesión"
         android:textColor="#FFFFFF"
         android:textStyle="bold"
+        android:backgroundTint="@color/color_primary"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.497"

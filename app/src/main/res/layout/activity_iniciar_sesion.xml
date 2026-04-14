@@ -5,7 +5,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@mipmap/fondo"
+    android:background="@color/color_background"
     tools:context=".IniciarSesion">
 
     <LinearLayout
@@ -59,7 +59,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
-            android:backgroundTint="#1976D2"
+            android:backgroundTint="@color/color_primary"
             android:onClick="onClick"
             android:text="Ingresar"
             android:textColor="#FFFFFF"
