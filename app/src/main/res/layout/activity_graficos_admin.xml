@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+    =====================================================
+    📊 PANTALLA DE GRÁFICOS DEL ADMINISTRADOR
+    =====================================================
+    ¿Qué hace este XML?
+    1. Define el fondo usando el color oficial de la app (@color/color_background)
+    2. Muestra un ScrollView para que el admin pueda hacer scroll
+       y ver los 3 gráficos sin que se corten en pantallas pequeñas
+    3. Cada gráfico tiene:
+       - Un TextView de título descriptivo
+       - El componente de gráfico de MPAndroidChart
+
+    COLORES USADOS (misma paleta que activity_agregar.xml):
+    → @color/color_background  = #C8EFED  → Fondo general
+    → @color/color_primary     = #1D8EC1  → Botón volver
+    → @color/color_text_primary= #4B65A9  → Títulos y textos
+    → @color/color_surface     = #F8EFED  → Texto del botón, tarjetas
+    → @color/color_secondary   = #5FCAE0  → Bordes de tarjetas
+    =====================================================
+-->
+
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/scrollGraficos"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/color_background"
+    android:fillViewport="true"
+    tools:context=".GraficosAdmin">
+
+    <!-- Contenedor vertical de todos los elementos de la pantalla -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- ====================================================
+             🏷️ TÍTULO PRINCIPAL DE LA PANTALLA
+             ==================================================== -->
+        <TextView
+            android:id="@+id/tvTituloPantalla"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/graficos_titulo_pantalla"
+            android:textColor="@color/color_text_primary"
+            android:textSize="26sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="20dp"
+            android:gravity="center" />
+
+        <!-- ====================================================
+             📊 SECCIÓN 1: USUARIOS REGISTRADOS POR MES
+             Muestra un gráfico de barras verticales con el
+             número de nuevos usuarios cada mes.
+             ==================================================== -->
+
+        <!-- Tarjeta contenedora del primer gráfico -->
+        <LinearLayout
+            android:id="@+id/cardUsuarios"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@color/color_surface"
+            android:padding="12dp"
+            android:layout_marginBottom="20dp">
+
+            <!-- Título del gráfico 1 -->
+            <TextView
+                android:id="@+id/tvTituloUsuarios"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/graficos_titulo_usuarios"
+                android:textColor="@color/color_text_primary"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="8dp" />
+
+            <!-- Gráfico de barras verticales: usuarios por mes
+                 El Java asociado es barChartUsuarios en GraficosAdmin.java -->
+            <com.github.mikephil.charting.charts.BarChart
+                android:id="@+id/barChartUsuarios"
+                android:layout_width="match_parent"
+                android:layout_height="260dp" />
+
+        </LinearLayout>
+
+        <!-- ====================================================
+             📊 SECCIÓN 2: COMPRAS DE DISPOSITIVOS POR MES (GLOBAL)
+             Muestra el total de dispositivos comprados en
+             todo el sistema, agrupados por mes.
+             ==================================================== -->
+
+        <!-- Tarjeta contenedora del segundo gráfico -->
+        <LinearLayout
+            android:id="@+id/cardComprasGlobal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@color/color_surface"
+            android:padding="12dp"
+            android:layout_marginBottom="20dp">
+
+            <!-- Título del gráfico 2 -->
+            <TextView
+                android:id="@+id/tvTituloComprasGlobal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/graficos_titulo_compras_global"
+                android:textColor="@color/color_text_primary"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="8dp" />
+
+            <!-- Gráfico de barras verticales: compras globales por mes
+                 El Java asociado es barChartComprasGlobal en GraficosAdmin.java -->
+            <com.github.mikephil.charting.charts.BarChart
+                android:id="@+id/barChartComprasGlobal"
+                android:layout_width="match_parent"
+                android:layout_height="260dp" />
+
+        </LinearLayout>
+
+        <!-- ====================================================
+             📊 SECCIÓN 3: COMPRAS DE DISPOSITIVOS POR USUARIO
+             Muestra cuántos dispositivos ha comprado
+             cada usuario individualmente.
+             Se usa gráfico horizontal porque los correos
+             son textos largos que se leen mejor en vertical.
+             ==================================================== -->
+
+        <!-- Tarjeta contenedora del tercer gráfico -->
+        <LinearLayout
+            android:id="@+id/cardComprasPorUsuario"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@color/color_surface"
+            android:padding="12dp"
+            android:layout_marginBottom="20dp">
+
+            <!-- Título del gráfico 3 -->
+            <TextView
+                android:id="@+id/tvTituloComprasPorUsuario"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/graficos_titulo_compras_usuario"
+                android:textColor="@color/color_text_primary"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="8dp" />
+
+            <!-- Gráfico de barras HORIZONTALES: compras por usuario
+                 Horizontal porque los correos son largos como etiquetas.
+                 El Java asociado es barChartComprasPorUsuario en GraficosAdmin.java -->
+            <com.github.mikephil.charting.charts.HorizontalBarChart
+                android:id="@+id/barChartComprasPorUsuario"
+                android:layout_width="match_parent"
+                android:layout_height="300dp" />
+
+        </LinearLayout>
+
+        <!-- ====================================================
+             ⬅️ BOTÓN VOLVER
+             Llama al método volver() de GraficosAdmin.java
+             que cierra la Activity y regresa al MenuAdmin.
+             Usa el color y estilo de los botones de Agregar.xml
+             ==================================================== -->
+        <Button
+            android:id="@+id/btnVolverGraficos"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/graficos_btn_volver"
+            android:backgroundTint="@color/color_primary"
+            android:textColor="@color/color_surface"
+            android:textSize="16sp"
+            android:padding="12dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="16dp"
+            android:onClick="volver" />
+
+    </LinearLayout>
+
+</ScrollView>

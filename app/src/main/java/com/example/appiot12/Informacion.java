@@ -3,6 +3,7 @@ package com.example.appiot12;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -101,6 +102,10 @@ public class Informacion extends AppCompatActivity {
     private String tanqueId;
     private String idDispositivo;
 
+    private String tanqueNombre;
+    private String tanqueCapacidad;
+    private String tanqueColor;
+
     private boolean mantencionTanque;
     private boolean mantencionDispositivo;
 
@@ -194,9 +199,13 @@ public class Informacion extends AppCompatActivity {
         mantencionTanque = intent.getBooleanExtra("mantencionTanque", false);
         mantencionDispositivo = intent.getBooleanExtra("mantencionDispositivo", false);
 
-        String nombre = valorSeguro(intent.getStringExtra("tanqueNombre"));
-        String capacidad = valorSeguro(intent.getStringExtra("tanqueCapacidad"));
-        String color = valorSeguro(intent.getStringExtra("tanqueColor"));
+        tanqueNombre = valorSeguro(intent.getStringExtra("tanqueNombre"));
+        tanqueCapacidad = valorSeguro(intent.getStringExtra("tanqueCapacidad"));
+        tanqueColor = valorSeguro(intent.getStringExtra("tanqueColor"));
+
+        String nombre = tanqueNombre;
+        String capacidad = tanqueCapacidad;
+        String color = tanqueColor;
 
         txtNombre.setText(nombre);
         txtCapasidad.setText(capacidad);
@@ -498,6 +507,22 @@ public class Informacion extends AppCompatActivity {
         txtCondEstado.setTextColor(COLOR_ALERTA);
         txtTurbEstado.setTextColor(COLOR_ALERTA);
         txtUltraEstado.setTextColor(COLOR_ALERTA);
+    }
+
+    // =====================================================
+    // ✏️ EDITAR TANQUE
+    // =====================================================
+    /**
+     * Abre la pantalla Editor con los datos actuales del tanque.
+     * Llamado por android:onClick="editarTanque" en el XML.
+     */
+    public void editarTanque(View view) {
+        Intent intent = new Intent(this, Editor.class);
+        intent.putExtra("tanqueId", tanqueId);
+        intent.putExtra("tanqueNombre", tanqueNombre);
+        intent.putExtra("tanqueCapacidad", tanqueCapacidad);
+        intent.putExtra("tanqueColor", tanqueColor);
+        startActivity(intent);
     }
 
     @Override

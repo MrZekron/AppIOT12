@@ -27,6 +27,15 @@
     <string name="borrar"></string>
 
     <!-- ===================================================== -->
+    <!-- 📊 PANTALLA GRÁFICOS ADMIN -->
+    <!-- ===================================================== -->
+    <string name="graficos_titulo_pantalla">Gráficos del Sistema</string>
+    <string name="graficos_titulo_usuarios">Usuarios registrados por mes</string>
+    <string name="graficos_titulo_compras_global">Compras de dispositivos por mes (global)</string>
+    <string name="graficos_titulo_compras_usuario">Dispositivos comprados por usuario</string>
+    <string name="graficos_btn_volver">Volver</string>
+
+    <!-- ===================================================== -->
     <!-- 💳 ARRAY DE CUOTAS -->
     <!-- ===================================================== -->
     <!-- Opciones de cuotas para compra de dispositivo -->
