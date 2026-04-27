@@ -1,10 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<?xml version="1.0" encoding="utf-8"?>
 <!--
     Pantalla de edición de tanque.
-    - El formulario está dentro de un contenedor con margen.
-    - Los botones están fuera del formulario para que puedas
-      moverlos y ajustar su tamaño más fácilmente.
+
+    Qué hace este layout:
+    - Muestra el título "Editor de Tanque".
+    - Contiene un formulario con 3 campos:
+        1) Nombre del tanque
+        2) Capacidad en litros
+        3) Color del tanque
+    - Tiene un botón para guardar los cambios.
+    - Tiene un botón para volver al menú.
+    - Usa ConstraintLayout como contenedor principal.
 -->
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
@@ -15,34 +21,30 @@
     android:background="@color/color_background"
     tools:context=".Editor">
 
+    <!--
+        Título principal de la pantalla.
+        Está centrado horizontalmente en la parte superior.
+    -->
     <TextView
         android:id="@+id/tvTituloConfig"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Editor de Tanque"
-        android:textSize="36sp"
-        android:textColor="@color/color_text_primary"
         android:layout_marginTop="40dp"
-        app:layout_constraintTop_toTopOf="parent"
+        android:text="Editor de Tanque"
+        android:textColor="@color/color_text_primary"
+        android:textSize="36sp"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <!--
-        CONTENEDOR DEL FORMULARIO
-        Aquí se agrupan los campos para que tengan un margen general
-        respecto a los bordes de la pantalla.
+        Contenedor del formulario.
+        Agrupa los campos de edición del tanque con padding interno.
     -->
-
-    <!--
-        BOTÓN GUARDAR
-        Está fuera del formulario para que puedas moverlo o cambiarle
-        el tamaño manualmente sin afectar el contenedor.
-    -->
-
     <LinearLayout
         android:id="@+id/contenedorFormulario"
         android:layout_width="334dp"
-        android:layout_height="224dp"
+        android:layout_height="wrap_content"
         android:layout_marginStart="24dp"
         android:layout_marginTop="132dp"
         android:layout_marginEnd="24dp"
@@ -92,23 +94,26 @@
 
     </LinearLayout>
 
+    <!--
+        Botón para guardar los cambios del tanque.
+        Llama al método guardarTanque del Activity.
+    -->
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/btnGuardar"
         android:layout_width="220dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="32dp"
-        android:onClick="guardarTanque"
         android:backgroundTint="@color/color_primary"
+        android:onClick="guardarTanque"
         android:text="Guardar Cambios"
         android:textColor="@android:color/white"
-        app:layout_constraintTop_toBottomOf="@id/contenedorFormulario"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/contenedorFormulario" />
 
     <!--
-        BOTÓN VOLVER
-        También está fuera del formulario para que lo puedas ajustar
-        libremente después.
+        Botón para volver al menú.
+        Llama al método volverAlMenu del Activity.
     -->
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/btnVolver"

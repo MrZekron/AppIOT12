@@ -66,4 +66,25 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
+    <!-- ====================================================
+         📊 BOTÓN: Gráficos Estadísticos
+         Abre GraficosAdmin.java donde el admin puede ver:
+         - Usuarios registrados por mes
+         - Compras de dispositivos por mes (global)
+         - Compras de dispositivos por usuario
+         Usa @color/color_primary (#1D8EC1) igual que Agregar.xml
+         ==================================================== -->
+    <Button
+        android:id="@+id/btnGraficos"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Ver Gráficos 📊"
+        android:textColor="@color/color_surface"
+        android:backgroundTint="@color/color_primary"
+        android:padding="12dp"
+        android:layout_marginTop="20dp"
+        app:layout_constraintTop_toBottomOf="@+id/btnConfigAdmin"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

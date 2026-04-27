@@ -93,6 +93,10 @@
             android:exported="false" />
         <activity
             android:name=".HistorialGlobal"
+            android:exported="false" />
+        <!-- 📊 Pantalla de gráficos estadísticos del administrador -->
+        <activity
+            android:name=".GraficosAdmin"
             android:exported="false" /> <!-- ========================= -->
         <!-- 🚀 MAIN -->
         <!-- ========================= -->

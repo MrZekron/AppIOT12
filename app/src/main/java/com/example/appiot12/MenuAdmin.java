@@ -32,6 +32,9 @@ public class MenuAdmin extends AppCompatActivity {
     private Button btnHistorialGlobal;
     private Button btnConfigAdmin;
 
+    // 📊 Botón para abrir la pantalla de gráficos estadísticos
+    private Button btnGraficos;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -54,7 +57,10 @@ public class MenuAdmin extends AppCompatActivity {
         // 🔗 Vincular botones del XML
         btnGestionUsuarios = findViewById(R.id.btnGestionUsuarios);
         btnHistorialGlobal = findViewById(R.id.btnHistorialGlobal);
-        btnConfigAdmin = findViewById(R.id.btnConfigAdmin);
+        btnConfigAdmin     = findViewById(R.id.btnConfigAdmin);
+
+        // 📊 Vincular el nuevo botón de gráficos
+        btnGraficos = findViewById(R.id.btnGraficos);
 
         configurarAcciones(); // 🎛️ Activar navegación
     }
@@ -89,6 +95,11 @@ public class MenuAdmin extends AppCompatActivity {
         // ⚙️ Configuración general
         btnConfigAdmin.setOnClickListener(v ->
                 irA(Configuracion.class, "Abriendo configuración ⚙️")
+        );
+
+        // 📊 Gráficos estadísticos: usuarios creados y compras de dispositivos
+        btnGraficos.setOnClickListener(v ->
+                irA(GraficosAdmin.class, "Abriendo gráficos 📊")
         );
     }
 }
