@@ -22,86 +22,86 @@
         android:theme="@style/Theme.AppIOT12"
         tools:targetApi="31">
         <activity
-            android:name=".EditorPerfil"
+            android:name="com.example.appiot12.ui.perfil.EditorPerfil"
             android:exported="false" />
         <!-- ========================= -->
         <!-- 🧭 NAVEGACIÓN / MAPAS -->
         <!-- ========================= -->
         <activity
-            android:name=".MapaDireccionActivity"
+            android:name="com.example.appiot12.ui.maps.MapaDireccionActivity"
             android:exported="false" /> <!-- ========================= -->
         <!-- 💧 TANQUES -->
         <!-- ========================= -->
         <activity
-            android:name=".Agregar"
+            android:name="com.example.appiot12.ui.tanque.Agregar"
             android:exported="false" />
         <activity
-            android:name=".Lista"
+            android:name="com.example.appiot12.ui.tanque.Lista"
             android:exported="false" />
         <activity
-            android:name=".ListaGlobalTanques"
+            android:name="com.example.appiot12.ui.tanque.ListaGlobalTanques"
             android:exported="false" /> <!-- ========================= -->
         <!-- 🤖 DISPOSITIVOS -->
         <!-- ========================= -->
         <activity
-            android:name=".ComprarDispositivo"
+            android:name="com.example.appiot12.ui.pago.ComprarDispositivo"
             android:exported="false" />
         <activity
-            android:name=".AsociarDispositivoATanque"
+            android:name="com.example.appiot12.ui.tanque.AsociarDispositivoATanque"
             android:exported="false" /> <!-- ========================= -->
         <!-- 💳 PAGOS -->
         <!-- ========================= -->
         <activity
-            android:name=".CentroPagos"
+            android:name="com.example.appiot12.ui.pago.CentroPagos"
             android:exported="false" />
         <activity
-            android:name=".HistorialCompra"
+            android:name="com.example.appiot12.ui.pago.HistorialCompra"
             android:exported="false" /> <!-- ========================= -->
         <!-- 👤 USUARIO -->
         <!-- ========================= -->
         <activity
-            android:name=".IniciarSesion"
+            android:name="com.example.appiot12.ui.auth.IniciarSesion"
             android:exported="false" />
         <activity
-            android:name=".CrearCuentaActivity"
+            android:name="com.example.appiot12.ui.auth.CrearCuentaActivity"
             android:exported="false" />
         <activity
-            android:name=".OlvideContrasenaActivity"
+            android:name="com.example.appiot12.ui.auth.OlvideContrasenaActivity"
             android:exported="false" /> <!-- ========================= -->
         <!-- ⚙️ ADMIN / CONFIG -->
         <!-- ========================= -->
         <activity
-            android:name=".Menu"
+            android:name="com.example.appiot12.ui.menu.Menu"
             android:exported="false" />
         <activity
-            android:name=".MenuAdmin"
+            android:name="com.example.appiot12.ui.menu.MenuAdmin"
             android:exported="false" />
         <activity
-            android:name=".Configuracion"
+            android:name="com.example.appiot12.ui.perfil.Configuracion"
             android:exported="false" />
         <activity
-            android:name=".Informacion"
+            android:name="com.example.appiot12.ui.perfil.Informacion"
             android:exported="false" />
         <activity
-            android:name=".Editor"
+            android:name="com.example.appiot12.ui.tanque.Editor"
             android:exported="false" />
         <activity
-            android:name=".GestionUsuarios"
+            android:name="com.example.appiot12.ui.admin.GestionUsuarios"
             android:exported="false" />
         <activity
-            android:name=".HistorialAcciones"
+            android:name="com.example.appiot12.ui.admin.HistorialAcciones"
             android:exported="false" />
         <activity
-            android:name=".HistorialGlobal"
+            android:name="com.example.appiot12.ui.admin.HistorialGlobal"
             android:exported="false" />
         <!-- 📊 Pantalla de gráficos estadísticos del administrador -->
         <activity
-            android:name=".GraficosAdmin"
+            android:name="com.example.appiot12.ui.admin.GraficosAdmin"
             android:exported="false" /> <!-- ========================= -->
         <!-- 🚀 MAIN -->
         <!-- ========================= -->
         <activity
-            android:name=".MainActivity"
+            android:name="com.example.appiot12.ui.menu.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
