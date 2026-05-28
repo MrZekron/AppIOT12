@@ -25,7 +25,7 @@
             android:layout_height="match_parent"
             android:layout_gravity="center"
             android:contentDescription="Logo de la aplicación"
-            android:src="@mipmap/Logo2" />
+            android:src="@mipmap/logo2" />
     </LinearLayout>
 
     <LinearLayout
