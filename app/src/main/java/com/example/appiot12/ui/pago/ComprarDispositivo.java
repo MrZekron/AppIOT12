@@ -34,7 +34,7 @@ public class ComprarDispositivo extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_comprar_dispositivo);
+        setContentView(R.layout.cliente_comprar_dispositivo);
 
         tvPrecio        = findViewById(R.id.tvPrecio);
         tvResumenCuota  = findViewById(R.id.tvResumenCuota);

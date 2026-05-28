@@ -32,7 +32,7 @@ public class IniciarSesion extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(com.example.appiot12.R.layout.activity_iniciar_sesion);
+        setContentView(com.example.appiot12.R.layout.cliente_iniciar_sesion);
 
         etCorreo = findViewById(com.example.appiot12.R.id.tvCorreo);
         etContrasena = findViewById(com.example.appiot12.R.id.tvContrasena);

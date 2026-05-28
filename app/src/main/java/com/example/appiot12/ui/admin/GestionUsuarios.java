@@ -43,7 +43,7 @@ public class GestionUsuarios extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_gestion_usuarios);
+        setContentView(R.layout.admin_gestion_usuarios);
 
         listUsuarios = findViewById(R.id.listUsuarios);
         btnFiltrarUsuarios = findViewById(R.id.btnFiltrarUsuarios);

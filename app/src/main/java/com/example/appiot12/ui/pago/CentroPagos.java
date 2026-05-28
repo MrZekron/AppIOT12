@@ -36,7 +36,7 @@ public class CentroPagos extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_centro_pagos);
+        setContentView(R.layout.cliente_centro_pagos);
 
         tvProducto     = findViewById(R.id.tvProductoPago);
         tvMonto        = findViewById(R.id.tvMontoPago);

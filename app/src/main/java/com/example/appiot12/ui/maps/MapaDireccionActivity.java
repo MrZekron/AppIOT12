@@ -24,7 +24,7 @@ public class MapaDireccionActivity extends AppCompatActivity {
 
         Configuration.getInstance().setUserAgentValue(getPackageName());
 
-        setContentView(R.layout.activity_mapa_direccion);
+        setContentView(R.layout.cliente_mapa_direccion);
 
         map = findViewById(R.id.map);
         map.setTileSource(TileSourceFactory.MAPNIK);

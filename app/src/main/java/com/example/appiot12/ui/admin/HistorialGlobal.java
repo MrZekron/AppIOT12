@@ -34,7 +34,7 @@ public class HistorialGlobal extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_historial_global);
+        setContentView(R.layout.admin_historial_global);
 
         txtUsuariosTotal = findViewById(R.id.txtUsuariosTotal);
         txtTanquesTotal = findViewById(R.id.txtTanquesTotal);

@@ -27,7 +27,7 @@ public class Editor extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_editor);
+        setContentView(R.layout.cliente_editor_tanque);
 
         FirebaseApp.initializeApp(this);
 

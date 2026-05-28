@@ -81,7 +81,7 @@ public class Agregar extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         try {
-            setContentView(R.layout.activity_agregar);
+            setContentView(R.layout.cliente_agregar_tanque);
 
             txtNombre = findViewById(R.id.txtNombre);
             txtCapasidad = findViewById(R.id.txtCapasidad);

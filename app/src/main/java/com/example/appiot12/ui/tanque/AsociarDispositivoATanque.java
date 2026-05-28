@@ -30,7 +30,7 @@ public class AsociarDispositivoATanque extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_asociar_dispositivo_atanque);
+        setContentView(R.layout.cliente_asociar_dispositivo);
 
         spnTanques = findViewById(R.id.spnTanques);
         spnDispositivos = findViewById(R.id.spnDispositivos);

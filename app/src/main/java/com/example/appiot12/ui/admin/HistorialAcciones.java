@@ -44,7 +44,7 @@ public class HistorialAcciones extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_historial_acciones);
+        setContentView(R.layout.admin_historial_acciones);
 
         spnFiltro = findViewById(R.id.spnFiltro);
         lvHistorial = findViewById(R.id.lvHistorial);

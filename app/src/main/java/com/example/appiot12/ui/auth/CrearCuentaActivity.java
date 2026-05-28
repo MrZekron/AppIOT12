@@ -32,7 +32,7 @@ public class CrearCuentaActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(com.example.appiot12.R.layout.activity_crear_cuenta);
+        setContentView(com.example.appiot12.R.layout.cliente_crear_cuenta);
 
         etNombre = findViewById(com.example.appiot12.R.id.etNombre);
         etEmail = findViewById(com.example.appiot12.R.id.etEmailCrear);

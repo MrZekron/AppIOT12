@@ -56,7 +56,7 @@ public class GraficosAdmin extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_graficos_admin);
+        setContentView(R.layout.admin_graficos);
 
         tvTituloUsuarios          = findViewById(R.id.tvTituloUsuarios);
         tvTituloComprasGlobal     = findViewById(R.id.tvTituloComprasGlobal);

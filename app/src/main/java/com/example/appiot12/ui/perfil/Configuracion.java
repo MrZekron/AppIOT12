@@ -28,7 +28,7 @@ public class Configuracion extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_configuracion);
+        setContentView(R.layout.cliente_configuracion);
 
         auth = FirebaseAuth.getInstance();
 

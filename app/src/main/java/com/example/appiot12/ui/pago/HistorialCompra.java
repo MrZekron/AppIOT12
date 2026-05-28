@@ -29,7 +29,7 @@ public class HistorialCompra extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_historial_compra);
+        setContentView(R.layout.cliente_historial_compra);
 
         lvPagos = findViewById(R.id.lvPagos);
 

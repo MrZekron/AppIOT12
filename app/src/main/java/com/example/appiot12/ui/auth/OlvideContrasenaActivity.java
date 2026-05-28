@@ -22,7 +22,7 @@ public class OlvideContrasenaActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(com.example.appiot12.R.layout.activity_olvide_contrasena);
+        setContentView(com.example.appiot12.R.layout.cliente_olvide_contrasena);
 
         etEmail = findViewById(com.example.appiot12.R.id.etEmailOlvide);
         btnEnviar = findViewById(com.example.appiot12.R.id.btnEnviar);
