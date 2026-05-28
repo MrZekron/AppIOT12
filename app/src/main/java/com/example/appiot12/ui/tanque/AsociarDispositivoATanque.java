@@ -1,5 +1,4 @@
 package com.example.appiot12.ui.tanque;
-// 🔗 Asocia un dispositivo existente a un tanque existente 💧🤖
 
 import android.os.Bundle;
 import android.widget.ArrayAdapter;
@@ -20,33 +19,31 @@ import java.util.List;
 
 public class AsociarDispositivoATanque extends AppCompatActivity {
 
-    private Spinner spnTanques;
-    private Spinner spnDispositivos;
+    private Spinner spnTanques, spnDispositivos;
     private Button btnAsociar;
 
     private final List<TanqueAgua> tanquesDisponibles = new ArrayList<>();
     private final List<Dispositivo> dispositivosLibres = new ArrayList<>();
 
     private DatabaseReference refUsuario;
-    private String uid;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_asociar_dispositivo_atanque);
 
-        inicializarVistas();
+        spnTanques = findViewById(R.id.spnTanques);
+        spnDispositivos = findViewById(R.id.spnDispositivos);
+        btnAsociar = findViewById(R.id.btnAsociar);
 
-        uid = obtenerUidUsuario();
-        if (uid == null) {
-            toast("Usuario no autenticado ❌");
+        if (FirebaseAuth.getInstance().getCurrentUser() == null) {
+            toast("Usuario no autenticado");
             finish();
             return;
         }
 
-        refUsuario = FirebaseDatabase.getInstance()
-                .getReference("usuarios")
-                .child(uid);
+        String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        refUsuario = FirebaseDatabase.getInstance().getReference("usuarios").child(uid);
 
         cargarTanques();
         cargarDispositivosLibres();
@@ -54,115 +51,67 @@ public class AsociarDispositivoATanque extends AppCompatActivity {
         btnAsociar.setOnClickListener(v -> asociar());
     }
 
-    private void inicializarVistas() {
-        spnTanques = findViewById(R.id.spnTanques);
-        spnDispositivos = findViewById(R.id.spnDispositivos);
-        btnAsociar = findViewById(R.id.btnAsociar);
-    }
-
-    private String obtenerUidUsuario() {
-        if (FirebaseAuth.getInstance().getCurrentUser() == null) return null;
-        return FirebaseAuth.getInstance().getCurrentUser().getUid();
-    }
-
     private void cargarTanques() {
+        refUsuario.child("tanques").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                tanquesDisponibles.clear();
+                List<String> nombres = new ArrayList<>();
+                for (DataSnapshot s : snapshot.getChildren()) {
+                    TanqueAgua t = s.getValue(TanqueAgua.class);
+                    if (t == null) continue;
+                    if (t.getIdTanque() == null) t.setIdTanque(s.getKey());
+                    tanquesDisponibles.add(t);
+                    nombres.add(t.getNombre());
+                }
+                ArrayAdapter<String> adapter = new ArrayAdapter<>(AsociarDispositivoATanque.this,
+                        android.R.layout.simple_spinner_item, nombres);
+                adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                spnTanques.setAdapter(adapter);
+            }
 
-        refUsuario.child("tanques")
-                .addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot snapshot) {
-
-                        tanquesDisponibles.clear();
-                        List<String> nombres = new ArrayList<>();
-
-                        for (DataSnapshot s : snapshot.getChildren()) {
-                            TanqueAgua t = s.getValue(TanqueAgua.class);
-                            if (t == null) continue;
-
-                            if (t.getIdTanque() == null) {
-                                t.setIdTanque(s.getKey());
-                            }
-
-                            tanquesDisponibles.add(t);
-                            nombres.add(t.getNombre());
-                        }
-
-                        ArrayAdapter<String> adapter =
-                                new ArrayAdapter<>(AsociarDispositivoATanque.this,
-                                        android.R.layout.simple_spinner_item,
-                                        nombres);
-
-                        adapter.setDropDownViewResource(
-                                android.R.layout.simple_spinner_dropdown_item);
-
-                        spnTanques.setAdapter(adapter);
-                    }
-
-                    @Override
-                    public void onCancelled(DatabaseError error) {
-                        toast("Error al cargar tanques");
-                    }
-                });
+            @Override
+            public void onCancelled(DatabaseError error) {
+                toast("Error al cargar tanques");
+            }
+        });
     }
 
     private void cargarDispositivosLibres() {
-
-        refUsuario.child("dispositivos")
-                .addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot snapshot) {
-
-                        dispositivosLibres.clear();
-                        List<String> textos = new ArrayList<>();
-
-                        for (DataSnapshot s : snapshot.getChildren()) {
-
-                            Dispositivo d = s.getValue(Dispositivo.class);
-                            if (d == null) continue;
-
-                            if (d.getIdTanque() == null || d.getIdTanque().isEmpty()) {
-                                dispositivosLibres.add(d);
-                                textos.add("Dispositivo: " + d.getId());
-                            }
-                        }
-
-                        ArrayAdapter<String> adapter =
-                                new ArrayAdapter<>(AsociarDispositivoATanque.this,
-                                        android.R.layout.simple_spinner_item,
-                                        textos);
-
-                        adapter.setDropDownViewResource(
-                                android.R.layout.simple_spinner_dropdown_item);
-
-                        spnDispositivos.setAdapter(adapter);
+        refUsuario.child("dispositivos").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                dispositivosLibres.clear();
+                List<String> textos = new ArrayList<>();
+                for (DataSnapshot s : snapshot.getChildren()) {
+                    Dispositivo d = s.getValue(Dispositivo.class);
+                    if (d == null) continue;
+                    if (d.getIdTanque() == null || d.getIdTanque().isEmpty()) {
+                        dispositivosLibres.add(d);
+                        textos.add("Dispositivo: " + d.getId());
                     }
+                }
+                ArrayAdapter<String> adapter = new ArrayAdapter<>(AsociarDispositivoATanque.this,
+                        android.R.layout.simple_spinner_item, textos);
+                adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                spnDispositivos.setAdapter(adapter);
+            }
 
-                    @Override
-                    public void onCancelled(DatabaseError error) {
-                        toast("Error al cargar dispositivos");
-                    }
-                });
+            @Override
+            public void onCancelled(DatabaseError error) {
+                toast("Error al cargar dispositivos");
+            }
+        });
     }
 
     private void asociar() {
+        TanqueAgua tanque = tanquesDisponibles.get(spnTanques.getSelectedItemPosition());
+        Dispositivo dispositivo = dispositivosLibres.get(spnDispositivos.getSelectedItemPosition());
 
-        TanqueAgua tanque =
-                tanquesDisponibles.get(spnTanques.getSelectedItemPosition());
+        refUsuario.child("tanques").child(tanque.getIdTanque()).child("idDispositivo").setValue(dispositivo.getId());
+        refUsuario.child("dispositivos").child(dispositivo.getId()).child("idTanque").setValue(tanque.getIdTanque());
 
-        Dispositivo dispositivo =
-                dispositivosLibres.get(spnDispositivos.getSelectedItemPosition());
-
-        refUsuario.child("tanques")
-                .child(tanque.getIdTanque())
-                .child("idDispositivo")
-                .setValue(dispositivo.getId());
-
-        refUsuario.child("dispositivos")
-                .child(dispositivo.getId())
-                .child("idTanque")
-                .setValue(tanque.getIdTanque());
-
-        toast("Dispositivo asociado correctamente 🤝");
+        toast("Dispositivo asociado correctamente");
         finish();
     }
 

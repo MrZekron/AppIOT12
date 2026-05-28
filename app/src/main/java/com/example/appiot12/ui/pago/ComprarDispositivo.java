@@ -1,7 +1,5 @@
 package com.example.appiot12.ui.pago;
 
-// Pantalla para solicitar la compra manual del dispositivo por transferencia.
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.ArrayAdapter;
@@ -22,16 +20,13 @@ import java.util.Map;
 
 public class ComprarDispositivo extends AppCompatActivity {
 
-    // Configuración base del producto.
     private static final int PRECIO_DEFAULT = 125000;
     private static final String NOMBRE_PRODUCTO = "Dispositivo AguaSegura";
 
-    // Vistas.
     private TextView tvPrecio, tvResumenCuota;
     private Spinner spnCuotas;
     private Button btnComprar;
 
-    // Estado de compra.
     private int precioActual = PRECIO_DEFAULT;
     private int cuotasSeleccionadas = 1;
     private String uid;
@@ -41,13 +36,11 @@ public class ComprarDispositivo extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_comprar_dispositivo);
 
-        // Vincula vistas del XML.
-        tvPrecio = findViewById(R.id.tvPrecio);
-        tvResumenCuota = findViewById(R.id.tvResumenCuota);
-        spnCuotas = findViewById(R.id.spnCuotas);
-        btnComprar = findViewById(R.id.btnComprar);
+        tvPrecio        = findViewById(R.id.tvPrecio);
+        tvResumenCuota  = findViewById(R.id.tvResumenCuota);
+        spnCuotas       = findViewById(R.id.spnCuotas);
+        btnComprar      = findViewById(R.id.btnComprar);
 
-        // Obtiene usuario actual.
         uid = FirebaseAuth.getInstance().getUid();
         if (uid == null) {
             toast("Debes iniciar sesión");
@@ -55,19 +48,14 @@ public class ComprarDispositivo extends AppCompatActivity {
             return;
         }
 
-        // Inicializa cuotas y carga precio.
         initSpinner();
         cargarPrecio();
 
-        // Crea la compra manual.
         btnComprar.setOnClickListener(v -> crearCompra());
     }
 
-    // Carga el precio desde Firebase; si no existe, usa el valor por defecto.
     private void cargarPrecio() {
-        FirebaseDatabase.getInstance()
-                .getReference("configuracion/precioDispositivo")
-                .get()
+        FirebaseDatabase.getInstance().getReference("configuracion/precioDispositivo").get()
                 .addOnSuccessListener(snap -> {
                     Integer precio = snap.getValue(Integer.class);
                     precioActual = precio != null ? precio : PRECIO_DEFAULT;
@@ -76,13 +64,9 @@ public class ComprarDispositivo extends AppCompatActivity {
                 .addOnFailureListener(e -> actualizarUI());
     }
 
-    // Configura selector de cuotas.
     private void initSpinner() {
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
-                this,
-                R.array.cuotas_array,
-                android.R.layout.simple_spinner_item
-        );
+                this, R.array.cuotas_array, android.R.layout.simple_spinner_item);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spnCuotas.setAdapter(adapter);
 
@@ -98,19 +82,16 @@ public class ComprarDispositivo extends AppCompatActivity {
         });
     }
 
-    // Convierte la posición del spinner en cantidad de cuotas.
     private int obtenerCuotas(int pos) {
         return pos == 1 ? 3 : pos == 2 ? 6 : pos == 3 ? 12 : 1;
     }
 
-    // Actualiza precio total y valor estimado por cuota.
     private void actualizarUI() {
         int cuota = (int) Math.ceil((double) precioActual / cuotasSeleccionadas);
         tvPrecio.setText(String.format(Locale.getDefault(), "Precio: $%d", precioActual));
         tvResumenCuota.setText(String.format(Locale.getDefault(), "Cuota referencial: $%d", cuota));
     }
 
-    // Crea una compra en Firebase para pago por transferencia.
     private void crearCompra() {
         btnComprar.setEnabled(false);
 
@@ -133,9 +114,7 @@ public class ComprarDispositivo extends AppCompatActivity {
         compra.put("estado", "pendiente_pago");
         compra.put("fecha", System.currentTimeMillis());
 
-        FirebaseDatabase.getInstance()
-                .getReference("compras")
-                .child(idCompra)
+        FirebaseDatabase.getInstance().getReference("compras").child(idCompra)
                 .setValue(compra)
                 .addOnSuccessListener(unused -> abrirCentroPagos(idCompra, codigoPedido))
                 .addOnFailureListener(e -> {
@@ -144,7 +123,6 @@ public class ComprarDispositivo extends AppCompatActivity {
                 });
     }
 
-    // Abre la pantalla con los datos para transferencia.
     private void abrirCentroPagos(String idCompra, String codigoPedido) {
         Intent i = new Intent(this, CentroPagos.class);
         i.putExtra("idCompra", idCompra);
@@ -155,7 +133,6 @@ public class ComprarDispositivo extends AppCompatActivity {
         finish();
     }
 
-    // Muestra mensajes rápidos al usuario.
     private void toast(String msg) {
         Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
     }

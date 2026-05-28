@@ -1,4 +1,5 @@
 const functions = require("firebase-functions/v2/https");
+const { onValueWritten } = require("firebase-functions/v2/database");
 const logger = require("firebase-functions/logger");
 const admin = require("firebase-admin");
 const axios = require("axios");
@@ -161,3 +162,82 @@ exports.crearPreferenciaPago = functions.onRequest(async (req, res) => {
     return res.status(500).send("ERROR");
   }
 });
+
+// =====================================================
+// ALERTA CALIDAD DEL AGUA — trigger RTDB
+// Escucha: usuarios/{uid}/dispositivos/{idDispositivo}
+// Envía FCM si ph/conductividad/turbidez supera umbral
+// =====================================================
+exports.alertarCalidadAgua = onValueWritten(
+  {
+    ref: "usuarios/{uid}/dispositivos/{idDispositivo}",
+    region: "us-central1"
+  },
+  async (event) => {
+    const after = event.data.after;
+    if (!after.exists()) return;
+
+    const uid = event.params.uid;
+    const data = after.val();
+
+    const ph = typeof data.ph === "number" ? data.ph : null;
+    const conductividad = typeof data.conductividad === "number" ? data.conductividad : null;
+    const turbidez = typeof data.turbidez === "number" ? data.turbidez : null;
+
+    const alertas = [];
+    let esPeligro = false;
+
+    if (ph !== null) {
+      if (ph < 6.0 || ph > 9.0) {
+        alertas.push(`pH ${ph.toFixed(2)} — PELIGRO`);
+        esPeligro = true;
+      } else if (ph < 6.5 || ph > 8.5) {
+        alertas.push(`pH ${ph.toFixed(2)} — Alerta`);
+      }
+    }
+
+    if (conductividad !== null) {
+      if (conductividad > 2500) {
+        alertas.push(`Conductividad ${conductividad.toFixed(0)} µS/cm — PELIGRO`);
+        esPeligro = true;
+      } else if (conductividad > 1500) {
+        alertas.push(`Conductividad ${conductividad.toFixed(0)} µS/cm — Alerta`);
+      }
+    }
+
+    if (turbidez !== null) {
+      if (turbidez > 10) {
+        alertas.push(`Turbidez ${turbidez.toFixed(2)} NTU — PELIGRO`);
+        esPeligro = true;
+      } else if (turbidez > 5) {
+        alertas.push(`Turbidez ${turbidez.toFixed(2)} NTU — Alerta`);
+      }
+    }
+
+    if (alertas.length === 0) return;
+
+    const tokenSnap = await db.ref(`usuarios/${uid}/fcmToken`).once("value");
+    const token = tokenSnap.val();
+    if (!token) {
+      logger.warn(`Sin fcmToken para uid=${uid}`);
+      return;
+    }
+
+    const titulo = esPeligro
+      ? "Peligro — Calidad del Agua"
+      : "Alerta — Calidad del Agua";
+    const cuerpo = alertas.join(" | ");
+
+    await admin.messaging().send({
+      token,
+      notification: { title: titulo, body: cuerpo },
+      data: { title: titulo, body: cuerpo },
+      android: {
+        priority: "high",
+        notification: { sound: "default", channel_id: "agua_alertas" }
+      }
+    });
+
+    logger.info(`FCM enviado a uid=${uid}: ${cuerpo}`);
+  }
+);

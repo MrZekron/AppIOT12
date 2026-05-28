@@ -10,6 +10,7 @@
     <uses-permission
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="28" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
         android:allowBackup="true"
@@ -98,6 +99,14 @@
         <activity
             android:name="com.example.appiot12.ui.admin.GraficosAdmin"
             android:exported="false" /> <!-- ========================= -->
+        <!-- 🔔 FCM -->
+        <service
+            android:name="com.example.appiot12.service.MiFirebaseMessagingService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
         <!-- 🚀 MAIN -->
         <!-- ========================= -->
         <activity

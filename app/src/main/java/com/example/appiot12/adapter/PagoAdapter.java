@@ -13,16 +13,6 @@ import com.example.appiot12.model.Pago;
 import java.util.List;
 import java.util.Locale;
 
-/**
- * Adaptador para mostrar pagos en ListView.
- *
- * Muestra:
- * - nombre del producto
- * - resumen de cuotas
- * - saldo pendiente
- * - estado del pago
- * - estado de envío
- */
 public class PagoAdapter extends ArrayAdapter<Pago> {
 
     public PagoAdapter(Context context, List<Pago> pagos) {
@@ -48,30 +38,13 @@ public class PagoAdapter extends ArrayAdapter<Pago> {
         }
 
         String nombre = safe(pago.getNombreProducto());
-        if (nombre.isEmpty()) {
-            nombre = "Dispositivo";
-        }
+        if (nombre.isEmpty()) nombre = "Dispositivo";
 
-        String resumen1 = String.format(
-                Locale.getDefault(),
-                "%s | %s",
-                nombre,
-                formatearEstadoPago(pago.getEstadoPago())
-        );
+        text1.setText(String.format(Locale.getDefault(), "%s | %s", nombre, formatearEstadoPago(pago.getEstadoPago())));
+        text2.setText(String.format(Locale.getDefault(), "Cuotas: %d/%d | Saldo: $%d | Envío: %s",
+                pago.getCuotasPagadas(), pago.getCuotasTotales(),
+                pago.getSaldoPendiente(), formatearEstadoEnvio(pago.getEstadoEnvio())));
 
-        String resumen2 = String.format(
-                Locale.getDefault(),
-                "Cuotas: %d/%d | Saldo: $%d | Envío: %s",
-                pago.getCuotasPagadas(),
-                pago.getCuotasTotales(),
-                pago.getSaldoPendiente(),
-                formatearEstadoEnvio(pago.getEstadoEnvio())
-        );
-
-        text1.setText(resumen1);
-        text2.setText(resumen2);
-
-        // Color del estado principal
         switch (safe(pago.getEstadoPago()).toLowerCase(Locale.ROOT)) {
             case "pagado":
                 text1.setTextColor(Color.parseColor("#2E7D32"));
@@ -92,32 +65,19 @@ public class PagoAdapter extends ArrayAdapter<Pago> {
     }
 
     private String formatearEstadoPago(String estado) {
-        String e = safe(estado).toLowerCase(Locale.ROOT);
-
-        switch (e) {
-            case "pagado":
-                return "Pagado";
-            case "parcial":
-                return "Pago parcial";
-            case "fallido":
-                return "Fallido";
-            default:
-                return "Pendiente";
+        switch (safe(estado).toLowerCase(Locale.ROOT)) {
+            case "pagado":  return "Pagado";
+            case "parcial": return "Pago parcial";
+            case "fallido": return "Fallido";
+            default:        return "Pendiente";
         }
     }
 
     private String formatearEstadoEnvio(String estado) {
-        String e = safe(estado).toLowerCase(Locale.ROOT);
-
-        switch (e) {
-            case "enviado":
-                return "Enviado";
-            case "entregado":
-                return "Entregado";
-            case "preparando":
-                return "Preparando";
-            default:
-                return "Preparando";
+        switch (safe(estado).toLowerCase(Locale.ROOT)) {
+            case "enviado":   return "Enviado";
+            case "entregado": return "Entregado";
+            default:          return "Preparando";
         }
     }
 }

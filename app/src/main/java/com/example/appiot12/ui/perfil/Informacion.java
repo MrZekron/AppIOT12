@@ -32,54 +32,26 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.Locale;
 
-/**
- * Pantalla de información detallada del tanque y su dispositivo asociado.
- *
- * Responsabilidades:
- * - Mostrar metadata del tanque
- * - Escuchar cambios en tiempo real del dispositivo
- * - Colorear estados según rangos
- * - Graficar lecturas de sensores
- *
- * Nota:
- * Esta versión no depende de TextViews extra de mantención en el XML.
- * Para no romper compilación, la mantención se refleja junto al color del tanque.
- */
 public class Informacion extends AppCompatActivity {
 
-    // =====================================================
-    // 🎨 COLORES DE ESTADO
-    // =====================================================
     private static final int COLOR_OK = Color.parseColor("#2E7D32");
     private static final int COLOR_ALERTA = Color.parseColor("#F9A825");
     private static final int COLOR_PELIGRO = Color.parseColor("#C62828");
 
-    // =====================================================
-    // 🖥️ VISTAS DEL TANQUE
-    // =====================================================
     private TextView txtNombre;
     private TextView txtCapasidad;
     private TextView txtColor;
 
-    // =====================================================
-    // 🖥️ VISTAS DE SENSORES
-    // =====================================================
     private TextView txtPh;
     private TextView txtConductividad;
     private TextView txtTurbidez;
     private TextView txtUltrasonico;
 
-    // =====================================================
-    // 🖥️ VISTAS DE ESTADO
-    // =====================================================
     private TextView txtPhEstado;
     private TextView txtCondEstado;
     private TextView txtTurbEstado;
     private TextView txtUltraEstado;
 
-    // =====================================================
-    // 📈 GRÁFICO
-    // =====================================================
     private LineChart sensorChart;
     private LineData lineData;
     private LineDataSet setPH;
@@ -89,18 +61,12 @@ public class Informacion extends AppCompatActivity {
     private static final int MAX_POINTS_PER_SET = 300;
     private int sampleIndex = 0;
 
-    // =====================================================
-    // ☁️ FIREBASE
-    // =====================================================
     private DatabaseReference tanqueRef;
     private DatabaseReference dispositivoRef;
 
     private ValueEventListener tanqueListener;
     private ValueEventListener dispositivoListener;
 
-    // =====================================================
-    // 📦 DATOS DEL INTENT
-    // =====================================================
     private String tanqueId;
     private String idDispositivo;
 
@@ -143,18 +109,11 @@ public class Informacion extends AppCompatActivity {
         String uid = auth.getCurrentUser().getUid();
 
         tanqueRef = FirebaseDatabase.getInstance()
-                .getReference("usuarios")
-                .child(uid)
-                .child("tanques")
-                .child(tanqueId);
+                .getReference("usuarios").child(uid).child("tanques").child(tanqueId);
 
         if (idDispositivo != null && !idDispositivo.trim().isEmpty()) {
             dispositivoRef = FirebaseDatabase.getInstance()
-                    .getReference("usuarios")
-                    .child(uid)
-                    .child("dispositivos")
-                    .child(idDispositivo);
-
+                    .getReference("usuarios").child(uid).child("dispositivos").child(idDispositivo);
             suscribirseDispositivoTiempoReal();
         } else {
             mostrarSinDispositivo();
@@ -163,9 +122,6 @@ public class Informacion extends AppCompatActivity {
         suscribirseMetaTanque();
     }
 
-    // =====================================================
-    // 🔗 INICIALIZAR VISTAS
-    // =====================================================
     private void inicializarVistas() {
         txtNombre = findViewById(R.id.txtNombre);
         txtCapasidad = findViewById(R.id.txtCapasidad);
@@ -184,9 +140,6 @@ public class Informacion extends AppCompatActivity {
         sensorChart = findViewById(R.id.sensorChart);
     }
 
-    // =====================================================
-    // 📥 LEER DATOS DEL INTENT
-    // =====================================================
     private void leerIntent() {
         Intent intent = getIntent();
 
@@ -205,44 +158,27 @@ public class Informacion extends AppCompatActivity {
         tanqueCapacidad = valorSeguro(intent.getStringExtra("tanqueCapacidad"));
         tanqueColor = valorSeguro(intent.getStringExtra("tanqueColor"));
 
-        String nombre = tanqueNombre;
-        String capacidad = tanqueCapacidad;
-        String color = tanqueColor;
+        txtNombre.setText(tanqueNombre);
+        txtCapasidad.setText(tanqueCapacidad);
+        actualizarTextoMantencion(tanqueColor);
+    }
 
-        txtNombre.setText(nombre);
-        txtCapasidad.setText(capacidad);
-
-        // Como todavía no queremos depender de más TextViews en el XML,
-        // mostramos el estado de mantención incrustado en txtColor.
-        String textoMantencionTanque = mantencionTanque ? "Pendiente" : "Al día";
-        String textoMantencionDispositivo = mantencionDispositivo ? "Pendiente" : "Al día";
-
+    private void actualizarTextoMantencion(String color) {
         String textoColor = String.format(
                 Locale.getDefault(),
                 "%s | Mant. tanque: %s | Mant. dispositivo: %s",
                 color,
-                textoMantencionTanque,
-                textoMantencionDispositivo
+                mantencionTanque ? "Pendiente" : "Al día",
+                mantencionDispositivo ? "Pendiente" : "Al día"
         );
-
         txtColor.setText(textoColor);
-
-        if (mantencionTanque || mantencionDispositivo) {
-            txtColor.setTextColor(COLOR_PELIGRO);
-        } else {
-            txtColor.setTextColor(COLOR_OK);
-        }
+        txtColor.setTextColor((mantencionTanque || mantencionDispositivo) ? COLOR_PELIGRO : COLOR_OK);
     }
 
-    // =====================================================
-    // ☁️ SUSCRIBIRSE A METADATA DEL TANQUE
-    // =====================================================
     private void suscribirseMetaTanque() {
-
         tanqueListener = new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snap) {
-
                 String nombre = snap.child("nombre").getValue(String.class);
                 String capacidad = snap.child("capacidad").getValue(String.class);
                 String color = snap.child("color").getValue(String.class);
@@ -250,37 +186,12 @@ public class Informacion extends AppCompatActivity {
                 Boolean mantTanqueDb = snap.child("mantencionTanque").getValue(Boolean.class);
                 Boolean mantDispDb = snap.child("mantencionDispositivo").getValue(Boolean.class);
 
-                if (nombre != null) {
-                    txtNombre.setText(nombre);
-                }
+                if (nombre != null) txtNombre.setText(nombre);
+                if (capacidad != null) txtCapasidad.setText(capacidad);
+                if (mantTanqueDb != null) mantencionTanque = mantTanqueDb;
+                if (mantDispDb != null) mantencionDispositivo = mantDispDb;
 
-                if (capacidad != null) {
-                    txtCapasidad.setText(capacidad);
-                }
-
-                if (mantTanqueDb != null) {
-                    mantencionTanque = mantTanqueDb;
-                }
-
-                if (mantDispDb != null) {
-                    mantencionDispositivo = mantDispDb;
-                }
-
-                String textoMantencionTanque = mantencionTanque ? "Pendiente" : "Al día";
-                String textoMantencionDispositivo = mantencionDispositivo ? "Pendiente" : "Al día";
-
-                String colorSeguro = valorSeguro(color);
-
-                String textoColor = String.format(
-                        Locale.getDefault(),
-                        "%s | Mant. tanque: %s | Mant. dispositivo: %s",
-                        colorSeguro,
-                        textoMantencionTanque,
-                        textoMantencionDispositivo
-                );
-
-                txtColor.setText(textoColor);
-                txtColor.setTextColor((mantencionTanque || mantencionDispositivo) ? COLOR_PELIGRO : COLOR_OK);
+                actualizarTextoMantencion(valorSeguro(color));
             }
 
             @Override
@@ -292,15 +203,10 @@ public class Informacion extends AppCompatActivity {
         tanqueRef.addValueEventListener(tanqueListener);
     }
 
-    // =====================================================
-    // ☁️ SUSCRIBIRSE A SENSORES EN TIEMPO REAL
-    // =====================================================
     private void suscribirseDispositivoTiempoReal() {
-
         dispositivoListener = new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snap) {
-
                 double ph = leerDouble(snap, "ph");
                 double conductividad = leerDouble(snap, "conductividad");
                 double turbidez = leerDouble(snap, "turbidez");
@@ -324,11 +230,7 @@ public class Informacion extends AppCompatActivity {
         dispositivoRef.addValueEventListener(dispositivoListener);
     }
 
-    // =====================================================
-    // 📈 CONFIGURAR GRÁFICO
-    // =====================================================
     private void configurarGrafico() {
-
         sensorChart.setNoDataText("Aún no hay lecturas");
         sensorChart.getDescription().setEnabled(false);
 
@@ -368,13 +270,8 @@ public class Informacion extends AppCompatActivity {
         set.setCircleColor(color);
     }
 
-    // =====================================================
-    // 📈 AGREGAR PUNTOS
-    // =====================================================
     private void agregarPuntosGrafico(double ph, double conductividad, double turbidez) {
-        if (lineData == null) {
-            return;
-        }
+        if (lineData == null) return;
 
         lineData.addEntry(new Entry(sampleIndex, escalarPh(ph)), 0);
         lineData.addEntry(new Entry(sampleIndex, escalarConductividad(conductividad)), 1);
@@ -397,11 +294,7 @@ public class Informacion extends AppCompatActivity {
         }
     }
 
-    // =====================================================
-    // 🎨 ACTUALIZAR ESTADOS
-    // =====================================================
     private void actualizarEstadosVisuales(double ph, double conductividad, double turbidez, double ultrasonico) {
-
         int colorPh = obtenerColorEstado(ph, 6.5, 8.5, 6.0, 9.0);
         int colorCond = obtenerColorEstado(conductividad, 0, 700, 701, 1500);
         int colorTurb = obtenerColorEstado(turbidez, 0, 5, 6, 50);
@@ -417,39 +310,23 @@ public class Informacion extends AppCompatActivity {
         valorView.setTextColor(color);
         estadoView.setTextColor(color);
 
-        if (color == COLOR_OK) {
-            estadoView.setText(String.format(Locale.getDefault(), "%s: Normal", nombreSensor));
-        } else if (color == COLOR_ALERTA) {
-            estadoView.setText(String.format(Locale.getDefault(), "%s: Advertencia", nombreSensor));
-        } else {
-            estadoView.setText(String.format(Locale.getDefault(), "%s: Peligro", nombreSensor));
-        }
+        String estado;
+        if (color == COLOR_OK) estado = "Normal";
+        else if (color == COLOR_ALERTA) estado = "Advertencia";
+        else estado = "Peligro";
+
+        estadoView.setText(String.format(Locale.getDefault(), "%s: %s", nombreSensor, estado));
     }
 
     private int obtenerColorEstado(double valor, double okMin, double okMax, double alertaMin, double alertaMax) {
-        if (Double.isNaN(valor)) {
-            return COLOR_PELIGRO;
-        }
-
-        if (valor >= okMin && valor <= okMax) {
-            return COLOR_OK;
-        }
-
-        if (valor >= alertaMin && valor <= alertaMax) {
-            return COLOR_ALERTA;
-        }
-
+        if (Double.isNaN(valor)) return COLOR_PELIGRO;
+        if (valor >= okMin && valor <= okMax) return COLOR_OK;
+        if (valor >= alertaMin && valor <= alertaMax) return COLOR_ALERTA;
         return COLOR_PELIGRO;
     }
 
-    // =====================================================
-    // 🔎 HELPERS
-    // =====================================================
     private double leerDouble(DataSnapshot snap, String key) {
-        if (!snap.hasChild(key)) {
-            return Double.NaN;
-        }
-
+        if (!snap.hasChild(key)) return Double.NaN;
         try {
             return Double.parseDouble(String.valueOf(snap.child(key).getValue()));
         } catch (Exception e) {
@@ -459,9 +336,7 @@ public class Informacion extends AppCompatActivity {
 
     private String primerTextoValido(String... valores) {
         for (String valor : valores) {
-            if (valor != null && !valor.trim().isEmpty()) {
-                return valor;
-            }
+            if (valor != null && !valor.trim().isEmpty()) return valor;
         }
         return null;
     }
@@ -471,29 +346,17 @@ public class Informacion extends AppCompatActivity {
     }
 
     private float escalarPh(double valor) {
-        if (Double.isNaN(valor)) {
-            return 0f;
-        }
-        return (float) ((valor / 14.0) * 100.0);
+        return Double.isNaN(valor) ? 0f : (float) ((valor / 14.0) * 100.0);
     }
 
     private float escalarConductividad(double valor) {
-        if (Double.isNaN(valor)) {
-            return 0f;
-        }
-        return (float) ((valor / 2000.0) * 100.0);
+        return Double.isNaN(valor) ? 0f : (float) ((valor / 2000.0) * 100.0);
     }
 
     private float escalarTurbidez(double valor) {
-        if (Double.isNaN(valor)) {
-            return 0f;
-        }
-        return (float) ((valor / 100.0) * 100.0);
+        return Double.isNaN(valor) ? 0f : (float) (valor);
     }
 
-    // =====================================================
-    // 🚫 CASO SIN DISPOSITIVO
-    // =====================================================
     private void mostrarSinDispositivo() {
         txtPh.setText("pH: N/A");
         txtConductividad.setText("Conductividad: N/A");
@@ -511,13 +374,7 @@ public class Informacion extends AppCompatActivity {
         txtUltraEstado.setTextColor(COLOR_ALERTA);
     }
 
-    // =====================================================
-    // ✏️ EDITAR TANQUE
-    // =====================================================
-    /**
-     * Abre la pantalla Editor con los datos actuales del tanque.
-     * Llamado por android:onClick="editarTanque" en el XML.
-     */
+    /** Called via android:onClick="editarTanque" in the layout. */
     public void editarTanque(View view) {
         Intent intent = new Intent(this, Editor.class);
         intent.putExtra("tanqueId", tanqueId);
@@ -530,13 +387,7 @@ public class Informacion extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-
-        if (tanqueRef != null && tanqueListener != null) {
-            tanqueRef.removeEventListener(tanqueListener);
-        }
-
-        if (dispositivoRef != null && dispositivoListener != null) {
-            dispositivoRef.removeEventListener(dispositivoListener);
-        }
+        if (tanqueRef != null && tanqueListener != null) tanqueRef.removeEventListener(tanqueListener);
+        if (dispositivoRef != null && dispositivoListener != null) dispositivoRef.removeEventListener(dispositivoListener);
     }
 }

@@ -22,38 +22,26 @@ public class MapaDireccionActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // ⚠️ OBLIGATORIO para OSMDroid
         Configuration.getInstance().setUserAgentValue(getPackageName());
 
         setContentView(R.layout.activity_mapa_direccion);
 
         map = findViewById(R.id.map);
-
         map.setTileSource(TileSourceFactory.MAPNIK);
         map.setMultiTouchControls(true);
         map.getController().setZoom(16.0);
+        map.getController().setCenter(new GeoPoint(-33.4489, -70.6693));
 
-        // Punto inicial (Chile, Santiago aprox)
-        GeoPoint inicio = new GeoPoint(-33.4489, -70.6693);
-        map.getController().setCenter(inicio);
-
-        // 📍 Click en el mapa
         map.setOnTouchListener((v, event) -> {
             GeoPoint punto = (GeoPoint) map.getProjection().fromPixels(
-                    (int) event.getX(),
-                    (int) event.getY()
-            );
-
+                    (int) event.getX(), (int) event.getY());
             seleccionarPunto(punto);
             return false;
         });
     }
 
     private void seleccionarPunto(GeoPoint punto) {
-
-        if (markerSeleccionado != null) {
-            map.getOverlays().remove(markerSeleccionado);
-        }
+        if (markerSeleccionado != null) map.getOverlays().remove(markerSeleccionado);
 
         markerSeleccionado = new Marker(map);
         markerSeleccionado.setPosition(punto);
@@ -63,14 +51,12 @@ public class MapaDireccionActivity extends AppCompatActivity {
         map.getOverlays().add(markerSeleccionado);
         map.invalidate();
 
-        // 📤 Devolver coordenadas
         Intent data = new Intent();
         data.putExtra("latitud", punto.getLatitude());
         data.putExtra("longitud", punto.getLongitude());
 
         setResult(RESULT_OK, data);
         Toast.makeText(this, "Ubicación seleccionada", Toast.LENGTH_SHORT).show();
-
         finish();
     }
 }
