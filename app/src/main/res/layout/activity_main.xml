@@ -9,11 +9,10 @@
     tools:context=".MainActivity">
 
 
-
     <LinearLayout
         android:id="@+id/logoLayout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_width="407dp"
+        android:layout_height="312dp"
         android:layout_marginTop="32dp"
         android:orientation="vertical"
         app:layout_constraintBottom_toTopOf="@+id/iniciar"
@@ -22,11 +21,11 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <ImageView
-            android:layout_width="298dp"
-            android:layout_height="214dp"
+            android:layout_width="336dp"
+            android:layout_height="match_parent"
             android:layout_gravity="center"
             android:contentDescription="Logo de la aplicación"
-            android:src="@mipmap/logo" />
+            android:src="@mipmap/Logo2" />
     </LinearLayout>
 
     <LinearLayout
