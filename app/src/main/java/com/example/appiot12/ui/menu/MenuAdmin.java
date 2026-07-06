@@ -6,7 +6,7 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
-import androidx.appcompat.app.AppCompatActivity;
+import com.example.appiot12.ui.BaseActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -17,7 +17,7 @@ import com.example.appiot12.ui.admin.GraficosAdmin;
 import com.example.appiot12.ui.admin.HistorialGlobal;
 import com.example.appiot12.ui.perfil.Configuracion;
 
-public class MenuAdmin extends AppCompatActivity {
+public class MenuAdmin extends BaseActivity {
 
     private Button btnGestionUsuarios;
     private Button btnHistorialGlobal;

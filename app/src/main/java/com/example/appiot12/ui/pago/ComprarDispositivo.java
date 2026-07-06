@@ -8,7 +8,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AppCompatActivity;
+import com.example.appiot12.ui.BaseActivity;
 
 import com.example.appiot12.R;
 import com.google.firebase.auth.FirebaseAuth;
@@ -18,7 +18,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
-public class ComprarDispositivo extends AppCompatActivity {
+public class ComprarDispositivo extends BaseActivity {
 
     private static final int PRECIO_DEFAULT = 125000;
     private static final String NOMBRE_PRODUCTO = "Dispositivo AguaSegura";
@@ -66,8 +66,8 @@ public class ComprarDispositivo extends AppCompatActivity {
 
     private void initSpinner() {
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
-                this, R.array.cuotas_array, android.R.layout.simple_spinner_item);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                this, R.array.cuotas_array, R.layout.spinner_item);
+        adapter.setDropDownViewResource(R.layout.spinner_dropdown_item);
         spnCuotas.setAdapter(adapter);
 
         spnCuotas.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {

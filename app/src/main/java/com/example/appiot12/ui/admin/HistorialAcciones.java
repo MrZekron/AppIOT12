@@ -9,7 +9,7 @@ import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AppCompatActivity;
+import com.example.appiot12.ui.BaseActivity;
 
 import com.example.appiot12.R;
 import com.example.appiot12.adapter.HistorialAdapter;
@@ -29,7 +29,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-public class HistorialAcciones extends AppCompatActivity {
+public class HistorialAcciones extends BaseActivity {
 
     private Spinner spnFiltro;
     private ListView lvHistorial;

@@ -6,7 +6,8 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AppCompatActivity;
+import com.example.appiot12.ui.BaseActivity;
+import androidx.core.content.ContextCompat;
 
 import com.example.appiot12.R;
 import com.github.mikephil.charting.charts.BarChart;
@@ -33,7 +34,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
 
-public class GraficosAdmin extends AppCompatActivity {
+public class GraficosAdmin extends BaseActivity {
 
     private BarChart barChartUsuarios;
     private BarChart barChartComprasGlobal;
@@ -46,10 +47,10 @@ public class GraficosAdmin extends AppCompatActivity {
     private DatabaseReference refUsuarios;
     private DatabaseReference refCompras;
 
-    private static final int COLOR_PRIMARY   = Color.parseColor("#1D8EC1");
-    private static final int COLOR_TEXT      = Color.parseColor("#4B65A9");
-    private static final int COLOR_SECONDARY = Color.parseColor("#5FCAE0");
-    private static final int COLOR_SURFACE   = Color.parseColor("#F8EFED");
+    private int colorPrimary;
+    private int colorText;
+    private int colorSecondary;
+    private int colorSurface;
 
     private final SimpleDateFormat formatoMes = new SimpleDateFormat("MMM yyyy", new Locale("es", "CL"));
 
@@ -57,6 +58,11 @@ public class GraficosAdmin extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.admin_graficos);
+
+        colorPrimary = ContextCompat.getColor(this, R.color.color_primary);
+        colorText = ContextCompat.getColor(this, R.color.color_text_primary);
+        colorSecondary = ContextCompat.getColor(this, R.color.color_secondary);
+        colorSurface = ContextCompat.getColor(this, R.color.color_surface);
 
         tvTituloUsuarios          = findViewById(R.id.tvTituloUsuarios);
         tvTituloComprasGlobal     = findViewById(R.id.tvTituloComprasGlobal);
@@ -95,7 +101,7 @@ public class GraficosAdmin extends AppCompatActivity {
                     return;
                 }
 
-                dibujarBarChart(barChartUsuarios, registrosPorMes, "Usuarios registrados", COLOR_PRIMARY);
+                dibujarBarChart(barChartUsuarios, registrosPorMes, "Usuarios registrados", colorPrimary);
             }
 
             @Override
@@ -129,7 +135,7 @@ public class GraficosAdmin extends AppCompatActivity {
                 }
 
                 if (!comprasPorMes.isEmpty()) {
-                    dibujarBarChart(barChartComprasGlobal, comprasPorMes, "Dispositivos comprados", COLOR_SECONDARY);
+                    dibujarBarChart(barChartComprasGlobal, comprasPorMes, "Dispositivos comprados", colorSecondary);
                 } else {
                     tvTituloComprasGlobal.setText("Compras de dispositivos por mes (sin datos aún)");
                 }
@@ -195,7 +201,7 @@ public class GraficosAdmin extends AppCompatActivity {
 
         BarDataSet dataSet = new BarDataSet(entradas, etiqueta);
         dataSet.setColor(colorBarra);
-        dataSet.setValueTextColor(COLOR_TEXT);
+        dataSet.setValueTextColor(colorText);
         dataSet.setValueTextSize(11f);
         dataSet.setValueFormatter(new ValueFormatter() {
             @Override
@@ -211,12 +217,12 @@ public class GraficosAdmin extends AppCompatActivity {
         xAxis.setGranularity(1f);
         xAxis.setLabelCount(etiquetasX.size());
         xAxis.setLabelRotationAngle(-30f);
-        xAxis.setTextColor(COLOR_TEXT);
+        xAxis.setTextColor(colorText);
         xAxis.setDrawGridLines(false);
 
         YAxis yAxisLeft = chart.getAxisLeft();
         yAxisLeft.setAxisMinimum(0f);
-        yAxisLeft.setTextColor(COLOR_TEXT);
+        yAxisLeft.setTextColor(colorText);
         yAxisLeft.setGranularity(1f);
         yAxisLeft.setValueFormatter(new ValueFormatter() {
             @Override
@@ -226,7 +232,7 @@ public class GraficosAdmin extends AppCompatActivity {
         chart.getAxisRight().setEnabled(false);
         chart.setData(barData);
         chart.getDescription().setEnabled(false);
-        chart.getLegend().setTextColor(COLOR_TEXT);
+        chart.getLegend().setTextColor(colorText);
         chart.setBackgroundColor(Color.TRANSPARENT);
         chart.setFitBars(true);
         chart.animateY(800);
@@ -243,8 +249,8 @@ public class GraficosAdmin extends AppCompatActivity {
         }
 
         BarDataSet dataSet = new BarDataSet(entradas, "Dispositivos por usuario");
-        dataSet.setColor(COLOR_TEXT);
-        dataSet.setValueTextColor(COLOR_SURFACE);
+        dataSet.setColor(colorText);
+        dataSet.setValueTextColor(colorSurface);
         dataSet.setValueTextSize(11f);
         dataSet.setValueFormatter(new ValueFormatter() {
             @Override
@@ -259,13 +265,13 @@ public class GraficosAdmin extends AppCompatActivity {
         xAxis.setPosition(XAxis.XAxisPosition.BOTTOM_INSIDE);
         xAxis.setGranularity(1f);
         xAxis.setLabelCount(correos.size());
-        xAxis.setTextColor(COLOR_TEXT);
+        xAxis.setTextColor(colorText);
         xAxis.setDrawGridLines(false);
         xAxis.setTextSize(9f);
 
         YAxis yAxisLeft = barChartComprasPorUsuario.getAxisLeft();
         yAxisLeft.setAxisMinimum(0f);
-        yAxisLeft.setTextColor(COLOR_TEXT);
+        yAxisLeft.setTextColor(colorText);
         yAxisLeft.setGranularity(1f);
         yAxisLeft.setValueFormatter(new ValueFormatter() {
             @Override
@@ -275,7 +281,7 @@ public class GraficosAdmin extends AppCompatActivity {
         barChartComprasPorUsuario.getAxisRight().setEnabled(false);
         barChartComprasPorUsuario.setData(barData);
         barChartComprasPorUsuario.getDescription().setEnabled(false);
-        barChartComprasPorUsuario.getLegend().setTextColor(COLOR_TEXT);
+        barChartComprasPorUsuario.getLegend().setTextColor(colorText);
         barChartComprasPorUsuario.setBackgroundColor(Color.TRANSPARENT);
         barChartComprasPorUsuario.setFitBars(true);
         barChartComprasPorUsuario.animateX(800);

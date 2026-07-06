@@ -1,120 +1,282 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <!--
+
     Pantalla para solicitar la compra del dispositivo.
+
     Muestra el producto, el precio, cuotas referenciales
+
     y permite crear la compra para luego ir a transferencia.
+
 -->
 
+
+
 <androidx.constraintlayout.widget.ConstraintLayout
+
     xmlns:android="http://schemas.android.com/apk/res/android"
+
     xmlns:app="http://schemas.android.com/apk/res-auto"
+
     xmlns:tools="http://schemas.android.com/tools"
+
     android:id="@+id/main"
+
     android:layout_width="match_parent"
+
     android:layout_height="match_parent"
-    android:background="@color/color_background"
+
+    android:background="@drawable/bg_screen_with_logo"
+
     android:padding="24dp"
+
     tools:context=".ComprarDispositivo">
 
-    <!-- Título -->
-    <TextView
-        android:id="@+id/tvTituloCompra"
-        android:layout_width="wrap_content"
+
+
+    <include
+
+        android:id="@+id/includeToolbarTema"
+
+        layout="@layout/include_toolbar_tema"
+
+        android:layout_width="0dp"
+
         android:layout_height="wrap_content"
-        android:text="Comprar Dispositivo"
-        android:textColor="@color/color_text_primary"
-        android:textSize="28sp"
-        android:textStyle="bold"
+
+        android:elevation="8dp"
+
         app:layout_constraintEnd_toEndOf="parent"
+
         app:layout_constraintStart_toStartOf="parent"
+
         app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- Tarjeta principal -->
-    <LinearLayout
-        android:id="@+id/cardCompra"
-        android:layout_width="0dp"
+
+
+    <!-- Título -->
+
+    <TextView
+
+        android:id="@+id/tvTituloCompra"
+
+        android:layout_width="wrap_content"
+
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:background="@color/color_secondary"
-        android:elevation="4dp"
-        android:orientation="vertical"
-        android:padding="18dp"
+
+        android:layout_marginTop="8dp"
+
+        android:text="Comprar Dispositivo"
+
+        android:textColor="@color/color_text_primary"
+
+        android:textSize="28sp"
+
+        android:textStyle="bold"
+
         app:layout_constraintEnd_toEndOf="parent"
+
         app:layout_constraintStart_toStartOf="parent"
+
+        app:layout_constraintTop_toBottomOf="@id/includeToolbarTema" />
+
+
+
+    <!-- Tarjeta principal -->
+
+    <LinearLayout
+
+        android:id="@+id/cardCompra"
+
+        android:layout_width="0dp"
+
+        android:layout_height="wrap_content"
+
+        android:layout_marginTop="20dp"
+
+        android:background="@drawable/bg_card"
+
+        android:elevation="4dp"
+
+        android:orientation="vertical"
+
+        android:padding="18dp"
+
+        app:layout_constraintEnd_toEndOf="parent"
+
+        app:layout_constraintStart_toStartOf="parent"
+
         app:layout_constraintTop_toBottomOf="@id/tvTituloCompra">
 
+
+
         <!-- Descripción -->
+
         <TextView
+
             android:id="@+id/tvDescripcion"
+
             android:layout_width="wrap_content"
+
             android:layout_height="wrap_content"
+
             android:text="Solicita tu dispositivo y continúa el pago por transferencia."
-            android:textColor="#333"
+
+            android:textColor="@color/color_text_primary"
+
             android:textSize="16sp" />
+
+
 
         <!-- Precio -->
+
         <TextView
+
             android:id="@+id/tvPrecio"
+
             android:layout_width="wrap_content"
+
             android:layout_height="wrap_content"
+
             android:layout_marginTop="16dp"
+
             android:text="Precio: $0"
-            android:textColor="#1A237E"
+
+            android:textColor="@color/color_primary"
+
             android:textSize="20sp"
+
             android:textStyle="bold" />
+
+
 
         <!-- Etiqueta cuotas -->
+
         <TextView
+
             android:id="@+id/tvCuotas"
+
             android:layout_width="wrap_content"
+
             android:layout_height="wrap_content"
+
             android:layout_marginTop="24dp"
+
             android:text="Cuotas referenciales:"
-            android:textColor="#333"
-            android:textSize="16sp" />
+
+            android:textColor="@color/color_text_primary"
+
+            android:textSize="16sp"
+
+            android:textStyle="bold" />
+
+
 
         <!-- Selector de cuotas -->
+
         <Spinner
+
             android:id="@+id/spnCuotas"
+
             android:layout_width="match_parent"
+
             android:layout_height="wrap_content"
+
             android:layout_marginTop="8dp"
+
+            android:background="@drawable/bg_input_field"
+
             android:entries="@array/cuotas_array"
-            android:minHeight="48dp" />
+
+            android:minHeight="48dp"
+
+            android:padding="12dp"
+
+            android:popupBackground="@color/color_surface"
+
+            android:spinnerMode="dropdown" />
+
+
 
         <!-- Resumen -->
+
         <TextView
+
             android:id="@+id/tvResumenCuota"
+
             android:layout_width="wrap_content"
+
             android:layout_height="wrap_content"
+
             android:layout_marginTop="16dp"
+
             android:text="Cuota referencial: $0"
-            android:textColor="#004D40"
+
+            android:textColor="@color/color_secondary"
+
             android:textSize="16sp"
+
             android:textStyle="bold" />
+
+
 
         <!-- Nota -->
+
         <TextView
+
             android:id="@+id/tvNotaCompra"
+
             android:layout_width="wrap_content"
+
             android:layout_height="wrap_content"
+
             android:layout_marginTop="14dp"
+
             android:text="Después de confirmar, verás los datos para transferir y enviar tu comprobante por WhatsApp."
-            android:textColor="#444"
+
+            android:textColor="@color/color_text_secondary"
+
             android:textSize="14sp" />
 
+
+
         <!-- Botón comprar -->
-        <Button
+
+        <com.google.android.material.button.MaterialButton
+        style="@style/Widget.AppIOT12.Button"
+
             android:id="@+id/btnComprar"
+
             android:layout_width="match_parent"
+
             android:layout_height="wrap_content"
+
             android:layout_marginTop="28dp"
-            android:backgroundTint="@color/color_primary"
+
             android:padding="16dp"
+
             android:text="Continuar compra"
-            android:textColor="#FFFFFF"
+
             android:textSize="18sp"
+
             android:textStyle="bold" />
+
     </LinearLayout>
 
+    <com.google.android.material.button.MaterialButton
+        style="@style/Widget.AppIOT12.Button"
+        android:id="@+id/btnVolverHistorial"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="96dp"
+        android:onClick="volverAlMenu"
+        android:text="Volver"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintStart_toStartOf="parent" />
+
+
 </androidx.constraintlayout.widget.ConstraintLayout>
+
+

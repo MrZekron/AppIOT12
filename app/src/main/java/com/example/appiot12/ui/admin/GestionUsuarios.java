@@ -5,7 +5,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ListView;
 
-import androidx.appcompat.app.AppCompatActivity;
+import com.example.appiot12.ui.BaseActivity;
 import androidx.appcompat.widget.PopupMenu;
 
 import com.example.appiot12.R;
@@ -23,7 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class GestionUsuarios extends AppCompatActivity {
+public class GestionUsuarios extends BaseActivity {
 
     private ListView listUsuarios;
     private Button btnFiltrarUsuarios;

@@ -11,7 +11,7 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/color_background"
+    android:background="@drawable/bg_screen_with_logo"
     android:fillViewport="true">
 
     <LinearLayout
@@ -20,6 +20,8 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:padding="24dp">
+
+        <include layout="@layout/include_toolbar_tema" />
 
         <!-- Título principal -->
         <TextView
@@ -38,7 +40,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            android:background="@color/color_secondary"
+            android:background="@drawable/bg_card"
             android:elevation="4dp"
             android:orientation="vertical"
             android:padding="18dp">
@@ -59,12 +61,12 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:background="@android:color/white"
+                android:background="@drawable/bg_input_field"
                 android:hint="Ingrese su nombre"
                 android:inputType="textPersonName"
                 android:padding="12dp"
-                android:textColor="#000000"
-                android:textColorHint="#666666" />
+                android:textColor="@color/color_text_primary"
+                android:textColorHint="@color/color_text_hint" />
 
             <!-- Etiqueta correo -->
             <TextView
@@ -83,14 +85,14 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:background="@android:color/white"
+                android:background="@drawable/bg_input_field"
                 android:enabled="false"
                 android:focusable="false"
                 android:hint="correo@ejemplo.com"
                 android:inputType="textEmailAddress"
                 android:padding="12dp"
-                android:textColor="#444444"
-                android:textColorHint="#666666" />
+                android:textColor="@color/color_text_secondary"
+                android:textColorHint="@color/color_text_hint" />
 
             <!-- Nota informativa -->
             <TextView
@@ -99,34 +101,32 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:text="Por ahora solo puedes modificar tu nombre. El cambio de correo se gestionará más adelante."
-                android:textColor="#444444"
+                android:textColor="@color/color_text_secondary"
                 android:textSize="14sp" />
         </LinearLayout>
 
         <!-- Botón guardar cambios -->
 
         <!-- Botón cancelar -->
-        <Button
+        <com.google.android.material.button.MaterialButton
+        style="@style/Widget.AppIOT12.Button"
             android:id="@+id/btnGuardarPerfil"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            android:backgroundTint="@color/color_primary"
             android:padding="14dp"
             android:text="Guardar cambios"
-            android:textColor="@android:color/white"
             android:textSize="18sp"
             android:textStyle="bold" />
 
-        <Button
+        <com.google.android.material.button.MaterialButton
+        style="@style/Widget.AppIOT12.Button.Secondary"
             android:id="@+id/btnCancelarPerfil"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            android:backgroundTint="@color/color_secondary"
             android:padding="14dp"
             android:text="Cancelar"
-            android:textColor="@android:color/white"
             android:textSize="18sp"
             android:textStyle="bold" />
 

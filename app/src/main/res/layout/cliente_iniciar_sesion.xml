@@ -8,6 +8,16 @@
     android:background="@color/color_background"
     tools:context=".IniciarSesion">
 
+    <include
+        android:id="@+id/includeToolbarTema"
+        layout="@layout/include_toolbar_tema"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:elevation="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <LinearLayout
         android:id="@+id/tvLayout"
         android:layout_width="0dp"
@@ -27,15 +37,16 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
             android:autofillHints=""
-            android:background="@color/transparente"
-            android:backgroundTint="#ECEFF1"
+            android:background="@drawable/bg_input_field"
             android:drawableLeft="@drawable/baseline_person_outline_24"
             android:drawablePadding="20dp"
+            android:drawableTint="@color/color_text_primary"
             android:hint="Correo Electrónico"
             android:inputType="textEmailAddress"
             android:minHeight="48dp"
             android:padding="12dp"
-            android:textColorHint="#777777"
+            android:textColor="@color/color_text_primary"
+            android:textColorHint="@color/color_text_hint"
             tools:ignore="HardcodedText,VisualLintTextFieldSize,TextContrastCheck" />
 
         <EditText
@@ -43,15 +54,16 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:autofillHints=""
-            android:background="@color/transparente"
-            android:backgroundTint="#ECEFF1"
+            android:background="@drawable/bg_input_field"
             android:drawableLeft="@drawable/baseline_lock_24"
             android:drawablePadding="20dp"
+            android:drawableTint="@color/color_text_primary"
             android:hint="Contraseña"
             android:inputType="textPassword"
             android:minHeight="48dp"
             android:padding="12dp"
-            android:textColorHint="#616161"
+            android:textColor="@color/color_text_primary"
+            android:textColorHint="@color/color_text_hint"
             tools:ignore="HardcodedText,VisualLintTextFieldSize" />
 
         <Button
@@ -62,7 +74,7 @@
             android:backgroundTint="@color/color_primary"
             android:onClick="onClick"
             android:text="Ingresar"
-            android:textColor="#FFFFFF"
+            android:textColor="@color/color_text_on_primary"
             tools:ignore="OnClick,VisualLintButtonSize" />
 
         <!-- NUEVO: botones "Crear cuenta" y "Olvidé la contraseña" -->
@@ -84,7 +96,7 @@
                 android:onClick="goToCrearCuenta"
                 android:text="Crear cuenta"
                 android:textAllCaps="false"
-                android:textColor="#1976D2"
+                android:textColor="@color/color_link"
                 android:textStyle="bold"
                 tools:ignore="OnClick" />
 
@@ -103,7 +115,7 @@
                 android:onClick="goToOlvideContrasena"
                 android:text="Olvidé la contraseña"
                 android:textAllCaps="false"
-                android:textColor="#1976D2"
+                android:textColor="@color/color_link"
                 tools:ignore="OnClick" />
 
         </LinearLayout>
@@ -112,14 +124,18 @@
 
     <ImageView
         android:id="@+id/imageView"
-        android:layout_width="299dp"
-        android:layout_height="235dp"
-        android:layout_marginTop="32dp"
-        android:contentDescription="Descripción de la imagen"
+        android:layout_width="220dp"
+        android:layout_height="220dp"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/bg_logo"
+        android:contentDescription="Logo de la aplicación"
+        android:elevation="6dp"
+        android:padding="16dp"
+        android:scaleType="fitCenter"
         app:layout_constraintBottom_toTopOf="@+id/tvLayout"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/includeToolbarTema"
         app:layout_constraintVertical_bias="0.0"
         app:srcCompat="@mipmap/logo2"
         tools:ignore="HardcodedText,ImageContrastCheck" />
@@ -159,6 +175,7 @@
         android:layout_marginTop="51dp"
         android:layout_marginEnd="154dp"
         android:text="inicia sesion con"
+        android:textColor="@color/color_text_secondary"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/tvLayout" />

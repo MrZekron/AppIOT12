@@ -27,7 +27,7 @@
     android:id="@+id/scrollGraficos"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/color_background"
+    android:background="@drawable/bg_screen_with_logo"
     android:fillViewport="true"
     tools:context=".GraficosAdmin">
 
@@ -37,6 +37,8 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:padding="16dp">
+
+        <include layout="@layout/include_toolbar_tema" />
 
         <!-- ====================================================
              🏷️ TÍTULO PRINCIPAL DE LA PANTALLA
@@ -169,13 +171,12 @@
              que cierra la Activity y regresa al MenuAdmin.
              Usa el color y estilo de los botones de Agregar.xml
              ==================================================== -->
-        <Button
+        <com.google.android.material.button.MaterialButton
+        style="@style/Widget.AppIOT12.Button"
             android:id="@+id/btnVolverGraficos"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/graficos_btn_volver"
-            android:backgroundTint="@color/color_primary"
-            android:textColor="@color/color_surface"
             android:textSize="16sp"
             android:padding="12dp"
             android:layout_marginTop="8dp"

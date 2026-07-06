@@ -5,7 +5,7 @@ import android.os.Bundle;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AppCompatActivity;
+import com.example.appiot12.ui.BaseActivity;
 
 import com.example.appiot12.R;
 import com.github.mikephil.charting.charts.PieChart;
@@ -21,7 +21,7 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.List;
 
-public class HistorialGlobal extends AppCompatActivity {
+public class HistorialGlobal extends BaseActivity {
 
     private TextView txtUsuariosTotal;
     private TextView txtTanquesTotal;

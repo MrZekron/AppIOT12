@@ -1,7 +1,6 @@
 package com.example.appiot12.adapter;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,6 +8,7 @@ import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 
 import com.example.appiot12.R;
 import com.example.appiot12.model.Dispositivo;
@@ -52,12 +52,12 @@ public class TanqueAdapter extends ArrayAdapter<TanqueAgua> {
 
         if (tanque.getIdDispositivo() == null || tanque.getIdDispositivo().isEmpty()) {
             holder.tvResumen.setText("Estado: SIN DISPOSITIVO");
-            holder.tvResumen.setTextColor(Color.GRAY);
+            holder.tvResumen.setTextColor(ContextCompat.getColor(context, R.color.color_text_secondary));
             return convertView;
         }
 
         holder.tvResumen.setText("Cargando sensores…");
-        holder.tvResumen.setTextColor(Color.GRAY);
+        holder.tvResumen.setTextColor(ContextCompat.getColor(context, R.color.color_text_secondary));
 
         final View rowFinal = convertView;
         final ViewHolder holderFinal = holder;
@@ -75,14 +75,14 @@ public class TanqueAdapter extends ArrayAdapter<TanqueAgua> {
 
                         if (!snapshot.exists()) {
                             holderFinal.tvResumen.setText("DISPOSITIVO NO ENCONTRADO");
-                            holderFinal.tvResumen.setTextColor(Color.RED);
+                            holderFinal.tvResumen.setTextColor(ContextCompat.getColor(context, R.color.color_error));
                             return;
                         }
 
                         Dispositivo d = snapshot.getValue(Dispositivo.class);
                         if (d == null) {
                             holderFinal.tvResumen.setText("ERROR DE LECTURA");
-                            holderFinal.tvResumen.setTextColor(Color.RED);
+                            holderFinal.tvResumen.setTextColor(ContextCompat.getColor(context, R.color.color_error));
                             return;
                         }
 
@@ -102,14 +102,14 @@ public class TanqueAdapter extends ArrayAdapter<TanqueAgua> {
                                 || !"OK".equals(turbEstado) || "BAJO".equals(nivelEstado);
 
                         holderFinal.tvResumen.setTextColor(alerta
-                                ? Color.parseColor("#8B0000")
-                                : Color.parseColor("#006400"));
+                                ? ContextCompat.getColor(context, R.color.color_error)
+                                : ContextCompat.getColor(context, R.color.color_success));
                     }
 
                     @Override
                     public void onCancelled(@NonNull DatabaseError error) {
                         holderFinal.tvResumen.setText("ERROR FIREBASE");
-                        holderFinal.tvResumen.setTextColor(Color.RED);
+                        holderFinal.tvResumen.setTextColor(ContextCompat.getColor(context, R.color.color_error));
                     }
                 });
 

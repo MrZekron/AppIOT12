@@ -7,7 +7,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="24dp"
-    android:background="@color/color_background"
+    android:background="@drawable/bg_screen_with_logo"
     tools:context=".OlvideContrasenaActivity">
 
     <ImageView
@@ -41,7 +41,7 @@
         android:text="Ingresa tu correo y te enviaremos un enlace para restablecer la contraseña."
         android:textSize="14sp"
         android:layout_marginTop="12dp"
-        android:textColor="#666666"
+        android:textColor="@color/color_text_secondary"
         app:layout_constraintTop_toBottomOf="@id/tvTituloOlvide"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
@@ -54,38 +54,47 @@
         android:inputType="textEmailAddress"
         android:padding="12dp"
         android:layout_marginTop="18dp"
-        android:background="@color/transparente"
+        android:background="@drawable/bg_input_field"
         android:drawableLeft="@android:drawable/ic_dialog_email"
         android:drawablePadding="12dp"
-        android:textColorHint="#777777"
+        android:textColor="@color/color_text_primary"
+        android:textColorHint="@color/color_text_hint"
         app:layout_constraintTop_toBottomOf="@id/tvSubOlvide"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
-    <Button
+    <com.google.android.material.button.MaterialButton
+        style="@style/Widget.AppIOT12.Button"
         android:id="@+id/btnEnviar"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="Enviar enlace"
         android:layout_marginTop="16dp"
-        android:backgroundTint="@color/color_primary"
-        android:textColor="#FFFFFF"
         android:onClick="sendResetPassword"
         app:layout_constraintTop_toBottomOf="@id/etEmailOlvide"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
-    <Button
+    <com.google.android.material.button.MaterialButton
+        style="@style/Widget.AppIOT12.Button.Secondary"
         android:id="@+id/btnCancelarOlvide"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Cancelar"
-        android:backgroundTint="@color/color_secondary"
-        android:textColor="#1976D2"
         android:onClick="cancelReset"
         app:layout_constraintTop_toBottomOf="@id/btnEnviar"
         android:layout_marginTop="10dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
+
+    <include
+        android:id="@+id/includeToolbarTema"
+        layout="@layout/include_toolbar_tema"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:elevation="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -17,7 +17,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/color_background"
+    android:background="@drawable/bg_screen_with_logo"
     android:padding="16dp"
     tools:context=".Agregar">
 
@@ -48,6 +48,8 @@
 
         <!-- Nombre del tanque -->
         <EditText
+            android:textColorHint="@color/color_text_hint"
+            android:background="@drawable/bg_input_field"
             android:id="@+id/txtNombre"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -61,6 +63,8 @@
 
         <!-- Capacidad -->
         <EditText
+            android:textColorHint="@color/color_text_hint"
+            android:background="@drawable/bg_input_field"
             android:id="@+id/txtCapasidad"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -83,6 +87,8 @@
 
         <!-- Dirección -->
         <EditText
+            android:textColorHint="@color/color_text_hint"
+            android:background="@drawable/bg_input_field"
             android:id="@+id/txtDireccion"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -95,15 +101,14 @@
             android:textSize="16sp" />
 
         <!-- Botón validar dirección -->
-        <Button
+        <com.google.android.material.button.MaterialButton
+        style="@style/Widget.AppIOT12.Button"
             android:id="@+id/btnValidarDireccion"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            android:backgroundTint="@color/color_primary"
             android:onClick="validarDireccion"
             android:text="Validar dirección"
-            android:textColor="@color/color_surface"
             android:textSize="16sp" />
     </LinearLayout>
 
@@ -119,30 +124,38 @@
         app:layout_constraintTop_toBottomOf="@id/linearLayout">
 
         <!-- Volver -->
-        <Button
+        <com.google.android.material.button.MaterialButton
+        style="@style/Widget.AppIOT12.Button"
             android:id="@+id/btnVolver"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginEnd="8dp"
             android:layout_weight="1"
-            android:backgroundTint="@color/color_primary"
             android:onClick="cancelar"
             android:text="Volver"
-            android:textColor="@color/color_surface"
             android:textSize="16sp" />
 
         <!-- Agregar -->
-        <Button
+        <com.google.android.material.button.MaterialButton
+        style="@style/Widget.AppIOT12.Button"
             android:id="@+id/btnAgregar"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_weight="1"
-            android:backgroundTint="@color/color_primary"
             android:onClick="enviarDatosUsuario"
             android:text="Agregar"
-            android:textColor="@color/color_surface"
             android:textSize="16sp" />
     </LinearLayout>
 
+
+    <include
+        android:id="@+id/includeToolbarTema"
+        layout="@layout/include_toolbar_tema"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:elevation="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

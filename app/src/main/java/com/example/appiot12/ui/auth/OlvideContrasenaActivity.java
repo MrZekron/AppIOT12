@@ -8,11 +8,11 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AppCompatActivity;
+import com.example.appiot12.ui.BaseActivity;
 
 import com.google.firebase.auth.FirebaseAuth;
 
-public class OlvideContrasenaActivity extends AppCompatActivity {
+public class OlvideContrasenaActivity extends BaseActivity {
 
     private EditText etEmail;
     private Button btnEnviar, btnCancelar;

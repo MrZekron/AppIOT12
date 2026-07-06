@@ -1,7 +1,6 @@
 package com.example.appiot12.adapter;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,6 +9,7 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 
 import com.example.appiot12.R;
 import com.example.appiot12.model.Pago;
@@ -55,18 +55,18 @@ public class UsuarioAdapter extends ArrayAdapter<Usuario> {
 
         if (usuario.isBloqueado()) {
             holder.tvEstado.setText("Cuenta bloqueada");
-            holder.tvEstado.setTextColor(Color.RED);
+            holder.tvEstado.setTextColor(ContextCompat.getColor(context, R.color.color_error));
             holder.btnBloquear.setText("Desbloquear");
         } else {
             holder.tvEstado.setText("Cuenta activa");
-            holder.tvEstado.setTextColor(Color.GREEN);
+            holder.tvEstado.setTextColor(ContextCompat.getColor(context, R.color.color_success));
             holder.btnBloquear.setText("Bloquear");
         }
 
         holder.tvDeuda.setText("Cargando…");
-        holder.tvDeuda.setTextColor(Color.GRAY);
+        holder.tvDeuda.setTextColor(ContextCompat.getColor(context, R.color.color_text_secondary));
         holder.tvAtraso.setText("Calculando…");
-        holder.tvAtraso.setTextColor(Color.GRAY);
+        holder.tvAtraso.setTextColor(ContextCompat.getColor(context, R.color.color_text_secondary));
 
         cargarResumenFinanciero(usuario.getId(), holder);
 
@@ -94,9 +94,9 @@ public class UsuarioAdapter extends ArrayAdapter<Usuario> {
                     public void onDataChange(DataSnapshot snapshot) {
                         if (!snapshot.exists()) {
                             holder.tvDeuda.setText("Sin compras");
-                            holder.tvDeuda.setTextColor(Color.GRAY);
+                            holder.tvDeuda.setTextColor(ContextCompat.getColor(context, R.color.color_text_secondary));
                             holder.tvAtraso.setText("Atraso: 0 días");
-                            holder.tvAtraso.setTextColor(Color.GREEN);
+                            holder.tvAtraso.setTextColor(ContextCompat.getColor(context, R.color.color_success));
                             return;
                         }
 
@@ -113,10 +113,10 @@ public class UsuarioAdapter extends ArrayAdapter<Usuario> {
 
                         if (deuda == 0) {
                             holder.tvDeuda.setText("Al día");
-                            holder.tvDeuda.setTextColor(Color.GREEN);
+                            holder.tvDeuda.setTextColor(ContextCompat.getColor(context, R.color.color_success));
                         } else {
                             holder.tvDeuda.setText("Debe $" + deuda);
-                            holder.tvDeuda.setTextColor(Color.RED);
+                            holder.tvDeuda.setTextColor(ContextCompat.getColor(context, R.color.color_error));
                         }
 
                         long dias = 0;
@@ -125,17 +125,21 @@ public class UsuarioAdapter extends ArrayAdapter<Usuario> {
                         }
 
                         holder.tvAtraso.setText("Atraso: " + dias + " días");
-                        if (dias == 0) holder.tvAtraso.setTextColor(Color.GREEN);
-                        else if (dias <= 15) holder.tvAtraso.setTextColor(Color.parseColor("#FBC02D"));
-                        else holder.tvAtraso.setTextColor(Color.RED);
+                        if (dias == 0) {
+                            holder.tvAtraso.setTextColor(ContextCompat.getColor(context, R.color.color_success));
+                        } else if (dias <= 15) {
+                            holder.tvAtraso.setTextColor(ContextCompat.getColor(context, R.color.color_warning));
+                        } else {
+                            holder.tvAtraso.setTextColor(ContextCompat.getColor(context, R.color.color_error));
+                        }
                     }
 
                     @Override
                     public void onCancelled(DatabaseError error) {
                         holder.tvDeuda.setText("Error");
-                        holder.tvDeuda.setTextColor(Color.RED);
+                        holder.tvDeuda.setTextColor(ContextCompat.getColor(context, R.color.color_error));
                         holder.tvAtraso.setText("Error");
-                        holder.tvAtraso.setTextColor(Color.RED);
+                        holder.tvAtraso.setTextColor(ContextCompat.getColor(context, R.color.color_error));
                     }
                 });
     }

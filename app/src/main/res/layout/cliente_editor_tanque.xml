@@ -1,129 +1,139 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-    Pantalla de edición de tanque.
-
-    Qué hace este layout:
-    - Muestra el título "Editor de Tanque".
-    - Contiene un formulario con 3 campos:
-        1) Nombre del tanque
-        2) Capacidad en litros
-        3) Color del tanque
-    - Tiene un botón para guardar los cambios.
-    - Tiene un botón para volver al menú.
-    - Usa ConstraintLayout como contenedor principal.
--->
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/color_background"
+    android:background="@drawable/bg_screen_with_logo"
+    android:padding="24dp"
     tools:context=".Editor">
 
-    <!--
-        Título principal de la pantalla.
-        Está centrado horizontalmente en la parte superior.
-    -->
-    <TextView
-        android:id="@+id/tvTituloConfig"
-        android:layout_width="wrap_content"
+    <include
+        android:id="@+id/includeToolbarTema"
+        layout="@layout/include_toolbar_tema"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="40dp"
-        android:text="Editor de Tanque"
-        android:textColor="@color/color_text_primary"
-        android:textSize="36sp"
+        android:elevation="8dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <!--
-        Contenedor del formulario.
-        Agrupa los campos de edición del tanque con padding interno.
-    -->
+    <TextView
+        android:id="@+id/tvTituloConfig"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Editor de Tanque"
+        android:textColor="@color/color_text_primary"
+        android:textSize="28sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/includeToolbarTema" />
+
     <LinearLayout
         android:id="@+id/contenedorFormulario"
-        android:layout_width="334dp"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="24dp"
-        android:layout_marginTop="132dp"
-        android:layout_marginEnd="24dp"
-        android:background="@android:color/transparent"
+        android:layout_marginTop="20dp"
+        android:background="@drawable/bg_card"
         android:orientation="vertical"
-        android:padding="16dp"
+        android:padding="18dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.482"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toBottomOf="@id/tvTituloConfig">
 
-        <!--
-            Campo para ingresar o editar el nombre del tanque.
-        -->
-        <androidx.appcompat.widget.AppCompatEditText
-            android:id="@+id/etNombre"
+        <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
             android:hint="Nombre del Tanque"
-            android:inputType="text"
-            android:minHeight="48dp" />
+            app:boxBackgroundMode="outline"
+            app:boxCornerRadiusBottomEnd="@dimen/card_corner_radius"
+            app:boxCornerRadiusBottomStart="@dimen/card_corner_radius"
+            app:boxCornerRadiusTopEnd="@dimen/card_corner_radius"
+            app:boxCornerRadiusTopStart="@dimen/card_corner_radius"
+            app:boxStrokeColor="@color/color_primary"
+            app:hintTextColor="@color/color_text_hint">
 
-        <!--
-            Campo para ingresar o editar la capacidad del tanque en litros.
-        -->
-        <androidx.appcompat.widget.AppCompatEditText
-            android:id="@+id/etCapacidad"
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etNombre"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text"
+                android:minHeight="48dp"
+                android:textColor="@color/color_text_primary" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="12dp"
             android:hint="Capacidad (L)"
-            android:inputType="number"
-            android:minHeight="48dp" />
+            app:boxBackgroundMode="outline"
+            app:boxCornerRadiusBottomEnd="@dimen/card_corner_radius"
+            app:boxCornerRadiusBottomStart="@dimen/card_corner_radius"
+            app:boxCornerRadiusTopEnd="@dimen/card_corner_radius"
+            app:boxCornerRadiusTopStart="@dimen/card_corner_radius"
+            app:boxStrokeColor="@color/color_primary"
+            app:hintTextColor="@color/color_text_hint">
 
-        <!--
-            Campo para ingresar o editar el color del tanque.
-        -->
-        <androidx.appcompat.widget.AppCompatEditText
-            android:id="@+id/etColor"
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etCapacidad"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="number"
+                android:minHeight="48dp"
+                android:textColor="@color/color_text_primary" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="12dp"
             android:hint="Color del Tanque"
-            android:inputType="text"
-            android:minHeight="48dp" />
+            app:boxBackgroundMode="outline"
+            app:boxCornerRadiusBottomEnd="@dimen/card_corner_radius"
+            app:boxCornerRadiusBottomStart="@dimen/card_corner_radius"
+            app:boxCornerRadiusTopEnd="@dimen/card_corner_radius"
+            app:boxCornerRadiusTopStart="@dimen/card_corner_radius"
+            app:boxStrokeColor="@color/color_primary"
+            app:hintTextColor="@color/color_text_hint">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etColor"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text"
+                android:minHeight="48dp"
+                android:textColor="@color/color_text_primary" />
+        </com.google.android.material.textfield.TextInputLayout>
 
     </LinearLayout>
 
-    <!--
-        Botón para guardar los cambios del tanque.
-        Llama al método guardarTanque del Activity.
-    -->
-    <androidx.appcompat.widget.AppCompatButton
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/btnGuardar"
-        android:layout_width="220dp"
+        style="@style/Widget.AppIOT12.Button"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
-        android:backgroundTint="@color/color_primary"
+        android:layout_marginTop="24dp"
         android:onClick="guardarTanque"
-        android:text="Guardar Cambios"
-        android:textColor="@android:color/white"
+        android:paddingVertical="14dp"
+        android:text="Guardar cambios"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/contenedorFormulario" />
 
-    <!--
-        Botón para volver al menú.
-        Llama al método volverAlMenu del Activity.
-    -->
-    <androidx.appcompat.widget.AppCompatButton
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/btnVolver"
-        android:layout_width="203dp"
-        android:layout_height="43dp"
-        android:layout_marginTop="16dp"
-        android:backgroundTint="@color/color_secondary"
+        style="@style/Widget.AppIOT12.Button.Secondary"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
         android:onClick="volverAlMenu"
+        android:paddingVertical="14dp"
         android:text="Volver"
-        android:textColor="@android:color/white"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/btnGuardar" />

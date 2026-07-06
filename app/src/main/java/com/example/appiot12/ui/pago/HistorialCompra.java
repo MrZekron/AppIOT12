@@ -4,7 +4,7 @@ import android.os.Bundle;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AppCompatActivity;
+import com.example.appiot12.ui.BaseActivity;
 
 import com.example.appiot12.R;
 import com.example.appiot12.adapter.PagoAdapter;
@@ -19,7 +19,7 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.List;
 
-public class HistorialCompra extends AppCompatActivity {
+public class HistorialCompra extends BaseActivity {
 
     private ListView lvPagos;
     private final List<Pago> pagos = new ArrayList<>();

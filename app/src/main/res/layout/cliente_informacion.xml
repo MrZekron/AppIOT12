@@ -5,7 +5,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/color_background"
+    android:background="@drawable/bg_screen_with_logo"
     tools:context=".Informacion">
 
     <ScrollView
@@ -172,43 +172,50 @@
         </LinearLayout>
     </ScrollView>
 
-    <Button
+    <com.google.android.material.button.MaterialButton
+        style="@style/Widget.AppIOT12.Button"
         android:id="@+id/btnEditar"
         android:layout_width="160dp"
         android:layout_height="48dp"
         android:layout_marginBottom="12dp"
-        android:backgroundTint="@color/color_primary"
         android:onClick="editarTanque"
         android:text="Editar"
-        android:textColor="@android:color/white"
         app:layout_constraintBottom_toTopOf="@+id/btnEliminar"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <Button
+    <com.google.android.material.button.MaterialButton
+        style="@style/Widget.AppIOT12.Button.Danger"
         android:id="@+id/btnEliminar"
         android:layout_width="160dp"
         android:layout_height="48dp"
         android:layout_marginBottom="12dp"
-        android:backgroundTint="#D91E18"
         android:onClick="confirmarEliminar"
         android:text="Eliminar"
-        android:textColor="@android:color/white"
         app:layout_constraintBottom_toTopOf="@+id/btnVolver2"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <Button
+    <com.google.android.material.button.MaterialButton
+        style="@style/Widget.AppIOT12.Button.Secondary"
         android:id="@+id/btnVolver2"
         android:layout_width="160dp"
         android:layout_height="48dp"
         android:layout_marginBottom="20dp"
-        android:backgroundTint="@color/color_secondary"
         android:onClick="Volver2"
         android:text="Volver"
-        android:textColor="@android:color/white"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
+
+    <include
+        android:id="@+id/includeToolbarTema"
+        layout="@layout/include_toolbar_tema"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:elevation="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

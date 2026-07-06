@@ -6,7 +6,7 @@ import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AppCompatActivity;
+import com.example.appiot12.ui.BaseActivity;
 
 import com.example.appiot12.R;
 import com.example.appiot12.model.Dispositivo;
@@ -17,7 +17,7 @@ import com.google.firebase.database.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AsociarDispositivoATanque extends AppCompatActivity {
+public class AsociarDispositivoATanque extends BaseActivity {
 
     private Spinner spnTanques, spnDispositivos;
     private Button btnAsociar;

@@ -2,7 +2,7 @@
 <resources>
 
     <!-- ============================= -->
-    <!-- 🎯 PALETA OFICIAL AGUA SEGURA -->
+    <!-- Paleta oficial Agua Segura    -->
     <!-- ============================= -->
 
     <!-- 1: Texto principal -->
@@ -10,8 +10,6 @@
 
     <!-- 2: Botones, navbar, acciones principales -->
     <color name="color_primary">#1D8EC1</color>
-
-    <!-- Variante oscura del primary -->
     <color name="color_primary_dark">#156A91</color>
 
     <!-- 3: Elementos secundarios -->
@@ -20,29 +18,39 @@
     <!-- 4: Fondo general -->
     <color name="color_background">#C8EFED</color>
 
-    <!-- 5: Superficies -->
+    <!-- 5: Superficies (tarjetas, inputs) -->
     <color name="color_surface">#F8EFED</color>
 
     <!-- ============================= -->
-    <!-- 🎨 COLORES BASE -->
+    <!-- Tokens semánticos             -->
     <!-- ============================= -->
 
-    <color name="white">#FFFFFFFF</color> <!-- ⚪ Blanco -->
-    <color name="black">#FF000000</color> <!-- ⚫ Negro -->
-    <color name="transparente">#00FFFFFF</color> <!-- 🫥 Transparente -->
+    <color name="color_text_secondary">#5A6F9E</color>
+    <color name="color_text_on_primary">#FFFFFF</color>
+    <color name="color_text_on_dark">#FFFFFF</color>
+    <color name="color_text_hint">#6B7FA8</color>
+    <color name="color_link">#1D8EC1</color>
+    <color name="color_input_background">#E4F5F4</color>
+    <color name="color_nav_overlay">#33000000</color>
+    <color name="color_card_stroke">#334B65A9</color>
+    <color name="color_scrim">#66000000</color>
+    <color name="color_logo_backing">#FFFFFF</color>
 
     <!-- ============================= -->
-    <!-- 🚨 ESTADOS DEL SISTEMA -->
+    <!-- Colores base                  -->
     <!-- ============================= -->
 
-    <color name="color_error">#DF1616</color> <!-- 🔴 Error -->
-    <color name="color_success">#5FEA09</color> <!-- 🟢 OK -->
+    <color name="white">#FFFFFFFF</color>
+    <color name="black">#FF000000</color>
+    <color name="transparente">#00FFFFFF</color>
 
     <!-- ============================= -->
-    <!-- 🆕 FIX ERROR (IMPORTANTE) -->
+    <!-- Estados del sistema           -->
     <!-- ============================= -->
 
-    <!-- 👇 ESTE ERA EL QUE FALTABA -->
-    <color name="verde">#4CAF50</color> <!-- ✅ Verde estándar -->
+    <color name="color_error">#C62828</color>
+    <color name="color_warning">#E8A317</color>
+    <color name="color_success">#2E7D32</color>
+    <color name="verde">#4CAF50</color>
 
 </resources>

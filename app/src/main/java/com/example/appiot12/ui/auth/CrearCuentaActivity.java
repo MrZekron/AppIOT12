@@ -9,7 +9,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AppCompatActivity;
+import com.example.appiot12.ui.BaseActivity;
 
 import com.example.appiot12.ui.menu.Menu;
 import com.example.appiot12.ui.menu.MenuAdmin;
@@ -22,7 +22,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import java.util.HashMap;
 import java.util.Map;
 
-public class CrearCuentaActivity extends AppCompatActivity {
+public class CrearCuentaActivity extends BaseActivity {
 
     private EditText etNombre, etEmail, etPass, etPassConfirm;
     private Button btnCrear;

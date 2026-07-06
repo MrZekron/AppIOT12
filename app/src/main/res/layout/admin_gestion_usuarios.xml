@@ -11,7 +11,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/color_background"
+    android:background="@drawable/bg_screen_with_logo"
     tools:context=".GestionUsuarios">
 
     <!--
@@ -35,15 +35,14 @@
         Botón para filtrar usuarios.
         Se ubica debajo del título y centrado.
     -->
-    <Button
+    <com.google.android.material.button.MaterialButton
+        style="@style/Widget.AppIOT12.Button"
         android:id="@+id/btnFiltrarUsuarios"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
-        android:backgroundTint="@color/color_primary"
         android:padding="10dp"
         android:text="Filtrar usuarios"
-        android:textColor="#FFFFFF"
         android:textSize="16sp"
         app:layout_constraintTop_toBottomOf="@id/tvTituloUsuarios"
         app:layout_constraintStart_toStartOf="parent"
@@ -62,7 +61,7 @@
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="16dp"
-        android:background="@color/color_secondary"
+        android:background="@drawable/bg_card"
         android:dividerHeight="8dp"
         android:padding="16dp"
         app:layout_constraintTop_toBottomOf="@id/btnFiltrarUsuarios"
@@ -74,19 +73,28 @@
         Botón para volver a la pantalla anterior.
         Se fija en la parte inferior del layout.
     -->
-    <Button
+    <com.google.android.material.button.MaterialButton
+        style="@style/Widget.AppIOT12.Button.Dark"
         android:id="@+id/btnVolver"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="24dp"
-        android:backgroundTint="#A33D60"
         android:onClick="volver"
         android:padding="10dp"
         android:text="Volver"
-        android:textColor="#FFFFFF"
         android:textSize="18sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
+
+    <include
+        android:id="@+id/includeToolbarTema"
+        layout="@layout/include_toolbar_tema"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:elevation="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

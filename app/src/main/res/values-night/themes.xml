@@ -1,7 +1,21 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
+
     <style name="Base.Theme.AppIOT12" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your dark theme here. -->
-        <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
+        <item name="colorPrimary">@color/color_primary</item>
+        <item name="colorPrimaryDark">@color/color_primary_dark</item>
+        <item name="colorSecondary">@color/color_secondary</item>
+        <item name="colorOnPrimary">@color/color_text_on_primary</item>
+        <item name="colorOnSecondary">@color/color_text_on_primary</item>
+        <item name="android:colorBackground">@color/color_background</item>
+        <item name="android:windowBackground">@drawable/bg_screen_with_logo</item>
+        <item name="colorSurface">@color/color_surface</item>
+        <item name="colorOnSurface">@color/color_text_primary</item>
+        <item name="colorError">@color/color_error</item>
+        <item name="android:statusBarColor">@color/color_background</item>
+        <item name="android:navigationBarColor">@color/color_background</item>
+        <item name="android:windowLightStatusBar" tools:targetApi="m">false</item>
+        <item name="materialButtonStyle">@style/Widget.AppIOT12.Button</item>
+        <item name="textInputStyle">@style/Widget.AppIOT12.TextInputLayout</item>
     </style>
+
 </resources>

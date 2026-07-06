@@ -4,14 +4,14 @@ import android.os.Bundle;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
-import androidx.appcompat.app.AppCompatActivity;
+import com.example.appiot12.ui.BaseActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.appiot12.R;
 
-public class ListaGlobalTanques extends AppCompatActivity {
+public class ListaGlobalTanques extends BaseActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

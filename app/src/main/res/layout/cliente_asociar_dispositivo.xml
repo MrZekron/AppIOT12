@@ -7,79 +7,112 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="24dp"
-    android:background="@color/color_background"
+    android:background="@drawable/bg_screen_with_logo"
     tools:context=".AsociarDispositivoATanque">
 
     <!-- TÍTULO PRINCIPAL -->
+
+    <!-- TEXTO TANQUES -->
+
+    <!-- SPINNER TANQUES -->
+
+    <!-- TEXTO DISPOSITIVOS -->
+
+    <!-- SPINNER DISPOSITIVOS -->
+
+    <!-- BOTÓN ASOCIAR -->
+
+
     <TextView
         android:id="@+id/tvTituloAsociar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="52dp"
         android:text="Asociar Dispositivo a Tanque"
+        android:textColor="@color/color_text_primary"
         android:textSize="26sp"
         android:textStyle="bold"
-        android:textColor="@color/color_text_primary"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.481"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- TEXTO TANQUES -->
-    <TextView
-        android:id="@+id/tvTanques"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Selecciona el tanque:"
-        android:textSize="16sp"
-        android:textColor="@color/color_secondary"
-        android:layout_marginTop="28dp"
-        app:layout_constraintTop_toBottomOf="@id/tvTituloAsociar"
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <!-- SPINNER TANQUES -->
-    <Spinner
-        android:id="@+id/spnTanques"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        app:layout_constraintTop_toBottomOf="@id/tvTanques"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
-
-    <!-- TEXTO DISPOSITIVOS -->
-    <TextView
-        android:id="@+id/tvDispositivos"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Selecciona el dispositivo:"
-        android:textSize="16sp"
-        android:textColor="@color/color_secondary"
-        android:layout_marginTop="28dp"
-        app:layout_constraintTop_toBottomOf="@id/spnTanques"
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <!-- SPINNER DISPOSITIVOS -->
     <Spinner
         android:id="@+id/spnDispositivos"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        app:layout_constraintTop_toBottomOf="@id/tvDispositivos"
+        android:layout_marginTop="24dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/tvDispositivos" />
 
-    <!-- BOTÓN ASOCIAR -->
-    <Button
+    <com.google.android.material.button.MaterialButton
+        style="@style/Widget.AppIOT12.Button"
         android:id="@+id/btnAsociar"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Asociar Dispositivo"
-        android:textColor="#FFFFFF"
-        android:textSize="18sp"
+        android:layout_marginTop="24dp"
         android:padding="16dp"
-        android:layout_marginTop="36dp"
-        android:backgroundTint="@color/color_primary"
-        app:layout_constraintTop_toBottomOf="@id/spnDispositivos"
+        android:text="Asociar Dispositivo"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/spnDispositivos" />
 
+    <Spinner
+        android:id="@+id/spnTanques"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvTanques" />
+
+    <TextView
+        android:id="@+id/tvTanques"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="28dp"
+        android:text="Selecciona el tanque:"
+        android:textColor="@color/color_secondary"
+        android:textSize="16sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvTituloAsociar" />
+
+    <TextView
+        android:id="@+id/tvDispositivos"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:text="Selecciona el dispositivo:"
+        android:textColor="@color/color_secondary"
+        android:textSize="16sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/spnTanques" />
+
+    <include
+        android:id="@+id/includeToolbarTema"
+        layout="@layout/include_toolbar_tema"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:elevation="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <com.google.android.material.button.MaterialButton
+        style="@style/Widget.AppIOT12.Button"
+        android:id="@+id/btnVolverHistorial"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="228dp"
+        android:onClick="volverAlMenu"
+        android:text="Volver"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintStart_toStartOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

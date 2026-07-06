@@ -7,7 +7,7 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AppCompatActivity;
+import com.example.appiot12.ui.BaseActivity;
 
 import com.example.appiot12.R;
 import com.google.firebase.database.FirebaseDatabase;
@@ -16,7 +16,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
-public class CentroPagos extends AppCompatActivity {
+public class CentroPagos extends BaseActivity {
 
     private static final String BANCO = "Mercado Pago";
     private static final String TIPO_CUENTA = "Cuenta Vista";

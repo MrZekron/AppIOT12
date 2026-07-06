@@ -6,7 +6,7 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
-import androidx.appcompat.app.AppCompatActivity;
+import com.example.appiot12.ui.BaseActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -24,7 +24,7 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 
-public class Lista extends AppCompatActivity {
+public class Lista extends BaseActivity {
 
     private TanqueAdapter tanqueAdapter;
     private final ArrayList<TanqueAgua> tanques = new ArrayList<>();

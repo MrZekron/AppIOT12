@@ -1,7 +1,6 @@
 package com.example.appiot12.ui.perfil;
 
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
@@ -9,7 +8,8 @@ import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
+import com.example.appiot12.ui.BaseActivity;
+import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -32,11 +32,11 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.Locale;
 
-public class Informacion extends AppCompatActivity {
+public class Informacion extends BaseActivity {
 
-    private static final int COLOR_OK = Color.parseColor("#2E7D32");
-    private static final int COLOR_ALERTA = Color.parseColor("#F9A825");
-    private static final int COLOR_PELIGRO = Color.parseColor("#C62828");
+    private int colorOk;
+    private int colorAlerta;
+    private int colorPeligro;
 
     private TextView txtNombre;
     private TextView txtCapasidad;
@@ -90,6 +90,11 @@ public class Informacion extends AppCompatActivity {
         });
 
         inicializarVistas();
+
+        colorOk = ContextCompat.getColor(this, R.color.color_success);
+        colorAlerta = ContextCompat.getColor(this, R.color.color_warning);
+        colorPeligro = ContextCompat.getColor(this, R.color.color_error);
+
         leerIntent();
         configurarGrafico();
 
@@ -172,7 +177,7 @@ public class Informacion extends AppCompatActivity {
                 mantencionDispositivo ? "Pendiente" : "Al día"
         );
         txtColor.setText(textoColor);
-        txtColor.setTextColor((mantencionTanque || mantencionDispositivo) ? COLOR_PELIGRO : COLOR_OK);
+        txtColor.setTextColor((mantencionTanque || mantencionDispositivo) ? colorPeligro : colorOk);
     }
 
     private void suscribirseMetaTanque() {
@@ -248,9 +253,9 @@ public class Informacion extends AppCompatActivity {
         setCond = new LineDataSet(new ArrayList<>(), "Conductividad");
         setTurb = new LineDataSet(new ArrayList<>(), "Turbidez");
 
-        configurarDataSet(setPH, Color.parseColor("#2E7D32"));
-        configurarDataSet(setCond, Color.BLUE);
-        configurarDataSet(setTurb, Color.MAGENTA);
+        configurarDataSet(setPH, colorOk);
+        configurarDataSet(setCond, ContextCompat.getColor(this, R.color.color_primary));
+        configurarDataSet(setTurb, ContextCompat.getColor(this, R.color.color_secondary));
 
         lineData = new LineData();
         lineData.addDataSet(setPH);
@@ -311,18 +316,18 @@ public class Informacion extends AppCompatActivity {
         estadoView.setTextColor(color);
 
         String estado;
-        if (color == COLOR_OK) estado = "Normal";
-        else if (color == COLOR_ALERTA) estado = "Advertencia";
+        if (color == colorOk) estado = "Normal";
+        else if (color == colorAlerta) estado = "Advertencia";
         else estado = "Peligro";
 
         estadoView.setText(String.format(Locale.getDefault(), "%s: %s", nombreSensor, estado));
     }
 
     private int obtenerColorEstado(double valor, double okMin, double okMax, double alertaMin, double alertaMax) {
-        if (Double.isNaN(valor)) return COLOR_PELIGRO;
-        if (valor >= okMin && valor <= okMax) return COLOR_OK;
-        if (valor >= alertaMin && valor <= alertaMax) return COLOR_ALERTA;
-        return COLOR_PELIGRO;
+        if (Double.isNaN(valor)) return colorPeligro;
+        if (valor >= okMin && valor <= okMax) return colorOk;
+        if (valor >= alertaMin && valor <= alertaMax) return colorAlerta;
+        return colorPeligro;
     }
 
     private double leerDouble(DataSnapshot snap, String key) {
@@ -368,10 +373,10 @@ public class Informacion extends AppCompatActivity {
         txtTurbEstado.setText("Sin dispositivo");
         txtUltraEstado.setText("Sin dispositivo");
 
-        txtPhEstado.setTextColor(COLOR_ALERTA);
-        txtCondEstado.setTextColor(COLOR_ALERTA);
-        txtTurbEstado.setTextColor(COLOR_ALERTA);
-        txtUltraEstado.setTextColor(COLOR_ALERTA);
+        txtPhEstado.setTextColor(colorAlerta);
+        txtCondEstado.setTextColor(colorAlerta);
+        txtTurbEstado.setTextColor(colorAlerta);
+        txtUltraEstado.setTextColor(colorAlerta);
     }
 
     /** Called via android:onClick="editarTanque" in the layout. */

@@ -14,7 +14,7 @@
         android:text="correo@correo.cl"
         android:textSize="16sp"
         android:textStyle="bold"
-        android:textColor="@android:color/black"
+        android:textColor="@color/color_text_primary"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toStartOf="@id/btnBloquear"
         app:layout_constraintTop_toTopOf="parent" />
@@ -26,7 +26,7 @@
         android:layout_height="wrap_content"
         android:text="Estado: activa"
         android:textSize="14sp"
-        android:textColor="@android:color/darker_gray"
+        android:textColor="@color/color_text_secondary"
         android:layout_marginTop="2dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tvCorreo" />
@@ -38,7 +38,7 @@
         android:layout_height="wrap_content"
         android:text="Pagos al día"
         android:textSize="14sp"
-        android:textColor="#2E7D32"
+        android:textColor="@color/color_success"
         android:layout_marginTop="4dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tvEstadoCuenta"/>
@@ -50,13 +50,14 @@
         android:layout_height="wrap_content"
         android:text="Atrasado: 0 días"
         android:textSize="14sp"
-        android:textColor="#D32F2F"
+        android:textColor="@color/color_error"
         android:layout_marginTop="4dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tvDeuda"/>
 
     <!-- Botón bloquear/desbloquear -->
-    <Button
+    <com.google.android.material.button.MaterialButton
+        style="@style/Widget.AppIOT12.Button"
         android:id="@+id/btnBloquear"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

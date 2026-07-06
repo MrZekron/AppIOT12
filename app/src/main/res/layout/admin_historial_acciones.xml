@@ -7,7 +7,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="16dp"
-    android:background="@color/color_background"
+    android:background="@drawable/bg_screen_with_logo"
     tools:context=".HistorialAcciones">
 
     <!-- TÍTULO -->
@@ -35,13 +35,12 @@
         app:layout_constraintTop_toBottomOf="@id/tvTituloHistorial" />
 
     <!-- BOTÓN PDF -->
-    <Button
+    <com.google.android.material.button.MaterialButton
+        style="@style/Widget.AppIOT12.Button"
         android:id="@+id/btnPdf"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="PDF"
-        android:backgroundTint="@color/color_primary"
-        android:textColor="@android:color/white"
         app:layout_constraintTop_toBottomOf="@id/tvTituloHistorial"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="12dp"/>
@@ -58,4 +57,28 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
+
+    <include
+        android:id="@+id/includeToolbarTema"
+        layout="@layout/include_toolbar_tema"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:elevation="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <com.google.android.material.button.MaterialButton
+        style="@style/Widget.AppIOT12.Button.Dark"
+        android:id="@+id/btnVolver"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp"
+        android:onClick="volver"
+        android:padding="10dp"
+        android:text="Volver"
+        android:textSize="18sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

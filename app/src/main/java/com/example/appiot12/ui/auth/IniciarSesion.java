@@ -11,7 +11,7 @@ import android.widget.Toast;
 
 import android.os.Build;
 
-import androidx.appcompat.app.AppCompatActivity;
+import com.example.appiot12.ui.BaseActivity;
 import androidx.core.app.ActivityCompat;
 
 import com.example.appiot12.ui.menu.Menu;
@@ -21,7 +21,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.*;
 import com.google.firebase.messaging.FirebaseMessaging;
 
-public class IniciarSesion extends AppCompatActivity {
+public class IniciarSesion extends BaseActivity {
 
     private EditText etCorreo, etContrasena;
     private Button btnIngresar;

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- ============================= -->
+    <!-- Paleta oscura Agua Segura     -->
+    <!-- (inversión armónica de la     -->
+    <!--  paleta clara oficial)        -->
+    <!-- ============================= -->
+
+    <!-- Fondos profundos basados en el azul slate -->
+    <color name="color_background">#1A2332</color>
+    <color name="color_surface">#243447</color>
+
+    <!-- Textos: tonos aqua del tema claro -->
+    <color name="color_text_primary">#C8EFED</color>
+    <color name="color_text_secondary">#8BBFD4</color>
+    <color name="color_text_hint">#6A8FA8</color>
+
+    <!-- Acentos: cyan y azul del tema -->
+    <color name="color_primary">#1D8EC1</color>
+    <color name="color_primary_dark">#156A91</color>
+    <color name="color_secondary">#5FCAE0</color>
+
+    <!-- ============================= -->
+    <!-- Tokens semánticos             -->
+    <!-- ============================= -->
+
+    <color name="color_text_on_primary">#FFFFFF</color>
+    <color name="color_text_on_dark">#C8EFED</color>
+    <color name="color_link">#5FCAE0</color>
+    <color name="color_input_background">#2D3F56</color>
+    <color name="color_nav_overlay">#40000000</color>
+    <color name="color_card_stroke">#335FCAE0</color>
+    <color name="color_scrim">#99000000</color>
+    <color name="color_logo_backing">#F8EFED</color>
+
+    <!-- ============================= -->
+    <!-- Colores base                  -->
+    <!-- ============================= -->
+
+    <color name="white">#FFFFFFFF</color>
+    <color name="black">#FF000000</color>
+    <color name="transparente">#00FFFFFF</color>
+
+    <!-- ============================= -->
+    <!-- Estados del sistema           -->
+    <!-- ============================= -->
+
+    <color name="color_error">#EF5350</color>
+    <color name="color_warning">#FFB74D</color>
+    <color name="color_success">#66BB6A</color>
+    <color name="verde">#66BB6A</color>
+
+</resources>

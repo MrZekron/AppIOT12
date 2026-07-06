@@ -7,7 +7,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
-import androidx.appcompat.app.AppCompatActivity;
+import com.example.appiot12.ui.BaseActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -23,7 +23,7 @@ import com.example.appiot12.ui.tanque.Lista;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
-public class Menu extends AppCompatActivity {
+public class Menu extends BaseActivity {
 
     private FirebaseAuth auth;
     private TextView tvCorreoUsuario;

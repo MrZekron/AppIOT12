@@ -11,6 +11,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Nombre del Tanque"
+        android:textColor="@color/color_text_primary"
         android:textSize="16sp"
         android:textStyle="bold" />
 
@@ -20,6 +21,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Estado: Sin datos"
+        android:textColor="@color/color_text_secondary"
         android:textSize="14sp" />
 
 </LinearLayout>

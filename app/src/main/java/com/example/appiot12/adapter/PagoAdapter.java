@@ -1,13 +1,17 @@
 package com.example.appiot12.adapter;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
+
+import com.example.appiot12.R;
 import com.example.appiot12.model.Pago;
 
 import java.util.List;
@@ -19,8 +23,9 @@ public class PagoAdapter extends ArrayAdapter<Pago> {
         super(context, 0, pagos);
     }
 
+    @NonNull
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
+    public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
         Pago pago = getItem(position);
 
         if (convertView == null) {
@@ -47,13 +52,13 @@ public class PagoAdapter extends ArrayAdapter<Pago> {
 
         switch (safe(pago.getEstadoPago()).toLowerCase(Locale.ROOT)) {
             case "pagado":
-                text1.setTextColor(Color.parseColor("#2E7D32"));
+                text1.setTextColor(ContextCompat.getColor(getContext(), R.color.color_success));
                 break;
             case "parcial":
-                text1.setTextColor(Color.parseColor("#F9A825"));
+                text1.setTextColor(ContextCompat.getColor(getContext(), R.color.color_warning));
                 break;
             default:
-                text1.setTextColor(Color.parseColor("#C62828"));
+                text1.setTextColor(ContextCompat.getColor(getContext(), R.color.color_error));
                 break;
         }
 

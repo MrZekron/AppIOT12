@@ -7,7 +7,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="24dp"
-    android:background="@color/color_background"
+    android:background="@drawable/bg_screen_with_logo"
     tools:context=".CrearCuentaActivity">
 
     <!-- Logo / avatar -->
@@ -57,10 +57,11 @@
             android:hint="Nombre completo"
             android:inputType="textPersonName"
             android:padding="12dp"
-            android:background="@color/transparente"
+            android:background="@drawable/bg_input_field"
             android:drawableLeft="@drawable/baseline_person_outline_24"
             android:drawablePadding="12dp"
-            android:textColorHint="#777777" />
+            android:textColor="@color/color_text_primary"
+            android:textColorHint="@color/color_text_hint" />
 
         <EditText
             android:id="@+id/etEmailCrear"
@@ -70,10 +71,11 @@
             android:inputType="textEmailAddress"
             android:padding="12dp"
             android:layout_marginTop="12dp"
-            android:background="@color/transparente"
+            android:background="@drawable/bg_input_field"
             android:drawableLeft="@android:drawable/ic_dialog_email"
             android:drawablePadding="12dp"
-            android:textColorHint="#777777" />
+            android:textColor="@color/color_text_primary"
+            android:textColorHint="@color/color_text_hint" />
 
         <EditText
             android:id="@+id/etPassCrear"
@@ -83,10 +85,11 @@
             android:inputType="textPassword"
             android:padding="12dp"
             android:layout_marginTop="12dp"
-            android:background="@color/transparente"
+            android:background="@drawable/bg_input_field"
             android:drawableLeft="@drawable/baseline_lock_24"
             android:drawablePadding="12dp"
-            android:textColorHint="#777777" />
+            android:textColor="@color/color_text_primary"
+            android:textColorHint="@color/color_text_hint" />
 
         <EditText
             android:id="@+id/etPassConfirm"
@@ -96,31 +99,40 @@
             android:inputType="textPassword"
             android:padding="12dp"
             android:layout_marginTop="12dp"
-            android:background="@color/transparente"
+            android:background="@drawable/bg_input_field"
             android:drawableLeft="@drawable/baseline_lock_24"
             android:drawablePadding="12dp"
-            android:textColorHint="#777777" />
+            android:textColor="@color/color_text_primary"
+            android:textColorHint="@color/color_text_hint" />
 
-        <Button
+        <com.google.android.material.button.MaterialButton
+        style="@style/Widget.AppIOT12.Button"
             android:id="@+id/btnCrearCuenta"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="18dp"
             android:text="Crear cuenta"
-            android:backgroundTint="@color/color_primary"
-            android:textColor="#FFFFFF"
             android:onClick="createAccount" />
 
-        <Button
+        <com.google.android.material.button.MaterialButton
+        style="@style/Widget.AppIOT12.Button.Secondary"
             android:id="@+id/btnCancelarCrear"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Cancelar"
             android:layout_gravity="center"
             android:layout_marginTop="10dp"
-            android:backgroundTint="@color/color_secondary"
-            android:textColor="#1976D2"
             android:onClick="cancelCreateAccount" />
     </LinearLayout>
 
+
+    <include
+        android:id="@+id/includeToolbarTema"
+        layout="@layout/include_toolbar_tema"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:elevation="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

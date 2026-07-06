@@ -8,7 +8,7 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/color_background"
+    android:background="@drawable/bg_screen_with_logo"
     android:fillViewport="true">
 
     <LinearLayout
@@ -17,6 +17,8 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:padding="16dp">
+
+        <include layout="@layout/include_toolbar_tema" />
 
         <!-- Título principal -->
         <TextView
@@ -34,7 +36,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:background="@color/color_secondary"
+            android:background="@drawable/bg_card"
             android:elevation="4dp"
             android:orientation="vertical"
             android:padding="16dp">
@@ -71,7 +73,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:background="@color/color_secondary"
+            android:background="@drawable/bg_card"
             android:elevation="4dp"
             android:orientation="vertical"
             android:padding="16dp">
@@ -140,27 +142,25 @@
         </LinearLayout>
 
         <!-- Botón para abrir WhatsApp -->
-        <Button
+        <com.google.android.material.button.MaterialButton
+        style="@style/Widget.AppIOT12.Button"
             android:id="@+id/btnEnviarWhatsapp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            android:backgroundTint="@color/color_primary"
             android:padding="12dp"
             android:text="Enviar comprobante por WhatsApp"
-            android:textColor="@android:color/white"
             android:textStyle="bold" />
 
         <!-- Botón para volver -->
-        <Button
+        <com.google.android.material.button.MaterialButton
+        style="@style/Widget.AppIOT12.Button"
             android:id="@+id/btnVolverMenu"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            android:backgroundTint="@color/color_primary"
             android:padding="12dp"
             android:text="Volver"
-            android:textColor="@android:color/white"
             android:textStyle="bold" />
 
     </LinearLayout>

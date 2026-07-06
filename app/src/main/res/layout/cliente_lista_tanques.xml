@@ -1,34 +1,140 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <androidx.constraintlayout.widget.ConstraintLayout
+
     xmlns:android="http://schemas.android.com/apk/res/android"
+
     xmlns:app="http://schemas.android.com/apk/res-auto"
+
+    xmlns:tools="http://schemas.android.com/tools"
+
     android:id="@+id/main"
+
     android:layout_width="match_parent"
+
     android:layout_height="match_parent"
-    android:background="@mipmap/fondo">
+
+    android:background="@drawable/bg_screen_with_logo"
+
+    tools:context=".Lista">
+
+
+
+    <include
+
+        android:id="@+id/includeToolbarTema"
+
+        layout="@layout/include_toolbar_tema"
+
+        android:layout_width="0dp"
+
+        android:layout_height="wrap_content"
+
+        android:elevation="8dp"
+
+        app:layout_constraintEnd_toEndOf="parent"
+
+        app:layout_constraintStart_toStartOf="parent"
+
+        app:layout_constraintTop_toTopOf="parent" />
+
+
+
+    <TextView
+
+        android:id="@+id/tvTituloListaTanques"
+
+        android:layout_width="0dp"
+
+        android:layout_height="wrap_content"
+
+        android:layout_marginStart="16dp"
+
+        android:layout_marginTop="8dp"
+
+        android:layout_marginEnd="16dp"
+
+        android:gravity="center"
+
+        android:text="Lista de Tanques"
+
+        android:textColor="@color/color_text_primary"
+
+        android:textSize="28sp"
+
+        android:textStyle="bold"
+
+        app:layout_constraintEnd_toEndOf="parent"
+
+        app:layout_constraintStart_toStartOf="parent"
+
+        app:layout_constraintTop_toBottomOf="@id/includeToolbarTema" />
+
+
 
     <ListView
-        android:id="@+id/listaTanques"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:dividerHeight="1dp"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/btnVolver"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
 
-    <Button
-        android:id="@+id/btnVolver"
+        android:id="@+id/listaTanques"
+
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        android:backgroundTint="#E11B1B"
-        android:onClick="volverAlMenu"
-        android:text="Volver"
-        android:textColor="@android:color/white"
-        android:textSize="16sp"
-        app:layout_constraintBottom_toBottomOf="parent"
+
+        android:layout_height="0dp"
+
+        android:layout_marginStart="16dp"
+
+        android:layout_marginTop="12dp"
+
+        android:layout_marginEnd="16dp"
+
+        android:layout_marginBottom="8dp"
+
+        android:background="@drawable/bg_card"
+
+        android:clipToPadding="false"
+
+        android:divider="@color/color_card_stroke"
+
+        android:dividerHeight="1dp"
+
+        android:padding="8dp"
+
+        app:layout_constraintBottom_toTopOf="@id/btnVolver"
+
         app:layout_constraintEnd_toEndOf="parent"
+
+        app:layout_constraintStart_toStartOf="parent"
+
+        app:layout_constraintTop_toBottomOf="@id/tvTituloListaTanques" />
+
+
+
+    <com.google.android.material.button.MaterialButton
+        style="@style/Widget.AppIOT12.Button.Secondary"
+
+        android:id="@+id/btnVolver"
+
+        android:layout_width="0dp"
+
+        android:layout_height="wrap_content"
+
+        android:layout_margin="16dp"
+
+        android:onClick="volverAlMenu"
+
+        android:text="Volver"
+
+        android:textSize="16sp"
+
+        android:textStyle="bold"
+
+        app:layout_constraintBottom_toBottomOf="parent"
+
+        app:layout_constraintEnd_toEndOf="parent"
+
         app:layout_constraintStart_toStartOf="parent" />
 
+
+
 </androidx.constraintlayout.widget.ConstraintLayout>
+
+

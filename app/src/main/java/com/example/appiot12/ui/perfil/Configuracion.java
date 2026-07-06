@@ -7,11 +7,13 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
+import com.example.appiot12.ui.BaseActivity;
 
 import com.example.appiot12.R;
 import com.example.appiot12.ui.admin.HistorialAcciones;
 import com.example.appiot12.ui.menu.MainActivity;
+import com.example.appiot12.util.ThemeManager;
+import com.google.android.material.materialswitch.MaterialSwitch;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.FirebaseDatabase;
@@ -19,11 +21,12 @@ import com.google.firebase.database.FirebaseDatabase;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Configuracion extends AppCompatActivity {
+public class Configuracion extends BaseActivity {
 
     private FirebaseAuth auth;
     private TextView tvCorreoConfig, tvUidConfig;
     private Button btnEditarPerfil, btnHistorial, btnEliminarCuenta, btnVolverMenu;
+    private MaterialSwitch switchModoOscuro;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,6 +41,15 @@ public class Configuracion extends AppCompatActivity {
         btnHistorial = findViewById(R.id.btnHistorial);
         btnEliminarCuenta = findViewById(R.id.btnEliminarCuenta);
         btnVolverMenu = findViewById(R.id.btnVolverMenu);
+        switchModoOscuro = findViewById(R.id.switchModoOscuro);
+
+        switchModoOscuro.setChecked(ThemeManager.isDarkModeEnabled(this));
+        switchModoOscuro.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked != ThemeManager.isDarkModeEnabled(this)) {
+                ThemeManager.setDarkModeEnabled(this, isChecked);
+                recreate();
+            }
+        });
 
         mostrarUsuario();
 

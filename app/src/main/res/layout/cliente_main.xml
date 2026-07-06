@@ -5,61 +5,47 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/color_background"
+    android:background="@drawable/bg_screen_with_logo"
     tools:context=".MainActivity">
 
-
-    <LinearLayout
-        android:id="@+id/logoLayout"
-        android:layout_width="407dp"
-        android:layout_height="312dp"
-        android:layout_marginTop="32dp"
-        android:orientation="vertical"
-        app:layout_constraintBottom_toTopOf="@+id/iniciar"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <ImageView
-            android:layout_width="336dp"
-            android:layout_height="match_parent"
-            android:layout_gravity="center"
-            android:contentDescription="Logo de la aplicación"
-            android:src="@mipmap/logo2" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/iniciar"
-        android:layout_width="wrap_content"
+    <include
+        android:id="@+id/includeToolbarTema"
+        layout="@layout/include_toolbar_tema"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginTop="16dp"
-        android:backgroundTint="#AC4444"
-        android:orientation="vertical"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/logoLayout">
+        app:layout_constraintTop_toTopOf="parent" />
 
-    </LinearLayout>
+    <ImageView
+        android:id="@+id/ivLogoPrincipal"
+        android:layout_width="280dp"
+        android:layout_height="280dp"
+        android:layout_marginTop="24dp"
+        android:background="@drawable/bg_logo"
+        android:contentDescription="Logo de la aplicación"
+        android:elevation="6dp"
+        android:padding="20dp"
+        android:scaleType="fitCenter"
+        android:src="@mipmap/logo2"
+        app:layout_constraintBottom_toTopOf="@+id/btninicio"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/includeToolbarTema"
+        app:layout_constraintVertical_bias="0.35" />
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/btninicio"
+        style="@style/Widget.AppIOT12.Button"
         android:layout_width="220dp"
-        android:layout_height="73dp"
-        android:layout_marginTop="196dp"
-        android:gravity="center"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="48dp"
         android:onClick="iniciar"
+        android:paddingVertical="16dp"
         android:text="Iniciar Sesión"
-        android:textColor="#FFFFFF"
-        android:textStyle="bold"
-        android:backgroundTint="@color/color_primary"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.497"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/logoLayout"
-        app:layout_constraintVertical_bias="0.0"
-        tools:ignore="MissingConstraints" />
-
+        app:layout_constraintStart_toStartOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
+

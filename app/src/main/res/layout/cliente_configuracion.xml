@@ -5,7 +5,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/color_background"
+    android:background="@drawable/bg_screen_with_logo"
     tools:context=".Configuracion">
 
     <!-- 🔧 TITULO -->
@@ -40,47 +40,60 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="UID: ---"
-        android:textColor="@color/color_text_primary"
+        android:textColor="@color/color_text_secondary"
         android:textSize="16sp"
         android:layout_marginTop="10dp"
         app:layout_constraintTop_toBottomOf="@id/tvCorreoConfig"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- ⚙️ BOTÓN EDITAR PERFIL -->
-    <Button
-        android:id="@+id/btnEditarPerfil"
+    <!-- 🌙 MODO OSCURO -->
+    <com.google.android.material.materialswitch.MaterialSwitch
+        android:id="@+id/switchModoOscuro"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Editar Perfil"
-        android:backgroundTint="@color/color_primary"
-        android:textColor="#FFF"
-        android:layout_margin="20dp"
+        android:text="Modo oscuro"
+        android:textColor="@color/color_text_primary"
+        android:textSize="18sp"
+        android:layout_marginHorizontal="20dp"
+        android:layout_marginTop="24dp"
+        app:thumbTint="@color/color_secondary"
+        app:trackTint="@color/color_primary"
         app:layout_constraintTop_toBottomOf="@id/tvUidConfig"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
+    <!-- ⚙️ BOTÓN EDITAR PERFIL -->
+    <com.google.android.material.button.MaterialButton
+        style="@style/Widget.AppIOT12.Button"
+        android:id="@+id/btnEditarPerfil"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Editar Perfil"
+        android:layout_margin="20dp"
+        app:layout_constraintTop_toBottomOf="@id/switchModoOscuro"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
     <!-- 📜 BOTÓN HISTORIAL -->
-    <Button
+    <com.google.android.material.button.MaterialButton
+        style="@style/Widget.AppIOT12.Button.Secondary"
         android:id="@+id/btnHistorial"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="Historial"
-        android:backgroundTint="@color/color_secondary"
-        android:textColor="#FFF"
         android:layout_marginHorizontal="20dp"
         app:layout_constraintTop_toBottomOf="@id/btnEditarPerfil"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
     <!-- ☠️ BOTÓN ELIMINAR CUENTA -->
-    <Button
+    <com.google.android.material.button.MaterialButton
+        style="@style/Widget.AppIOT12.Button.Danger"
         android:id="@+id/btnEliminarCuenta"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="Eliminar Cuenta"
-        android:backgroundTint="#D32F2F"
-        android:textColor="#FFF"
         android:layout_marginHorizontal="20dp"
         android:layout_marginTop="10dp"
         app:layout_constraintTop_toBottomOf="@id/btnHistorial"
@@ -88,16 +101,25 @@
         app:layout_constraintEnd_toEndOf="parent" />
 
     <!-- 🔙 VOLVER -->
-    <Button
+    <com.google.android.material.button.MaterialButton
+        style="@style/Widget.AppIOT12.Button.Secondary"
         android:id="@+id/btnVolverMenu"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Volver"
-        android:backgroundTint="@color/color_secondary"
-        android:textColor="@color/white"
         android:layout_marginTop="30dp"
         app:layout_constraintTop_toBottomOf="@id/btnEliminarCuenta"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
+
+    <include
+        android:id="@+id/includeToolbarTema"
+        layout="@layout/include_toolbar_tema"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:elevation="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

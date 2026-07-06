@@ -4,7 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AppCompatActivity;
+import com.example.appiot12.ui.BaseActivity;
 
 import com.example.appiot12.R;
 import org.osmdroid.config.Configuration;
@@ -13,7 +13,7 @@ import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.Marker;
 
-public class MapaDireccionActivity extends AppCompatActivity {
+public class MapaDireccionActivity extends BaseActivity {
 
     private MapView map;
     private Marker markerSeleccionado;
