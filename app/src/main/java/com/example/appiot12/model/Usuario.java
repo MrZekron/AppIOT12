@@ -1,41 +1,55 @@
 package com.example.appiot12.model;
 
 import com.google.firebase.database.Exclude;
+import com.google.firebase.database.IgnoreExtraProperties;
+import com.google.firebase.database.PropertyName;
 
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+@IgnoreExtraProperties
 public class Usuario implements Serializable {
 
     private String id;
-    private String correo;
-    private String rol;
-    private boolean bloqueado = false;
-    private String idCliente;  // FK → Cliente (null si rol=admin o rol=tecnico)
+    @PropertyName("correo")
+    private String email;
+    private String nombre;
+    private String rol;             // admin / cliente / tecnico
+    private boolean activo = true;  // false = cuenta suspendida
+    private long fechaCreacion;
+    private String idCliente;       // FK → Cliente (solo si rol=cliente)
 
-    // Firebase requiere constructor vacío
     public Usuario() {}
 
-    public Usuario(String id, String correo, String rol) {
+    public Usuario(String id, String email, String rol) {
         this.id = id;
-        this.correo = correo;
+        this.email = email;
         this.rol = rol;
-        this.bloqueado = false;
+        this.activo = true;
+        this.fechaCreacion = System.currentTimeMillis();
     }
 
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
 
-    public String getCorreo() { return correo; }
-    public void setCorreo(String correo) { this.correo = correo; }
+    @PropertyName("correo")
+    public String getEmail() { return email; }
+    @PropertyName("correo")
+    public void setEmail(String email) { this.email = email; }
+
+    public String getNombre() { return nombre; }
+    public void setNombre(String nombre) { this.nombre = nombre; }
 
     public String getRol() { return rol; }
     public void setRol(String rol) { this.rol = rol; }
 
-    public boolean isBloqueado() { return bloqueado; }
-    public void setBloqueado(boolean bloqueado) { this.bloqueado = bloqueado; }
+    public boolean isActivo() { return activo; }
+    public void setActivo(boolean activo) { this.activo = activo; }
+
+    public long getFechaCreacion() { return fechaCreacion; }
+    public void setFechaCreacion(long fechaCreacion) { this.fechaCreacion = fechaCreacion; }
 
     public String getIdCliente() { return idCliente; }
     public void setIdCliente(String idCliente) { this.idCliente = idCliente; }
@@ -44,16 +58,18 @@ public class Usuario implements Serializable {
     public Map<String, Object> toMap() {
         Map<String, Object> map = new HashMap<>();
         map.put("id", id);
-        map.put("correo", correo);
+        map.put("correo", email);
+        map.put("nombre", nombre);
         map.put("rol", rol);
-        map.put("bloqueado", bloqueado);
+        map.put("activo", activo);
+        map.put("fechaCreacion", fechaCreacion);
         if (idCliente != null) map.put("idCliente", idCliente);
         return map;
     }
 
     @Override
     public String toString() {
-        return correo + " | Rol: " + rol + " | Bloqueado: " + (bloqueado ? "Sí" : "No");
+        return email + " | Rol: " + rol + " | Activo: " + (activo ? "Sí" : "No");
     }
 
     @Override

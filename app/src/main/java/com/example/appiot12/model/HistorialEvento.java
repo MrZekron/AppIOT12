@@ -1,61 +1,65 @@
 package com.example.appiot12.model;
 
-public class HistorialEvento {
+import com.google.firebase.database.IgnoreExtraProperties;
+import java.io.Serializable;
 
-    private String id;
-    private String tipo;
-    private String descripcion;
+@IgnoreExtraProperties
+public class HistorialEvento implements Serializable {
+
+    private String idHistorial;
+    private String idUsuario;           // FK → Usuario (quien realizó la acción)
+    private String accion;              // descripción de la acción realizada
+    private String entidadAfectada;     // tanque / dispositivo / pago / alerta / etc.
+    private String idEntidadAfectada;   // ID del objeto afectado
     private long timestamp;
+    private String detalle;             // JSON serializado con datos adicionales
 
-    private String idTanque;
-    private double ph;
-    private double conductividad;
-    private double turbidez;
-    private double nivel;
-
-    private double monto;
-    private int cuotasPagadas;
-
-    // Firebase requiere constructor vacío
     public HistorialEvento() {}
 
-    public HistorialEvento(String id, String tipo, String descripcion, long timestamp) {
-        this.id = id;
-        this.tipo = tipo;
-        this.descripcion = descripcion;
-        this.timestamp = timestamp;
+    public HistorialEvento(String idHistorial, String idUsuario, String accion,
+                           String entidadAfectada, String idEntidadAfectada) {
+        this.idHistorial = idHistorial;
+        this.idUsuario = idUsuario;
+        this.accion = accion;
+        this.entidadAfectada = entidadAfectada;
+        this.idEntidadAfectada = idEntidadAfectada;
+        this.timestamp = System.currentTimeMillis();
     }
 
-    public String getId() { return id; }
-    public void setId(String id) { this.id = id; }
+    public String getIdHistorial() { return idHistorial; }
+    public void setIdHistorial(String idHistorial) { this.idHistorial = idHistorial; }
 
-    public String getTipo() { return tipo; }
-    public void setTipo(String tipo) { this.tipo = tipo; }
+    public String getIdUsuario() { return idUsuario; }
+    public void setIdUsuario(String idUsuario) { this.idUsuario = idUsuario; }
 
-    public String getDescripcion() { return descripcion; }
-    public void setDescripcion(String descripcion) { this.descripcion = descripcion; }
+    public String getAccion() { return accion; }
+    public void setAccion(String accion) { this.accion = accion; }
+
+    public String getEntidadAfectada() { return entidadAfectada; }
+    public void setEntidadAfectada(String entidadAfectada) { this.entidadAfectada = entidadAfectada; }
+
+    public String getIdEntidadAfectada() { return idEntidadAfectada; }
+    public void setIdEntidadAfectada(String idEntidadAfectada) { this.idEntidadAfectada = idEntidadAfectada; }
 
     public long getTimestamp() { return timestamp; }
     public void setTimestamp(long timestamp) { this.timestamp = timestamp; }
 
-    public String getIdTanque() { return idTanque; }
-    public void setIdTanque(String idTanque) { this.idTanque = idTanque; }
+    public String getDetalle() { return detalle; }
+    public void setDetalle(String detalle) { this.detalle = detalle; }
 
-    public double getPh() { return ph; }
-    public void setPh(double ph) { this.ph = ph; }
+    // Aliases para compatibilidad con HistorialAdapter
+    public String getTipo() { return entidadAfectada; }
+    public void setTipo(String tipo) { this.entidadAfectada = tipo; }
 
-    public double getConductividad() { return conductividad; }
-    public void setConductividad(double conductividad) { this.conductividad = conductividad; }
+    public String getDescripcion() { return accion; }
+    public void setDescripcion(String descripcion) { this.accion = descripcion; }
 
-    public double getTurbidez() { return turbidez; }
-    public void setTurbidez(double turbidez) { this.turbidez = turbidez; }
+    // Alias para compatibilidad con código que usa "id" como campo antiguo
+    public String getId() { return idHistorial; }
+    public void setId(String id) { this.idHistorial = id; }
 
-    public double getNivel() { return nivel; }
-    public void setNivel(double nivel) { this.nivel = nivel; }
-
-    public double getMonto() { return monto; }
-    public void setMonto(double monto) { this.monto = monto; }
-
-    public int getCuotasPagadas() { return cuotasPagadas; }
-    public void setCuotasPagadas(int cuotasPagadas) { this.cuotasPagadas = cuotasPagadas; }
+    @Override
+    public String toString() {
+        return "[" + entidadAfectada + "] " + accion;
+    }
 }

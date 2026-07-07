@@ -1,35 +1,33 @@
 package com.example.appiot12.model;
 
+import com.google.firebase.database.IgnoreExtraProperties;
 import java.io.Serializable;
 
+@IgnoreExtraProperties
 public class LecturaParametro implements Serializable {
 
     private String idLectura;
-    private String idDispositivo;
-    private String idTanque;
-    private String idCliente;     // FK redundante para consultas sin joins
+    private String idDispositivo;   // FK → Dispositivo (único FK per spec)
+    private long timestamp;
 
     private double ph;
-    private double conductividad;
     private double turbidez;
-    private double ultrasonico;
-
-    private long timestamp;
+    private double conductividad;
+    private double nivelPorcentaje; // 0 – 100 %
+    private double nivelCm;         // lectura raw del sensor ultrasónico
 
     public LecturaParametro() {}
 
     public LecturaParametro(String idLectura, String idDispositivo,
-                             String idTanque, String idCliente,
                              double ph, double conductividad,
-                             double turbidez, double ultrasonico) {
+                             double turbidez, double nivelCm, double nivelPorcentaje) {
         this.idLectura = idLectura;
         this.idDispositivo = idDispositivo;
-        this.idTanque = idTanque;
-        this.idCliente = idCliente;
         this.ph = ph;
         this.conductividad = conductividad;
         this.turbidez = turbidez;
-        this.ultrasonico = ultrasonico;
+        this.nivelCm = nivelCm;
+        this.nivelPorcentaje = nivelPorcentaje;
         this.timestamp = System.currentTimeMillis();
     }
 
@@ -39,24 +37,21 @@ public class LecturaParametro implements Serializable {
     public String getIdDispositivo() { return idDispositivo; }
     public void setIdDispositivo(String idDispositivo) { this.idDispositivo = idDispositivo; }
 
-    public String getIdTanque() { return idTanque; }
-    public void setIdTanque(String idTanque) { this.idTanque = idTanque; }
-
-    public String getIdCliente() { return idCliente; }
-    public void setIdCliente(String idCliente) { this.idCliente = idCliente; }
+    public long getTimestamp() { return timestamp; }
+    public void setTimestamp(long timestamp) { this.timestamp = timestamp; }
 
     public double getPh() { return ph; }
     public void setPh(double ph) { this.ph = ph; }
 
-    public double getConductividad() { return conductividad; }
-    public void setConductividad(double conductividad) { this.conductividad = conductividad; }
-
     public double getTurbidez() { return turbidez; }
     public void setTurbidez(double turbidez) { this.turbidez = turbidez; }
 
-    public double getUltrasonico() { return ultrasonico; }
-    public void setUltrasonico(double ultrasonico) { this.ultrasonico = ultrasonico; }
+    public double getConductividad() { return conductividad; }
+    public void setConductividad(double conductividad) { this.conductividad = conductividad; }
 
-    public long getTimestamp() { return timestamp; }
-    public void setTimestamp(long timestamp) { this.timestamp = timestamp; }
+    public double getNivelPorcentaje() { return nivelPorcentaje; }
+    public void setNivelPorcentaje(double nivelPorcentaje) { this.nivelPorcentaje = nivelPorcentaje; }
+
+    public double getNivelCm() { return nivelCm; }
+    public void setNivelCm(double nivelCm) { this.nivelCm = nivelCm; }
 }
