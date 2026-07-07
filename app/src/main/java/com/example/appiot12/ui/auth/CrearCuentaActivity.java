@@ -136,6 +136,7 @@ public class CrearCuentaActivity extends BaseActivity {
         usuario.put("nombre", nombre);
         usuario.put("correo", email);
         usuario.put("rol", rol);
+        usuario.put("activo", true);
         usuario.put("tanques", new HashMap<>());
         usuario.put("createdAt", System.currentTimeMillis());
 

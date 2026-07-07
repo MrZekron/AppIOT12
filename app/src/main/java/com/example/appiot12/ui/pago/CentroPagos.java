@@ -32,6 +32,7 @@ public class CentroPagos extends BaseActivity {
 
     private String idCompra, codigoPedido, producto;
     private int monto;
+    private int cuotas;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,6 +71,7 @@ public class CentroPagos extends BaseActivity {
         codigoPedido = i.getStringExtra("codigoPedido");
         producto     = i.getStringExtra("producto");
         monto        = i.getIntExtra("monto", 0);
+        cuotas       = i.getIntExtra("cuotas", 1);
     }
 
     private void cargarDatosPantalla() {
@@ -87,9 +89,20 @@ public class CentroPagos extends BaseActivity {
     private void enviarWhatsapp() {
         actualizarEstadoCompra();
 
+        int valorCuota = (int) Math.ceil((double) monto / cuotas);
+        String detallePago;
+        if (cuotas == 1) {
+            detallePago = "monto total $" + String.format(Locale.getDefault(), "%,d", monto)
+                    + " al contado";
+        } else {
+            detallePago = "monto total $" + String.format(Locale.getDefault(), "%,d", monto)
+                    + " en " + cuotas + " cuotas de $"
+                    + String.format(Locale.getDefault(), "%,d", valorCuota) + " cada una";
+        }
+
         String msg = "Hola, acabo de realizar la transferencia del pedido "
-                + codigoPedido + " del producto " + producto
-                + " por un monto de $" + monto
+                + codigoPedido + " — Producto: " + producto
+                + " — " + detallePago
                 + ". Adjunto comprobante.";
 
         try {

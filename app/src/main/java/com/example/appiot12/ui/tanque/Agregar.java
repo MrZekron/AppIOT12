@@ -3,7 +3,6 @@ package com.example.appiot12.ui.tanque;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
-import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -11,8 +10,6 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import com.example.appiot12.ui.BaseActivity;
 
@@ -21,20 +18,12 @@ import com.example.appiot12.model.Dispositivo;
 import com.example.appiot12.model.TanqueAgua;
 import com.example.appiot12.service.HistorialService;
 import com.example.appiot12.ui.menu.Menu;
-import com.google.android.libraries.places.api.Places;
-import com.google.android.libraries.places.api.model.Place;
-import com.google.android.libraries.places.widget.Autocomplete;
-import com.google.android.libraries.places.widget.model.AutocompleteActivityMode;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 public class Agregar extends BaseActivity {
@@ -46,36 +35,9 @@ public class Agregar extends BaseActivity {
 
     private boolean direccionValidada = false;
     private String direccionFormateada = "";
-    private String placeIdDireccion = "";
     private double latitudDireccion = 0.0;
     private double longitudDireccion = 0.0;
 
-    private final ActivityResultLauncher<Intent> autocompleteLauncher =
-            registerForActivityResult(
-                    new ActivityResultContracts.StartActivityForResult(),
-                    result -> {
-                        try {
-                            if (result.getResultCode() == RESULT_OK && result.getData() != null) {
-                                Place place = Autocomplete.getPlaceFromIntent(result.getData());
-                                if (place.getAddress() != null && place.getLatLng() != null) {
-                                    direccionFormateada = place.getAddress();
-                                    placeIdDireccion = place.getId() != null ? place.getId() : "";
-                                    latitudDireccion = place.getLatLng().latitude;
-                                    longitudDireccion = place.getLatLng().longitude;
-                                    direccionValidada = true;
-                                    txtDireccion.setText(direccionFormateada);
-                                    txtDireccion.setSelection(txtDireccion.getText().length());
-                                    toast("Dirección validada correctamente");
-                                } else {
-                                    limpiarDireccionValidada();
-                                    toast("No se pudo validar la dirección");
-                                }
-                            }
-                        } catch (Exception e) {
-                            limpiarDireccionValidada();
-                            toast("Error al validar dirección: " + e.getMessage());
-                        }
-                    });
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -89,7 +51,6 @@ public class Agregar extends BaseActivity {
             spnColor = findViewById(R.id.spnColor);
 
             iniciarFirebase();
-            iniciarPlaces();
             cargarColores();
             configurarCampoDireccion();
         } catch (Exception e) {
@@ -101,17 +62,6 @@ public class Agregar extends BaseActivity {
     private void iniciarFirebase() {
         FirebaseApp.initializeApp(this);
         databaseReference = FirebaseDatabase.getInstance().getReference();
-    }
-
-    private void iniciarPlaces() {
-        String apiKey = getString(R.string.google_maps_key);
-        if (TextUtils.isEmpty(apiKey) || "TU_API_KEY_AQUI".equals(apiKey)) {
-            toast("Configura tu API Key de Google Places");
-            return;
-        }
-        if (!Places.isInitialized()) {
-            Places.initialize(getApplicationContext(), apiKey);
-        }
     }
 
     private void cargarColores() {
@@ -139,37 +89,26 @@ public class Agregar extends BaseActivity {
     }
 
     public void validarDireccion(View view) {
-        String consulta = txtDireccion.getText().toString().trim();
-        if (consulta.isEmpty()) {
+        String direccion = txtDireccion.getText().toString().trim();
+        if (direccion.isEmpty()) {
             txtDireccion.setError("Ingrese una dirección");
             txtDireccion.requestFocus();
             return;
         }
-
-        String apiKey = getString(R.string.google_maps_key);
-        if (TextUtils.isEmpty(apiKey) || "TU_API_KEY_AQUI".equals(apiKey)) {
-            toast("Debes configurar la API Key de Google Places");
-            return;
-        }
-
-        try {
-            List<Place.Field> fields = Arrays.asList(Place.Field.ID, Place.Field.NAME, Place.Field.ADDRESS, Place.Field.LAT_LNG);
-            Intent intent = new Autocomplete.IntentBuilder(AutocompleteActivityMode.OVERLAY, fields)
-                    .setCountries(Arrays.asList("CL"))
-                    .setInitialQuery(consulta)
-                    .build(this);
-            autocompleteLauncher.launch(intent);
-        } catch (Exception e) {
-            toast("Error al abrir Google Places: " + e.getMessage());
-        }
+        direccionFormateada = direccion;
+        direccionValidada = true;
+        txtDireccion.setFocusable(false);
+        txtDireccion.setFocusableInTouchMode(false);
+        toast("Dirección validada");
     }
 
     private void limpiarDireccionValidada() {
         direccionValidada = false;
         direccionFormateada = "";
-        placeIdDireccion = "";
         latitudDireccion = 0.0;
         longitudDireccion = 0.0;
+        txtDireccion.setFocusableInTouchMode(true);
+        txtDireccion.setFocusable(true);
     }
 
     public void enviarDatosUsuario(View view) {
@@ -188,7 +127,7 @@ public class Agregar extends BaseActivity {
 
         String uid = usuarioActual.getUid();
         String idTanque = UUID.randomUUID().toString();
-        String idDispositivo = UUID.randomUUID().toString();
+        String idDispositivo = "ESP32_001";
 
         Dispositivo dispositivo = new Dispositivo(idDispositivo, 7.0, 500.0, 1.0, 150.0);
 
@@ -197,30 +136,23 @@ public class Agregar extends BaseActivity {
 
         TanqueAgua tanque = new TanqueAgua();
         tanque.setIdTanque(idTanque);
+        tanque.setIdCliente(uid);
         tanque.setNombre(nombre);
-        tanque.setCapacidad(capacidad);
+        tanque.setCapacidadLitros(Integer.parseInt(capacidad));
         tanque.setColor(color);
         tanque.setIdDispositivo(idDispositivo);
+        tanque.setDireccion(direccionFormateada);
+        tanque.setLatitud(latitudDireccion);
+        tanque.setLongitud(longitudDireccion);
 
         dispositivoRef.setValue(dispositivo)
                 .addOnSuccessListener(aVoid ->
                         tanqueRef.setValue(tanque)
                                 .addOnSuccessListener(aVoid1 -> {
-                                    Map<String, Object> datosDireccion = new HashMap<>();
-                                    datosDireccion.put("direccion", direccionFormateada);
-                                    datosDireccion.put("latitud", latitudDireccion);
-                                    datosDireccion.put("longitud", longitudDireccion);
-                                    datosDireccion.put("placeIdDireccion", placeIdDireccion);
-
-                                    tanqueRef.updateChildren(datosDireccion)
-                                            .addOnSuccessListener(aVoid2 -> {
-                                                HistorialService.registrarEvento("CREAR", "Se creó el tanque: " + nombre);
-                                                toast("Tanque creado correctamente");
-                                                startActivity(new Intent(Agregar.this, Lista.class));
-                                                finish();
-                                            })
-                                            .addOnFailureListener(e ->
-                                                    toast("Tanque creado, pero falló la dirección: " + e.getMessage()));
+                                    HistorialService.registrarEvento("tanque", "Se creó el tanque: " + nombre, idTanque, null);
+                                    toast("Tanque creado correctamente");
+                                    startActivity(new Intent(Agregar.this, Lista.class));
+                                    finish();
                                 })
                                 .addOnFailureListener(e -> toast("Error al guardar tanque: " + e.getMessage()))
                 )
@@ -257,7 +189,7 @@ public class Agregar extends BaseActivity {
             txtDireccion.requestFocus();
             return false;
         }
-        if (!direccionValidada || !direccionVisible.equals(direccionFormateada)) {
+        if (!direccionValidada) {
             txtDireccion.setError("Debe validar la dirección con el botón");
             txtDireccion.requestFocus();
             toast("Primero valida la dirección");

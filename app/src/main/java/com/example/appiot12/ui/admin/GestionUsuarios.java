@@ -4,7 +4,9 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import com.example.appiot12.ui.BaseActivity;
 import androidx.appcompat.widget.PopupMenu;
 
@@ -52,6 +54,7 @@ public class GestionUsuarios extends BaseActivity {
         refCompras = FirebaseDatabase.getInstance().getReference("compras");
 
         adapter = new UsuarioAdapter(this, usuariosFiltrados);
+        adapter.setOnBlockListener(this::confirmarBloqueo);
         listUsuarios.setAdapter(adapter);
 
         cargarUsuarios();
@@ -167,10 +170,10 @@ public class GestionUsuarios extends BaseActivity {
 
         switch (filtro) {
             case "Nombre A-Z":
-                usuariosFiltrados.sort(Comparator.comparing(u -> safe(u.getCorreo()).toLowerCase()));
+                usuariosFiltrados.sort(Comparator.comparing(u -> safe(u.getEmail()).toLowerCase()));
                 break;
             case "Nombre Z-A":
-                usuariosFiltrados.sort((a, b) -> safe(b.getCorreo()).compareToIgnoreCase(safe(a.getCorreo())));
+                usuariosFiltrados.sort((a, b) -> safe(b.getEmail()).compareToIgnoreCase(safe(a.getEmail())));
                 break;
             case "Más tanques":
                 usuariosFiltrados.sort((a, b) -> tanquesPorUsuario.getOrDefault(b.getId(), 0) - tanquesPorUsuario.getOrDefault(a.getId(), 0));
@@ -202,6 +205,36 @@ public class GestionUsuarios extends BaseActivity {
     public int getTanquesUsuario(String uid) { return tanquesPorUsuario.getOrDefault(uid, 0); }
     public int getDispositivosUsuario(String uid) { return dispositivosPorUsuario.getOrDefault(uid, 0); }
     public int getDeudaUsuario(String uid) { return deudaPorUsuario.getOrDefault(uid, 0); }
+
+    private void confirmarBloqueo(com.example.appiot12.model.Usuario usuario, boolean nuevoEstado) {
+        String nombre = usuario.getNombre() != null ? usuario.getNombre() : usuario.getEmail();
+        String accion = nuevoEstado ? "desbloquear" : "bloquear";
+        String msg = "¿Desea " + accion + " la cuenta de " + nombre + "?";
+
+        new AlertDialog.Builder(this)
+                .setTitle(nuevoEstado ? "Desbloquear usuario" : "Bloquear usuario")
+                .setMessage(msg)
+                .setPositiveButton("Confirmar", (d, w) -> ejecutarBloqueo(usuario, nuevoEstado))
+                .setNegativeButton("Cancelar", null)
+                .show();
+    }
+
+    private void ejecutarBloqueo(com.example.appiot12.model.Usuario usuario, boolean nuevoEstado) {
+        if (usuario.getId() == null) {
+            Toast.makeText(this, "Error: ID de usuario no disponible", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        refUsuarios.child(usuario.getId()).child("activo")
+                .setValue(nuevoEstado)
+                .addOnSuccessListener(v -> {
+                    String msg = nuevoEstado ? "Usuario desbloqueado" : "Usuario bloqueado";
+                    Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+                })
+                .addOnFailureListener(e -> Toast.makeText(this,
+                        "Error al cambiar estado: " + e.getMessage(),
+                        Toast.LENGTH_LONG).show());
+    }
 
     public void volver(View view) {
         finish();

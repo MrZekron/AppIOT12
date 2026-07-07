@@ -89,7 +89,7 @@ public class TanqueAdapter extends ArrayAdapter<TanqueAgua> {
                         String phEstado   = evaluarRango(d.getPh(), 6.5, 8.5);
                         String condEstado = evaluarRango(d.getConductividad(), 0, 700);
                         String turbEstado = evaluarRango(d.getTurbidez(), 0, 5);
-                        double capacidad  = parseDoubleSeguro(tanque.getCapacidad());
+                        double capacidad  = tanque.getCapacidadLitros();
                         double nivel      = d.getUltrasonico();
                         String nivelEstado = evaluarNivel(nivel, capacidad);
 

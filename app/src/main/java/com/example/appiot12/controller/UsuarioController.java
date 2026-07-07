@@ -66,14 +66,14 @@ public class UsuarioController {
         return 0;
     }
 
-    public static void cambiarEstadoBloqueo(String userId, boolean bloquear) {
+    public static void cambiarEstadoActivo(String userId, boolean activo) {
         if (userId == null || userId.trim().isEmpty()) return;
 
         FirebaseDatabase.getInstance()
                 .getReference("usuarios")
                 .child(userId)
-                .child("bloqueado")
-                .setValue(bloquear);
+                .child("activo")
+                .setValue(activo);
     }
 
     public interface UsuarioFinanzasCallback {

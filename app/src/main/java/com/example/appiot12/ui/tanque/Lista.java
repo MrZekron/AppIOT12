@@ -2,6 +2,7 @@ package com.example.appiot12.ui.tanque;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -67,7 +68,7 @@ public class Lista extends BaseActivity {
             Intent intent = new Intent(this, Informacion.class);
             intent.putExtra("tanqueId", tanque.getIdTanque());
             intent.putExtra("tanqueNombre", tanque.getNombre());
-            intent.putExtra("tanqueCapacidad", tanque.getCapacidad());
+            intent.putExtra("tanqueCapacidad", tanque.getCapacidadLitros());
             intent.putExtra("tanqueColor", tanque.getColor());
             intent.putExtra("tanqueDireccion", tanque.getDireccion());
             intent.putExtra("idDispositivo", tanque.getIdDispositivo());
@@ -75,6 +76,10 @@ public class Lista extends BaseActivity {
             intent.putExtra("mantencionDispositivo", tanque.isMantencionDispositivo());
             startActivity(intent);
         });
+    }
+
+    public void volverAlMenu(View v) {
+        finish();
     }
 
     private void cargarTanques() {

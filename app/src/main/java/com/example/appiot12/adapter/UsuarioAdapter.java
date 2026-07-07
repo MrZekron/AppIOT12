@@ -23,13 +23,22 @@ import java.util.List;
 
 public class UsuarioAdapter extends ArrayAdapter<Usuario> {
 
+    public interface OnBlockListener {
+        void onBlock(Usuario usuario, boolean nuevoEstado);
+    }
+
     private final Context context;
     private final List<Usuario> usuarios;
+    private OnBlockListener blockListener;
 
     public UsuarioAdapter(Context context, List<Usuario> usuarios) {
         super(context, R.layout.item_usuario, usuarios);
         this.context = context;
         this.usuarios = usuarios;
+    }
+
+    public void setOnBlockListener(OnBlockListener listener) {
+        this.blockListener = listener;
     }
 
     @NonNull
@@ -51,9 +60,10 @@ public class UsuarioAdapter extends ArrayAdapter<Usuario> {
         }
 
         Usuario usuario = usuarios.get(position);
-        holder.tvCorreo.setText(usuario.getCorreo());
+        String display = usuario.getNombre() != null ? usuario.getNombre() : usuario.getEmail();
+        holder.tvCorreo.setText(display);
 
-        if (usuario.isBloqueado()) {
+        if (!usuario.isActivo()) {
             holder.tvEstado.setText("Cuenta bloqueada");
             holder.tvEstado.setTextColor(ContextCompat.getColor(context, R.color.color_error));
             holder.btnBloquear.setText("Desbloquear");
@@ -71,14 +81,9 @@ public class UsuarioAdapter extends ArrayAdapter<Usuario> {
         cargarResumenFinanciero(usuario.getId(), holder);
 
         holder.btnBloquear.setOnClickListener(v -> {
-            boolean nuevoEstado = !usuario.isBloqueado();
-            usuario.setBloqueado(nuevoEstado);
-            FirebaseDatabase.getInstance()
-                    .getReference("usuarios")
-                    .child(usuario.getId())
-                    .child("bloqueado")
-                    .setValue(nuevoEstado);
-            notifyDataSetChanged();
+            if (blockListener != null) {
+                blockListener.onBlock(usuario, !usuario.isActivo());
+            }
         });
 
         return convertView;

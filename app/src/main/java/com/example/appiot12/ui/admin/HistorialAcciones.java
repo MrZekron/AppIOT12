@@ -14,6 +14,7 @@ import com.example.appiot12.ui.BaseActivity;
 import com.example.appiot12.R;
 import com.example.appiot12.adapter.HistorialAdapter;
 import com.example.appiot12.model.HistorialEvento;
+import com.example.appiot12.model.LecturaParametro;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -38,17 +39,16 @@ public class HistorialAcciones extends BaseActivity {
     private final List<HistorialEvento> eventos = new ArrayList<>();
     private HistorialAdapter adapter;
 
-    private DatabaseReference refHistorial;
-    private String uid;
+    private DatabaseReference refLecturas;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.admin_historial_acciones);
 
-        spnFiltro = findViewById(R.id.spnFiltro);
+        spnFiltro   = findViewById(R.id.spnFiltro);
         lvHistorial = findViewById(R.id.lvHistorial);
-        btnPdf = findViewById(R.id.btnPdf);
+        btnPdf      = findViewById(R.id.btnPdf);
 
         if (FirebaseAuth.getInstance().getCurrentUser() == null) {
             Toast.makeText(this, "Usuario no autenticado", Toast.LENGTH_SHORT).show();
@@ -56,10 +56,7 @@ public class HistorialAcciones extends BaseActivity {
             return;
         }
 
-        uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
-
-        refHistorial = FirebaseDatabase.getInstance()
-                .getReference("usuarios").child(uid).child("historial");
+        refLecturas = FirebaseDatabase.getInstance().getReference("lecturas_historial");
 
         adapter = new HistorialAdapter(this, eventos);
         lvHistorial.setAdapter(adapter);
@@ -79,9 +76,9 @@ public class HistorialAcciones extends BaseActivity {
         spnFiltro.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                if (position == 0) cargarHistorial(1);
+                if (position == 0)      cargarHistorial(1);
                 else if (position == 1) cargarHistorial(7);
-                else cargarHistorial(30);
+                else                    cargarHistorial(30);
             }
 
             @Override
@@ -92,14 +89,22 @@ public class HistorialAcciones extends BaseActivity {
     private void cargarHistorial(int dias) {
         long limite = System.currentTimeMillis() - (dias * 24L * 60L * 60L * 1000L);
 
-        refHistorial.addListenerForSingleValueEvent(new ValueEventListener() {
+        refLecturas.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot snapshot) {
                 eventos.clear();
 
-                for (DataSnapshot s : snapshot.getChildren()) {
-                    HistorialEvento evento = s.getValue(HistorialEvento.class);
-                    if (evento != null && evento.getTimestamp() >= limite) {
+                for (DataSnapshot deviceSnap : snapshot.getChildren()) {
+                    String idDispositivo = deviceSnap.getKey();
+
+                    for (DataSnapshot lecturaSnap : deviceSnap.getChildren()) {
+                        LecturaParametro lectura = lecturaSnap.getValue(LecturaParametro.class);
+                        if (lectura == null || lectura.getTimestamp() < limite) continue;
+
+                        HistorialEvento evento = new HistorialEvento();
+                        evento.setTipo(idDispositivo);
+                        evento.setDescripcion(formatearLectura(lectura));
+                        evento.setTimestamp(lectura.getTimestamp());
                         eventos.add(evento);
                     }
                 }
@@ -110,33 +115,39 @@ public class HistorialAcciones extends BaseActivity {
 
             @Override
             public void onCancelled(DatabaseError error) {
-                Toast.makeText(HistorialAcciones.this, "Error al cargar historial", Toast.LENGTH_SHORT).show();
+                Toast.makeText(HistorialAcciones.this, "Error al cargar lecturas", Toast.LENGTH_SHORT).show();
             }
         });
     }
 
+    private String formatearLectura(LecturaParametro l) {
+        return String.format(Locale.getDefault(),
+                "pH %.1f  |  Turb %.1f NTU  |  Nivel %.0f%%  |  Cond %.0f µS",
+                l.getPh(), l.getTurbidez(), l.getNivelPorcentaje(), l.getConductividad());
+    }
+
     private void exportarHistorial() {
         try {
-            File file = new File(getExternalFilesDir(null), "historial.txt");
+            File file = new File(getExternalFilesDir(null), "lecturas_historial.txt");
             FileOutputStream fos = new FileOutputStream(file);
-
             SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
 
-            for (HistorialEvento evento : eventos) {
-                String linea = "[" + safe(evento.getTipo()) + "] "
-                        + safe(evento.getDescripcion()) + " - "
-                        + sdf.format(new Date(evento.getTimestamp()))
-                        + "\n";
+            fos.write("Historial de lecturas IoT\n".getBytes());
+            fos.write("==========================\n".getBytes());
+
+            for (HistorialEvento e : eventos) {
+                String linea = sdf.format(new Date(e.getTimestamp()))
+                        + "  [" + safe(e.getTipo()) + "]  "
+                        + safe(e.getDescripcion()) + "\n";
                 fos.write(linea.getBytes());
             }
 
             fos.flush();
             fos.close();
-
-            Toast.makeText(this, "Historial exportado:\n" + file.getAbsolutePath(), Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Exportado: " + file.getAbsolutePath(), Toast.LENGTH_LONG).show();
 
         } catch (Exception e) {
-            Toast.makeText(this, "Error al exportar historial", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Error al exportar", Toast.LENGTH_LONG).show();
         }
     }
 

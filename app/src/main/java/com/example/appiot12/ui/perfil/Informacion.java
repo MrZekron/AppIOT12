@@ -15,6 +15,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.appiot12.R;
+import com.example.appiot12.service.AlertaService;
 import com.example.appiot12.ui.tanque.Editor;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.Legend;
@@ -41,6 +42,7 @@ public class Informacion extends BaseActivity {
     private TextView txtNombre;
     private TextView txtCapasidad;
     private TextView txtColor;
+    private TextView txtDireccion;
 
     private TextView txtPh;
     private TextView txtConductividad;
@@ -73,6 +75,7 @@ public class Informacion extends BaseActivity {
     private String tanqueNombre;
     private String tanqueCapacidad;
     private String tanqueColor;
+    private String tanqueDireccion;
 
     private boolean mantencionTanque;
     private boolean mantencionDispositivo;
@@ -118,7 +121,7 @@ public class Informacion extends BaseActivity {
 
         if (idDispositivo != null && !idDispositivo.trim().isEmpty()) {
             dispositivoRef = FirebaseDatabase.getInstance()
-                    .getReference("usuarios").child(uid).child("dispositivos").child(idDispositivo);
+                    .getReference("lecturas_actuales").child(idDispositivo);
             suscribirseDispositivoTiempoReal();
         } else {
             mostrarSinDispositivo();
@@ -131,6 +134,7 @@ public class Informacion extends BaseActivity {
         txtNombre = findViewById(R.id.txtNombre);
         txtCapasidad = findViewById(R.id.txtCapasidad);
         txtColor = findViewById(R.id.txtColor);
+        txtDireccion = findViewById(R.id.txtDireccion);
 
         txtPh = findViewById(R.id.txtPh);
         txtConductividad = findViewById(R.id.txtConductividad);
@@ -162,9 +166,11 @@ public class Informacion extends BaseActivity {
         tanqueNombre = valorSeguro(intent.getStringExtra("tanqueNombre"));
         tanqueCapacidad = valorSeguro(intent.getStringExtra("tanqueCapacidad"));
         tanqueColor = valorSeguro(intent.getStringExtra("tanqueColor"));
+        tanqueDireccion = valorSeguro(intent.getStringExtra("tanqueDireccion"));
 
         txtNombre.setText(tanqueNombre);
         txtCapasidad.setText(tanqueCapacidad);
+        txtDireccion.setText(tanqueDireccion.isEmpty() ? "Sin dirección registrada" : tanqueDireccion);
         actualizarTextoMantencion(tanqueColor);
     }
 
@@ -187,6 +193,7 @@ public class Informacion extends BaseActivity {
                 String nombre = snap.child("nombre").getValue(String.class);
                 String capacidad = snap.child("capacidad").getValue(String.class);
                 String color = snap.child("color").getValue(String.class);
+                String direccion = snap.child("direccion").getValue(String.class);
 
                 Boolean mantTanqueDb = snap.child("mantencionTanque").getValue(Boolean.class);
                 Boolean mantDispDb = snap.child("mantencionDispositivo").getValue(Boolean.class);
@@ -195,6 +202,9 @@ public class Informacion extends BaseActivity {
                 if (capacidad != null) txtCapasidad.setText(capacidad);
                 if (mantTanqueDb != null) mantencionTanque = mantTanqueDb;
                 if (mantDispDb != null) mantencionDispositivo = mantDispDb;
+                if (direccion != null && !direccion.isEmpty()) {
+                    txtDireccion.setText(direccion);
+                }
 
                 actualizarTextoMantencion(valorSeguro(color));
             }
@@ -215,7 +225,8 @@ public class Informacion extends BaseActivity {
                 double ph = leerDouble(snap, "ph");
                 double conductividad = leerDouble(snap, "conductividad");
                 double turbidez = leerDouble(snap, "turbidez");
-                double ultrasonico = leerDouble(snap, "ultrasonico");
+                double ultrasonico = leerDouble(snap, "nivelCm");
+                double nivelPorcentaje = leerDouble(snap, "nivelPorcentaje");
 
                 txtPh.setText(String.format(Locale.getDefault(), "pH: %.2f", ph));
                 txtConductividad.setText(String.format(Locale.getDefault(), "Conductividad: %.2f", conductividad));
@@ -224,6 +235,12 @@ public class Informacion extends BaseActivity {
 
                 actualizarEstadosVisuales(ph, conductividad, turbidez, ultrasonico);
                 agregarPuntosGrafico(ph, conductividad, turbidez);
+
+                String uid = FirebaseAuth.getInstance().getCurrentUser() != null
+                        ? FirebaseAuth.getInstance().getCurrentUser().getUid() : null;
+                AlertaService.evaluarLectura(
+                        Informacion.this, uid, idDispositivo,
+                        ph, conductividad, turbidez, nivelPorcentaje);
             }
 
             @Override
@@ -377,6 +394,10 @@ public class Informacion extends BaseActivity {
         txtCondEstado.setTextColor(colorAlerta);
         txtTurbEstado.setTextColor(colorAlerta);
         txtUltraEstado.setTextColor(colorAlerta);
+    }
+
+    public void Volver2(View view) {
+        finish();
     }
 
     /** Called via android:onClick="editarTanque" in the layout. */

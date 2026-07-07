@@ -100,14 +100,14 @@ public class IniciarSesion extends BaseActivity {
 
                 String correoDB = s.child("correo").getValue(String.class);
                 String rol = s.child("rol").getValue(String.class);
-                Boolean bloqueado = s.child("bloqueado").getValue(Boolean.class);
+                Boolean activo = s.child("activo").getValue(Boolean.class);
 
                 if (correoDB == null || !correoDB.equalsIgnoreCase(correoIngresado)) {
                     toast("Correo no coincide");
                     return;
                 }
 
-                if (bloqueado != null && bloqueado) {
+                if (activo != null && !activo) {
                     auth.signOut();
                     toast("Cuenta bloqueada");
                     return;

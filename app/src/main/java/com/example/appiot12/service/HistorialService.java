@@ -18,48 +18,52 @@ public class HistorialService {
     private static DatabaseReference getHistorialRef() {
         String uid = uid();
         if (uid == null) return null;
-        return FirebaseDatabase.getInstance().getReference("usuarios").child(uid).child("historial");
+        return FirebaseDatabase.getInstance().getReference("historial");
     }
 
-    public static void registrarEvento(String tipo, String descripcion) {
+    public static void registrarEvento(String entidadAfectada, String accion) {
+        registrarEvento(entidadAfectada, accion, null, null);
+    }
+
+    public static void registrarEvento(String entidadAfectada, String accion,
+                                       String idEntidadAfectada, String detalle) {
         DatabaseReference ref = getHistorialRef();
         if (ref == null) return;
 
-        String id = ref.push().getKey();
-        if (id == null) return;
+        String idHistorial = ref.push().getKey();
+        if (idHistorial == null) return;
 
-        ref.child(id).setValue(new HistorialEvento(id, tipo, descripcion, System.currentTimeMillis()));
+        String idUsuario = uid();
+        HistorialEvento evento = new HistorialEvento(
+                idHistorial, idUsuario, accion, entidadAfectada, idEntidadAfectada);
+        if (detalle != null) evento.setDetalle(detalle);
+
+        ref.child(idHistorial).setValue(evento);
     }
 
     public static void registrarSensorDiario(String idTanque, double ph, double cond, double turb, double nivel) {
-        DatabaseReference ref = getHistorialRef();
-        if (ref == null) return;
-
-        String id = ref.push().getKey();
-        if (id == null) return;
-
-        HistorialEvento evento = new HistorialEvento(id, "SENSOR", "Estado diario del agua", System.currentTimeMillis());
-        evento.setIdTanque(idTanque);
-        evento.setPh(ph);
-        evento.setConductividad(cond);
-        evento.setTurbidez(turb);
-        evento.setNivel(nivel);
-
-        ref.child(id).setValue(evento);
+        try {
+            org.json.JSONObject json = new org.json.JSONObject();
+            json.put("idTanque", idTanque);
+            json.put("ph", ph);
+            json.put("conductividad", cond);
+            json.put("turbidez", turb);
+            json.put("nivel", nivel);
+            registrarEvento("dispositivo", "Lectura diaria de sensores", idTanque, json.toString());
+        } catch (org.json.JSONException e) {
+            registrarEvento("dispositivo", "Lectura diaria de sensores", idTanque, null);
+        }
     }
 
-    public static void registrarPago(double monto, int cuotasPagadas) {
-        DatabaseReference ref = getHistorialRef();
-        if (ref == null) return;
-
-        String id = ref.push().getKey();
-        if (id == null) return;
-
-        HistorialEvento evento = new HistorialEvento(id, "PAGO", "Pago de cuota", System.currentTimeMillis());
-        evento.setMonto(monto);
-        evento.setCuotasPagadas(cuotasPagadas);
-
-        ref.child(id).setValue(evento);
+    public static void registrarPago(int monto, int cuotasPagadas) {
+        try {
+            org.json.JSONObject json = new org.json.JSONObject();
+            json.put("monto", monto);
+            json.put("cuotasPagadas", cuotasPagadas);
+            registrarEvento("pago", "Pago de cuota registrado", null, json.toString());
+        } catch (org.json.JSONException e) {
+            registrarEvento("pago", "Pago de cuota registrado", null, null);
+        }
     }
 
     public static void limpiarHistorialAntiguo() {

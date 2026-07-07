@@ -37,8 +37,8 @@ public class ReporteMensualWorker extends Worker {
     private static final String TAG = "ReporteMensualWorker";
     private static final long TREINTA_DIAS_MS = 30L * 24L * 60L * 60L * 1000L;
 
-    private static final String CORREO_REPORTE = "TU_CORREO@gmail.com";
-    private static final String CLAVE_APP_CORREO = "TU_APP_PASSWORD";
+    private static final String CORREO_REPORTE = com.example.appiot12.BuildConfig.SMTP_EMAIL;
+    private static final String CLAVE_APP_CORREO = com.example.appiot12.BuildConfig.SMTP_PASSWORD;
 
     public ReporteMensualWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
@@ -114,16 +114,16 @@ public class ReporteMensualWorker extends Worker {
     }
 
     private void inicializarFechasSiHaceFalta(TanqueAgua tanque) {
-        if (tanque.getFechaCreacion() <= 0) tanque.setFechaCreacion(System.currentTimeMillis());
+        if (tanque.getFechaInstalacion() <= 0) tanque.setFechaInstalacion(System.currentTimeMillis());
         if (tanque.getUltimoCorreoEnviado() < 0) tanque.setUltimoCorreoEnviado(0);
     }
 
     private boolean debeEnviarReporte(TanqueAgua tanque) {
         long ahora = System.currentTimeMillis();
-        if (tanque.getFechaCreacion() <= 0) return false;
+        if (tanque.getFechaInstalacion() <= 0) return false;
 
         if (tanque.getUltimoCorreoEnviado() == 0) {
-            return (ahora - tanque.getFechaCreacion()) >= TREINTA_DIAS_MS;
+            return (ahora - tanque.getFechaInstalacion()) >= TREINTA_DIAS_MS;
         }
 
         return (ahora - tanque.getUltimoCorreoEnviado()) >= TREINTA_DIAS_MS;
@@ -174,10 +174,10 @@ public class ReporteMensualWorker extends Worker {
 
         resumen.append("DATOS DEL TANQUE\n");
         resumen.append("- Nombre: ").append(obtenerNombreSeguroTanque(tanque)).append("\n");
-        resumen.append("- Capacidad: ").append(valorSeguro(tanque.getCapacidad())).append(" litros\n");
+        resumen.append("- Capacidad: ").append(tanque.getCapacidadLitros()).append(" litros\n");
         resumen.append("- Color: ").append(valorSeguro(tanque.getColor())).append("\n");
         resumen.append("- Dirección: ").append(valorSeguro(tanque.getDireccion())).append("\n");
-        resumen.append("- Fecha de creación: ").append(formatearFecha(tanque.getFechaCreacion())).append("\n\n");
+        resumen.append("- Fecha de instalación: ").append(formatearFecha(tanque.getFechaInstalacion())).append("\n\n");
 
         if (historial == null || historial.isEmpty()) {
             resumen.append("ESTADO DEL DISPOSITIVO\n");

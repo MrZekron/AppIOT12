@@ -20,7 +20,7 @@ import java.util.Map;
 
 public class ComprarDispositivo extends BaseActivity {
 
-    private static final int PRECIO_DEFAULT = 125000;
+    private static final int PRECIO_DEFAULT = 130000;
     private static final String NOMBRE_PRODUCTO = "Dispositivo AguaSegura";
 
     private TextView tvPrecio, tvResumenCuota;
@@ -55,13 +55,8 @@ public class ComprarDispositivo extends BaseActivity {
     }
 
     private void cargarPrecio() {
-        FirebaseDatabase.getInstance().getReference("configuracion/precioDispositivo").get()
-                .addOnSuccessListener(snap -> {
-                    Integer precio = snap.getValue(Integer.class);
-                    precioActual = precio != null ? precio : PRECIO_DEFAULT;
-                    actualizarUI();
-                })
-                .addOnFailureListener(e -> actualizarUI());
+        precioActual = PRECIO_DEFAULT;
+        actualizarUI();
     }
 
     private void initSpinner() {
@@ -129,6 +124,7 @@ public class ComprarDispositivo extends BaseActivity {
         i.putExtra("codigoPedido", codigoPedido);
         i.putExtra("producto", NOMBRE_PRODUCTO);
         i.putExtra("monto", precioActual);
+        i.putExtra("cuotas", cuotasSeleccionadas);
         startActivity(i);
         finish();
     }

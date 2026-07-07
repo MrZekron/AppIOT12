@@ -83,9 +83,9 @@ public class HistorialGlobal extends BaseActivity {
     }
 
     private void mostrarResultados(int usuarios, int tanques, int dispositivos) {
-        txtUsuariosTotal.setText("Usuarios totales: " + usuarios);
-        txtTanquesTotal.setText("Tanques totales: " + tanques);
-        txtDispositivosTotal.setText("Dispositivos totales: " + dispositivos);
+        txtUsuariosTotal.setText(String.valueOf(usuarios));
+        txtTanquesTotal.setText(String.valueOf(tanques));
+        txtDispositivosTotal.setText(String.valueOf(dispositivos));
     }
 
     private void actualizarGrafico(int usuarios, int dispositivos) {
