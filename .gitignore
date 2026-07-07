@@ -13,3 +13,12 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+# AI tooling
+.agents/
+.atl/
+.claude/
+skills-lock.json
+
+# Temp scripts
+fix_ppt.py
