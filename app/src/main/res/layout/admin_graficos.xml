@@ -55,6 +55,228 @@
             android:gravity="center" />
 
         <!-- ====================================================
+             💼 SECCIÓN DE MÉTRICAS DE NEGOCIO
+             ==================================================== -->
+        <TextView
+            android:id="@+id/tvSeccionNegocio"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Métricas de Negocio"
+            android:textColor="@color/color_text_primary"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="10dp"
+            android:layout_marginTop="4dp" />
+
+        <!-- KPI Row 1: Clientes + Ingresos -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="8dp">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:background="@color/color_primary"
+                android:padding="12dp"
+                android:layout_marginEnd="4dp">
+                <TextView
+                    android:id="@+id/tvKpiClientes"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="—"
+                    android:textColor="@color/color_surface"
+                    android:textSize="22sp"
+                    android:textStyle="bold"
+                    android:gravity="center" />
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Clientes Activos"
+                    android:textColor="@color/color_surface"
+                    android:textSize="11sp"
+                    android:gravity="center" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:background="@color/color_text_primary"
+                android:padding="12dp"
+                android:layout_marginStart="4dp">
+                <TextView
+                    android:id="@+id/tvKpiIngresos"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="—"
+                    android:textColor="@color/color_surface"
+                    android:textSize="22sp"
+                    android:textStyle="bold"
+                    android:gravity="center" />
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Ingresos Acumulados"
+                    android:textColor="@color/color_surface"
+                    android:textSize="11sp"
+                    android:gravity="center" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- KPI Row 2: Mantención + Utilidad -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="20dp">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:background="@color/color_secondary"
+                android:padding="12dp"
+                android:layout_marginEnd="4dp">
+                <TextView
+                    android:id="@+id/tvKpiMantencion"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="—"
+                    android:textColor="@color/color_surface"
+                    android:textSize="22sp"
+                    android:textStyle="bold"
+                    android:gravity="center" />
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="En Mantención"
+                    android:textColor="@color/color_surface"
+                    android:textSize="11sp"
+                    android:gravity="center" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:background="#2E7D32"
+                android:padding="12dp"
+                android:layout_marginStart="4dp">
+                <TextView
+                    android:id="@+id/tvKpiUtilidad"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="—"
+                    android:textColor="@color/color_surface"
+                    android:textSize="22sp"
+                    android:textStyle="bold"
+                    android:gravity="center" />
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Utilidad Neta"
+                    android:textColor="@color/color_surface"
+                    android:textSize="11sp"
+                    android:gravity="center" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Chart: Ingresos vs Costos por Mes -->
+        <LinearLayout
+            android:id="@+id/cardIngresosCostos"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@color/color_surface"
+            android:padding="12dp"
+            android:layout_marginBottom="20dp">
+            <TextView
+                android:id="@+id/tvTituloIngresosCostos"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Ingresos vs Costos por Mes (CLP miles)"
+                android:textColor="@color/color_text_primary"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="8dp" />
+            <com.github.mikephil.charting.charts.BarChart
+                android:id="@+id/barChartIngresosCostos"
+                android:layout_width="match_parent"
+                android:layout_height="280dp" />
+        </LinearLayout>
+
+        <!-- Chart: Utilidad Neta por Mes -->
+        <LinearLayout
+            android:id="@+id/cardUtilidad"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@color/color_surface"
+            android:padding="12dp"
+            android:layout_marginBottom="20dp">
+            <TextView
+                android:id="@+id/tvTituloUtilidad"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Utilidad Neta por Mes (CLP miles)"
+                android:textColor="@color/color_text_primary"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="8dp" />
+            <com.github.mikephil.charting.charts.BarChart
+                android:id="@+id/barChartUtilidad"
+                android:layout_width="match_parent"
+                android:layout_height="260dp" />
+        </LinearLayout>
+
+        <!-- Chart: Dispositivos en Mantención por Mes -->
+        <LinearLayout
+            android:id="@+id/cardMantencion"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@color/color_surface"
+            android:padding="12dp"
+            android:layout_marginBottom="20dp">
+            <TextView
+                android:id="@+id/tvTituloMantencion"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Dispositivos en Mantención por Mes"
+                android:textColor="@color/color_text_primary"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="8dp" />
+            <com.github.mikephil.charting.charts.BarChart
+                android:id="@+id/barChartMantencion"
+                android:layout_width="match_parent"
+                android:layout_height="240dp" />
+        </LinearLayout>
+
+        <!-- Divisor entre secciones -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/color_secondary"
+            android:layout_marginBottom="16dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Estadísticas Operativas"
+            android:textColor="@color/color_text_primary"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="10dp" />
+
+        <!-- ====================================================
              📊 SECCIÓN 1: USUARIOS REGISTRADOS POR MES
              Muestra un gráfico de barras verticales con el
              número de nuevos usuarios cada mes.

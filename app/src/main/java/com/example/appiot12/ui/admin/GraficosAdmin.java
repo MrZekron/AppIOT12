@@ -12,6 +12,7 @@ import androidx.core.content.ContextCompat;
 import com.example.appiot12.R;
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.charts.HorizontalBarChart;
+import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.BarData;
@@ -27,6 +28,7 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -44,8 +46,21 @@ public class GraficosAdmin extends BaseActivity {
     private TextView tvTituloComprasGlobal;
     private TextView tvTituloComprasPorUsuario;
 
+    // Business metrics views
+    private BarChart barChartIngresosCostos;
+    private BarChart barChartUtilidad;
+    private BarChart barChartMantencion;
+    private TextView tvKpiClientes;
+    private TextView tvKpiIngresos;
+    private TextView tvKpiMantencion;
+    private TextView tvKpiUtilidad;
+
     private DatabaseReference refUsuarios;
     private DatabaseReference refCompras;
+    private DatabaseReference refPagos;
+
+    private static final int COLOR_GREEN  = Color.parseColor("#2E7D32");
+    private static final int COLOR_ORANGE = Color.parseColor("#E65100");
 
     private int colorPrimary;
     private int colorText;
@@ -72,11 +87,22 @@ public class GraficosAdmin extends BaseActivity {
         barChartComprasGlobal     = findViewById(R.id.barChartComprasGlobal);
         barChartComprasPorUsuario = findViewById(R.id.barChartComprasPorUsuario);
 
+        tvKpiClientes   = findViewById(R.id.tvKpiClientes);
+        tvKpiIngresos   = findViewById(R.id.tvKpiIngresos);
+        tvKpiMantencion = findViewById(R.id.tvKpiMantencion);
+        tvKpiUtilidad   = findViewById(R.id.tvKpiUtilidad);
+
+        barChartIngresosCostos = findViewById(R.id.barChartIngresosCostos);
+        barChartUtilidad       = findViewById(R.id.barChartUtilidad);
+        barChartMantencion     = findViewById(R.id.barChartMantencion);
+
         refUsuarios = FirebaseDatabase.getInstance().getReference("usuarios");
         refCompras  = FirebaseDatabase.getInstance().getReference("compras");
+        refPagos    = FirebaseDatabase.getInstance().getReference("pagos");
 
         cargarDatosUsuarios();
         cargarDatosCompras();
+        cargarMetricasNegocio();
     }
 
     private void cargarDatosUsuarios() {
@@ -97,8 +123,8 @@ public class GraficosAdmin extends BaseActivity {
                 }
 
                 if (registrosPorMes.isEmpty()) {
-                    tvTituloUsuarios.setText("Usuarios registrados por mes (sin datos aún)");
-                    return;
+                    tvTituloUsuarios.setText("Usuarios registrados por mes (ejemplo)");
+                    registrosPorMes = generarMesesDemo(new int[]{1, 3, 2, 5, 4, 2});
                 }
 
                 dibujarBarChart(barChartUsuarios, registrosPorMes, "Usuarios registrados", colorPrimary);
@@ -137,13 +163,19 @@ public class GraficosAdmin extends BaseActivity {
                 if (!comprasPorMes.isEmpty()) {
                     dibujarBarChart(barChartComprasGlobal, comprasPorMes, "Dispositivos comprados", colorSecondary);
                 } else {
-                    tvTituloComprasGlobal.setText("Compras de dispositivos por mes (sin datos aún)");
+                    tvTituloComprasGlobal.setText("Compras de dispositivos por mes (ejemplo)");
+                    dibujarBarChart(barChartComprasGlobal, generarMesesDemo(new int[]{0, 1, 2, 1, 3, 1}), "Dispositivos comprados", COLOR_SECONDARY);
                 }
 
                 if (!comprasPorUid.isEmpty()) {
                     cargarCorreosParaGrafico(comprasPorUid);
                 } else {
-                    tvTituloComprasPorUsuario.setText("Compras por usuario (sin datos aún)");
+                    tvTituloComprasPorUsuario.setText("Compras por usuario (ejemplo)");
+                    Map<String, Integer> demoUsuarios = new LinkedHashMap<>();
+                    demoUsuarios.put("cliente1@mail.com", 3);
+                    demoUsuarios.put("cliente2@mail.com", 1);
+                    demoUsuarios.put("cliente3@mail.com", 2);
+                    dibujarBarChartHorizontal(demoUsuarios);
                 }
             }
 
@@ -288,11 +320,306 @@ public class GraficosAdmin extends BaseActivity {
         barChartComprasPorUsuario.invalidate();
     }
 
+    private Map<String, Integer> generarMesesDemo(int[] valores) {
+        Map<String, Integer> demo = new LinkedHashMap<>();
+        Calendar cal = Calendar.getInstance();
+        int n = valores.length;
+        for (int i = n - 1; i >= 0; i--) {
+            Calendar c = (Calendar) cal.clone();
+            c.add(Calendar.MONTH, -i);
+            demo.put(formatoMes.format(c.getTime()), valores[n - 1 - i]);
+        }
+        return demo;
+    }
+
     private void mostrarError(String mensaje) {
         Toast.makeText(this, mensaje, Toast.LENGTH_LONG).show();
     }
 
     public void volver(View view) {
         finish();
+    }
+
+    // ── Business metrics ────────────────────────────────────────────────────────
+
+    private void cargarMetricasNegocio() {
+        refPagos.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                Map<String, Long>    ingresosPorMes   = new TreeMap<>();
+                Map<String, Integer> mantencionPorMes = new TreeMap<>();
+                long totalIngresos = 0;
+                int  totalMantencion = 0;
+
+                for (DataSnapshot snap : snapshot.getChildren()) {
+                    String estado = snap.child("estado").getValue(String.class);
+                    if (!"aprobado".equalsIgnoreCase(estado)) continue;
+
+                    Long monto = snap.child("monto").getValue(Long.class);
+                    Long fecha = snap.child("fechaPago").getValue(Long.class);
+                    String tipo = snap.child("tipoPago").getValue(String.class);
+                    if (monto == null || fecha == null) continue;
+
+                    String mes = formatoMes.format(new Date(fecha));
+                    ingresosPorMes.put(mes, ingresosPorMes.getOrDefault(mes, 0L) + monto);
+                    totalIngresos += monto;
+
+                    if ("mantenimiento".equalsIgnoreCase(tipo)) {
+                        mantencionPorMes.put(mes, mantencionPorMes.getOrDefault(mes, 0) + 1);
+                        totalMantencion++;
+                    }
+                }
+
+                if (ingresosPorMes.isEmpty()) {
+                    mostrarMetricasDemo();
+                    return;
+                }
+
+                Map<String, Long> costosPorMes = new TreeMap<>();
+                Map<String, Long> utilidadPorMes = new TreeMap<>();
+                for (Map.Entry<String, Long> e : ingresosPorMes.entrySet()) {
+                    long costo = (long) (e.getValue() * 0.33);
+                    costosPorMes.put(e.getKey(), costo);
+                    utilidadPorMes.put(e.getKey(), e.getValue() - costo);
+                }
+
+                final long fTotalIngresos   = totalIngresos;
+                final int  fTotalMantencion = totalMantencion;
+                final long fTotalUtilidad   = fTotalIngresos - (long) (fTotalIngresos * 0.33);
+
+                refUsuarios.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot us) {
+                        int clientes = 0;
+                        for (DataSnapshot u : us.getChildren()) {
+                            String rol = u.child("rol").getValue(String.class);
+                            if ("usuario".equalsIgnoreCase(rol)) clientes++;
+                        }
+                        actualizarKPIs(clientes, fTotalIngresos, fTotalMantencion, fTotalUtilidad);
+                    }
+                    @Override public void onCancelled(DatabaseError e) {
+                        actualizarKPIs(0, fTotalIngresos, fTotalMantencion, fTotalUtilidad);
+                    }
+                });
+
+                dibujarGraficoIngresosCostos(ingresosPorMes, costosPorMes);
+                dibujarGraficoUtilidad(utilidadPorMes);
+                dibujarGraficoMantencion(mantencionPorMes);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError error) {
+                mostrarMetricasDemo();
+            }
+        });
+    }
+
+    private void mostrarMetricasDemo() {
+        // Simulated 6-month growth curve (values in CLP thousands)
+        String[] meses = {"Feb 2026", "Mar 2026", "Abr 2026", "May 2026", "Jun 2026", "Jul 2026"};
+        long[]   ingresosDemo   = {1300, 2100, 3050, 4200, 5450, 7200};
+        int[]    mantencionDemo = {0, 1, 1, 2, 2, 3};
+
+        Map<String, Long>    ingresosPorMes   = new LinkedHashMap<>();
+        Map<String, Long>    costosPorMes     = new LinkedHashMap<>();
+        Map<String, Long>    utilidadPorMes   = new LinkedHashMap<>();
+        Map<String, Integer> mantencionPorMes = new LinkedHashMap<>();
+
+        long totalIngresos = 0;
+        int  totalMantencion = 0;
+
+        for (int i = 0; i < meses.length; i++) {
+            long ing   = ingresosDemo[i];
+            long costo = (long) (ing * 0.33);
+            ingresosPorMes.put(meses[i], ing);
+            costosPorMes.put(meses[i], costo);
+            utilidadPorMes.put(meses[i], ing - costo);
+            mantencionPorMes.put(meses[i], mantencionDemo[i]);
+            totalIngresos   += ing;
+            totalMantencion += mantencionDemo[i];
+        }
+
+        long totalUtilidad = totalIngresos - (long) (totalIngresos * 0.33);
+
+        actualizarKPIs(10, totalIngresos * 1000L, totalMantencion, totalUtilidad * 1000L);
+        dibujarGraficoIngresosCostos(ingresosPorMes, costosPorMes);
+        dibujarGraficoUtilidad(utilidadPorMes);
+        dibujarGraficoMantencion(mantencionPorMes);
+    }
+
+    private void actualizarKPIs(int clientes, long ingresos, int mantencion, long utilidad) {
+        tvKpiClientes.setText(String.valueOf(clientes));
+        tvKpiIngresos.setText(formatCLP(ingresos));
+        tvKpiMantencion.setText(String.valueOf(mantencion));
+        tvKpiUtilidad.setText(formatCLP(utilidad));
+    }
+
+    private String formatCLP(long valor) {
+        if (valor >= 1_000_000) return String.format(new Locale("es", "CL"), "$%.1fM", valor / 1_000_000.0);
+        if (valor >= 1_000)    return String.format(new Locale("es", "CL"), "$%.0fK", valor / 1_000.0);
+        return "$" + valor;
+    }
+
+    private void dibujarGraficoIngresosCostos(Map<String, Long> ingresosPorMes,
+                                               Map<String, Long> costosPorMes) {
+        List<String> etiquetas = new ArrayList<>(ingresosPorMes.keySet());
+        List<BarEntry> ingresosEntries = new ArrayList<>();
+        List<BarEntry> costosEntries   = new ArrayList<>();
+
+        int i = 0;
+        for (Map.Entry<String, Long> e : ingresosPorMes.entrySet()) {
+            ingresosEntries.add(new BarEntry(i, e.getValue()));
+            Long costo = costosPorMes.get(e.getKey());
+            costosEntries.add(new BarEntry(i, costo != null ? costo : 0));
+            i++;
+        }
+
+        BarDataSet setIngresos = new BarDataSet(ingresosEntries, "Ingresos");
+        setIngresos.setColor(COLOR_PRIMARY);
+        setIngresos.setValueTextColor(COLOR_TEXT);
+        setIngresos.setValueTextSize(9f);
+        setIngresos.setValueFormatter(new ValueFormatter() {
+            @Override public String getFormattedValue(float v) {
+                return v >= 1000 ? String.format("%.0fK", v / 1000) : String.valueOf((int) v);
+            }
+        });
+
+        BarDataSet setCostos = new BarDataSet(costosEntries, "Costos");
+        setCostos.setColor(COLOR_ORANGE);
+        setCostos.setValueTextColor(COLOR_TEXT);
+        setCostos.setValueTextSize(9f);
+        setCostos.setValueFormatter(setIngresos.getValueFormatter());
+
+        float groupSpace = 0.3f;
+        float barSpace   = 0.05f;
+        float barWidth   = 0.3f;
+
+        BarData barData = new BarData(setIngresos, setCostos);
+        barData.setBarWidth(barWidth);
+
+        XAxis xAxis = barChartIngresosCostos.getXAxis();
+        xAxis.setValueFormatter(new IndexAxisValueFormatter(etiquetas));
+        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+        xAxis.setGranularity(1f);
+        xAxis.setLabelCount(etiquetas.size());
+        xAxis.setLabelRotationAngle(-30f);
+        xAxis.setTextColor(COLOR_TEXT);
+        xAxis.setDrawGridLines(false);
+        xAxis.setCenterAxisLabels(true);
+
+        YAxis yAxisLeft = barChartIngresosCostos.getAxisLeft();
+        yAxisLeft.setAxisMinimum(0f);
+        yAxisLeft.setTextColor(COLOR_TEXT);
+        yAxisLeft.setValueFormatter(new ValueFormatter() {
+            @Override public String getFormattedValue(float v) {
+                return v >= 1000 ? String.format("%.0fK", v / 1000) : String.valueOf((int) v);
+            }
+        });
+
+        barChartIngresosCostos.getAxisRight().setEnabled(false);
+        barChartIngresosCostos.setData(barData);
+        barChartIngresosCostos.groupBars(0f, groupSpace, barSpace);
+        barChartIngresosCostos.getDescription().setEnabled(false);
+        barChartIngresosCostos.getLegend().setTextColor(COLOR_TEXT);
+        barChartIngresosCostos.getLegend().setForm(Legend.LegendForm.SQUARE);
+        barChartIngresosCostos.setBackgroundColor(Color.TRANSPARENT);
+        barChartIngresosCostos.setFitBars(true);
+        barChartIngresosCostos.animateY(900);
+        barChartIngresosCostos.invalidate();
+    }
+
+    private void dibujarGraficoUtilidad(Map<String, Long> utilidadPorMes) {
+        List<String>   etiquetas = new ArrayList<>(utilidadPorMes.keySet());
+        List<BarEntry> entradas  = new ArrayList<>();
+        int i = 0;
+        for (Long valor : utilidadPorMes.values()) {
+            entradas.add(new BarEntry(i++, valor));
+        }
+
+        BarDataSet dataSet = new BarDataSet(entradas, "Utilidad Neta");
+        dataSet.setColor(COLOR_GREEN);
+        dataSet.setValueTextColor(COLOR_TEXT);
+        dataSet.setValueTextSize(10f);
+        dataSet.setValueFormatter(new ValueFormatter() {
+            @Override public String getFormattedValue(float v) {
+                return v >= 1000 ? String.format("%.0fK", v / 1000) : String.valueOf((int) v);
+            }
+        });
+
+        BarData barData = new BarData(dataSet);
+        barData.setBarWidth(0.6f);
+
+        XAxis xAxis = barChartUtilidad.getXAxis();
+        xAxis.setValueFormatter(new IndexAxisValueFormatter(etiquetas));
+        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+        xAxis.setGranularity(1f);
+        xAxis.setLabelCount(etiquetas.size());
+        xAxis.setLabelRotationAngle(-30f);
+        xAxis.setTextColor(COLOR_TEXT);
+        xAxis.setDrawGridLines(false);
+
+        YAxis yAxisLeft = barChartUtilidad.getAxisLeft();
+        yAxisLeft.setAxisMinimum(0f);
+        yAxisLeft.setTextColor(COLOR_TEXT);
+        yAxisLeft.setValueFormatter(new ValueFormatter() {
+            @Override public String getFormattedValue(float v) {
+                return v >= 1000 ? String.format("%.0fK", v / 1000) : String.valueOf((int) v);
+            }
+        });
+
+        barChartUtilidad.getAxisRight().setEnabled(false);
+        barChartUtilidad.setData(barData);
+        barChartUtilidad.getDescription().setEnabled(false);
+        barChartUtilidad.getLegend().setTextColor(COLOR_TEXT);
+        barChartUtilidad.setBackgroundColor(Color.TRANSPARENT);
+        barChartUtilidad.setFitBars(true);
+        barChartUtilidad.animateY(900);
+        barChartUtilidad.invalidate();
+    }
+
+    private void dibujarGraficoMantencion(Map<String, Integer> mantencionPorMes) {
+        List<String>   etiquetas = new ArrayList<>(mantencionPorMes.keySet());
+        List<BarEntry> entradas  = new ArrayList<>();
+        int i = 0;
+        for (Integer valor : mantencionPorMes.values()) {
+            entradas.add(new BarEntry(i++, valor));
+        }
+
+        BarDataSet dataSet = new BarDataSet(entradas, "Dispositivos en mantencion");
+        dataSet.setColor(COLOR_ORANGE);
+        dataSet.setValueTextColor(COLOR_TEXT);
+        dataSet.setValueTextSize(11f);
+        dataSet.setValueFormatter(new ValueFormatter() {
+            @Override public String getFormattedValue(float v) { return String.valueOf((int) v); }
+        });
+
+        BarData barData = new BarData(dataSet);
+        barData.setBarWidth(0.6f);
+
+        XAxis xAxis = barChartMantencion.getXAxis();
+        xAxis.setValueFormatter(new IndexAxisValueFormatter(etiquetas));
+        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+        xAxis.setGranularity(1f);
+        xAxis.setLabelCount(etiquetas.size());
+        xAxis.setLabelRotationAngle(-30f);
+        xAxis.setTextColor(COLOR_TEXT);
+        xAxis.setDrawGridLines(false);
+
+        YAxis yAxisLeft = barChartMantencion.getAxisLeft();
+        yAxisLeft.setAxisMinimum(0f);
+        yAxisLeft.setTextColor(COLOR_TEXT);
+        yAxisLeft.setGranularity(1f);
+        yAxisLeft.setValueFormatter(new ValueFormatter() {
+            @Override public String getFormattedValue(float v) { return String.valueOf((int) v); }
+        });
+
+        barChartMantencion.getAxisRight().setEnabled(false);
+        barChartMantencion.setData(barData);
+        barChartMantencion.getDescription().setEnabled(false);
+        barChartMantencion.getLegend().setTextColor(COLOR_TEXT);
+        barChartMantencion.setBackgroundColor(Color.TRANSPARENT);
+        barChartMantencion.setFitBars(true);
+        barChartMantencion.animateY(900);
+        barChartMantencion.invalidate();
     }
 }
