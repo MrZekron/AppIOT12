@@ -1,3 +1,5 @@
+import java.util.Properties
+
 // app/build.gradle.kts
 // =====================================================
 // 📦 Módulo app del proyecto Agua Segura
@@ -21,6 +23,13 @@ plugins {
     id("com.google.gms.google-services")    // Plugin de Firebase / Google Services
 }
 
+val localProps = Properties().apply {
+    val f = rootProject.file("local.properties")
+    if (f.exists()) load(f.inputStream())
+}
+val smtpEmail: String = localProps.getProperty("smtp.email") ?: ""
+val smtpPassword: String = localProps.getProperty("smtp.password") ?: ""
+
 android {
     namespace = "com.example.appiot12"
     compileSdk = 35
@@ -32,6 +41,8 @@ android {
         versionCode = 1
         versionName = "1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        buildConfigField("String", "SMTP_EMAIL", "\"$smtpEmail\"")
+        buildConfigField("String", "SMTP_PASSWORD", "\"$smtpPassword\"")
     }
 
     buildTypes {
@@ -47,6 +58,10 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
+    }
+
+    buildFeatures {
+        buildConfig = true
     }
 
     packaging {
