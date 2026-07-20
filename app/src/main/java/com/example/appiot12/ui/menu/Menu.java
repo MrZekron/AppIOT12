@@ -25,7 +25,6 @@ import androidx.work.WorkManager;
 import com.example.appiot12.R;
 import com.example.appiot12.service.AlertaService;
 import com.example.appiot12.worker.AlertaWorker;
-import com.example.appiot12.ui.pago.CentroPagos;
 import com.example.appiot12.ui.pago.ComprarDispositivo;
 import com.example.appiot12.ui.pago.HistorialCompra;
 import com.example.appiot12.ui.perfil.Configuracion;
@@ -122,7 +121,6 @@ public class Menu extends BaseActivity {
     public void pagos(View v)              { irA(HistorialCompra.class); }
     public void comprarDispositivo(View v) { irA(ComprarDispositivo.class); }
     public void asociarDispositivo(View v) { irA(AsociarDispositivoATanque.class); }
-    public void centroPagos(View v)        { irA(CentroPagos.class); }
 
     public void salir(View v) {
         auth.signOut();

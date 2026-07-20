@@ -6,92 +6,9 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="24dp"
     android:background="@drawable/bg_screen_with_logo"
+    android:padding="24dp"
     tools:context=".AsociarDispositivoATanque">
-
-    <!-- TÍTULO PRINCIPAL -->
-
-    <!-- TEXTO TANQUES -->
-
-    <!-- SPINNER TANQUES -->
-
-    <!-- TEXTO DISPOSITIVOS -->
-
-    <!-- SPINNER DISPOSITIVOS -->
-
-    <!-- BOTÓN ASOCIAR -->
-
-
-    <TextView
-        android:id="@+id/tvTituloAsociar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="52dp"
-        android:text="Asociar Dispositivo a Tanque"
-        android:textColor="@color/color_text_primary"
-        android:textSize="26sp"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.481"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <Spinner
-        android:id="@+id/spnDispositivos"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tvDispositivos" />
-
-    <com.google.android.material.button.MaterialButton
-        style="@style/Widget.AppIOT12.Button"
-        android:id="@+id/btnAsociar"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:padding="16dp"
-        android:text="Asociar Dispositivo"
-        android:textSize="18sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/spnDispositivos" />
-
-    <Spinner
-        android:id="@+id/spnTanques"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tvTanques" />
-
-    <TextView
-        android:id="@+id/tvTanques"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="28dp"
-        android:text="Selecciona el tanque:"
-        android:textColor="@color/color_secondary"
-        android:textSize="16sp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tvTituloAsociar" />
-
-    <TextView
-        android:id="@+id/tvDispositivos"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:text="Selecciona el dispositivo:"
-        android:textColor="@color/color_secondary"
-        android:textSize="16sp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/spnTanques" />
 
     <include
         android:id="@+id/includeToolbarTema"
@@ -103,16 +20,133 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <com.google.android.material.button.MaterialButton
-        style="@style/Widget.AppIOT12.Button"
-        android:id="@+id/btnVolverHistorial"
-        android:layout_width="wrap_content"
+    <!-- Contenido principal -->
+    <LinearLayout
+        android:id="@+id/contenido"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:orientation="vertical"
+        app:layout_constraintTop_toBottomOf="@id/includeToolbarTema"
+        app:layout_constraintBottom_toTopOf="@id/btnRow"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <!-- Título -->
+        <TextView
+            android:id="@+id/tvTituloAsociar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Asociar Dispositivo"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            android:textColor="@color/color_text_primary"
+            android:paddingTop="24dp"
+            android:paddingBottom="8dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Vincula un dispositivo IoT a uno de tus tanques."
+            android:textSize="14sp"
+            android:textColor="@color/color_text_secondary"
+            android:paddingBottom="32dp" />
+
+        <!-- Sección tanque -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="TANQUE"
+            android:textSize="11sp"
+            android:textColor="@color/color_text_hint"
+            android:letterSpacing="0.08" />
+
+        <TextView
+            android:id="@+id/tvTanques"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Selecciona el tanque al que se vinculará el dispositivo"
+            android:textSize="13sp"
+            android:textColor="@color/color_text_secondary"
+            android:paddingTop="2dp"
+            android:paddingBottom="6dp" />
+
+        <Spinner
+            android:id="@+id/spnTanques"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_input_field"
+            android:minHeight="52dp"
+            android:padding="14dp"
+            android:spinnerMode="dropdown" />
+
+        <!-- Divider -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/color_card_stroke"
+            android:layout_marginTop="28dp"
+            android:layout_marginBottom="20dp" />
+
+        <!-- Sección dispositivo -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="DISPOSITIVO"
+            android:textSize="11sp"
+            android:textColor="@color/color_text_hint"
+            android:letterSpacing="0.08" />
+
+        <TextView
+            android:id="@+id/tvDispositivos"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Selecciona el dispositivo disponible"
+            android:textSize="13sp"
+            android:textColor="@color/color_text_secondary"
+            android:paddingTop="2dp"
+            android:paddingBottom="6dp" />
+
+        <Spinner
+            android:id="@+id/spnDispositivos"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_input_field"
+            android:minHeight="52dp"
+            android:padding="14dp"
+            android:spinnerMode="dropdown" />
+
+    </LinearLayout>
+
+    <!-- Fila de botones fija abajo -->
+    <LinearLayout
+        android:id="@+id/btnRow"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="228dp"
-        android:onClick="volverAlMenu"
-        android:text="Volver"
+        android:orientation="horizontal"
+        android:paddingTop="12dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <com.google.android.material.button.MaterialButton
+            style="@style/Widget.AppIOT12.Button"
+            android:id="@+id/btnAsociar"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:layout_marginEnd="8dp"
+            android:text="Asociar" />
+
+        <com.google.android.material.button.MaterialButton
+            style="@style/Widget.AppIOT12.Button.Secondary"
+            android:id="@+id/btnVolverHistorial"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:onClick="volverAlMenu"
+            android:text="Volver" />
+
+    </LinearLayout>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

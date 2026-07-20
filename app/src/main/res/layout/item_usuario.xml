@@ -43,17 +43,42 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tvEstadoCuenta"/>
 
-    <!-- 🔥 NUEVO: tiempo atrasado de pago -->
+    <!-- tiempo atrasado de pago -->
     <TextView
         android:id="@+id/tvTiempoAtraso"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Atrasado: 0 días"
+        android:text="Atraso: 0 días"
         android:textSize="14sp"
         android:textColor="@color/color_error"
         android:layout_marginTop="4dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tvDeuda"/>
+
+    <!-- cuotas pendientes -->
+    <TextView
+        android:id="@+id/tvCuotas"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Cuotas pendientes: —"
+        android:textSize="14sp"
+        android:textColor="@color/color_text_secondary"
+        android:layout_marginTop="4dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvTiempoAtraso"/>
+
+    <!-- conteo de dispositivos -->
+    <TextView
+        android:id="@+id/tvDispositivos"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Dispositivos: —"
+        android:textSize="14sp"
+        android:textColor="@color/color_text_secondary"
+        android:layout_marginTop="4dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvCuotas"
+        app:layout_constraintBottom_toBottomOf="parent"/>
 
     <!-- Botón bloquear/desbloquear -->
     <com.google.android.material.button.MaterialButton

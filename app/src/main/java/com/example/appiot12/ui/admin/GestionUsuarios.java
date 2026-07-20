@@ -1,5 +1,6 @@
 package com.example.appiot12.ui.admin;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -29,6 +30,7 @@ public class GestionUsuarios extends BaseActivity {
 
     private ListView listUsuarios;
     private Button btnFiltrarUsuarios;
+    private Button btnAsignarDispositivo;
 
     private UsuarioAdapter adapter;
 
@@ -49,6 +51,8 @@ public class GestionUsuarios extends BaseActivity {
 
         listUsuarios = findViewById(R.id.listUsuarios);
         btnFiltrarUsuarios = findViewById(R.id.btnFiltrarUsuarios);
+        btnAsignarDispositivo = findViewById(R.id.btnAsignarDispositivo);
+        btnAsignarDispositivo.setOnClickListener(v -> startActivity(new Intent(this, AsignarDispositivoAdmin.class)));
 
         refUsuarios = FirebaseDatabase.getInstance().getReference("usuarios");
         refCompras = FirebaseDatabase.getInstance().getReference("compras");

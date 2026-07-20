@@ -17,7 +17,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="40dp"
-        android:text="Historial de Pagos admin"
+        android:text="Mis Pagos"
         android:textColor="@color/color_text_primary"
         android:textSize="32sp"
         app:layout_constraintEnd_toEndOf="parent"

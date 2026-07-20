@@ -12,7 +12,10 @@ import com.example.appiot12.ui.BaseActivity;
 
 import com.example.appiot12.R;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.HashMap;
 import java.util.Locale;
@@ -55,8 +58,21 @@ public class ComprarDispositivo extends BaseActivity {
     }
 
     private void cargarPrecio() {
-        precioActual = PRECIO_DEFAULT;
-        actualizarUI();
+        FirebaseDatabase.getInstance()
+                .getReference("config/precioDispositivo")
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot snapshot) {
+                        Integer precio = snapshot.getValue(Integer.class);
+                        precioActual = (precio != null && precio > 0) ? precio : PRECIO_DEFAULT;
+                        actualizarUI();
+                    }
+                    @Override
+                    public void onCancelled(DatabaseError error) {
+                        precioActual = PRECIO_DEFAULT;
+                        actualizarUI();
+                    }
+                });
     }
 
     private void initSpinner() {

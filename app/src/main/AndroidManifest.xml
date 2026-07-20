@@ -91,14 +91,17 @@
             android:name="com.example.appiot12.ui.admin.GestionUsuarios"
             android:exported="false" />
         <activity
-            android:name="com.example.appiot12.ui.admin.HistorialAcciones"
+            android:name="com.example.appiot12.ui.admin.AsignarDispositivoAdmin"
             android:exported="false" />
         <activity
-            android:name="com.example.appiot12.ui.admin.HistorialGlobal"
+            android:name="com.example.appiot12.ui.admin.HistorialAcciones"
             android:exported="false" />
         <!-- 📊 Pantalla de gráficos estadísticos del administrador -->
         <activity
             android:name="com.example.appiot12.ui.admin.GraficosAdmin"
+            android:exported="false" />
+        <activity
+            android:name="com.example.appiot12.ui.admin.ConfirmarPagosAdmin"
             android:exported="false" /> <!-- ========================= -->
         <!-- 🔔 FCM -->
         <service

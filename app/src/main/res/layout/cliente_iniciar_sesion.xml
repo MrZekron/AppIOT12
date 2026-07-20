@@ -23,13 +23,12 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="32dp"
-        android:layout_marginTop="100dp"
+        android:layout_marginTop="16dp"
         android:layout_marginEnd="32dp"
         android:orientation="vertical"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toBottomOf="@+id/imageView">
 
         <EditText
             android:id="@+id/tvCorreo"
@@ -124,19 +123,17 @@
 
     <ImageView
         android:id="@+id/imageView"
-        android:layout_width="220dp"
-        android:layout_height="220dp"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
         android:layout_marginTop="16dp"
         android:background="@drawable/bg_logo"
         android:contentDescription="Logo de la aplicación"
         android:elevation="6dp"
         android:padding="16dp"
         android:scaleType="fitCenter"
-        app:layout_constraintBottom_toTopOf="@+id/tvLayout"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/includeToolbarTema"
-        app:layout_constraintVertical_bias="0.0"
         app:srcCompat="@mipmap/logo2"
         tools:ignore="HardcodedText,ImageContrastCheck" />
 

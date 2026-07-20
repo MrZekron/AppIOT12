@@ -156,21 +156,6 @@
         android:layout_margin="10dp"
         app:layout_constraintTop_toBottomOf="@id/btnPagosUsuario"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/btnCentroPagos"/>
-
-    <Button
-        android:id="@+id/btnCentroPagos"
-        android:layout_width="0dp"
-        android:layout_height="110dp"
-        android:text="Centro de Pagos"
-        android:textColor="@color/color_text_on_dark"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        android:backgroundTint="@color/color_primary"
-        android:onClick="centroPagos"
-        android:layout_margin="10dp"
-        app:layout_constraintTop_toBottomOf="@id/btnComprarDispositivo"
-        app:layout_constraintStart_toEndOf="@id/btnAsociarDispositivo"
         app:layout_constraintEnd_toEndOf="parent"/>
 
     <!-- ========================= -->
@@ -185,10 +170,11 @@
         android:textSize="16sp"
         android:textStyle="bold"
         android:backgroundTint="@color/color_secondary"
+        android:onClick="salir"
         android:paddingHorizontal="24dp"
         android:paddingVertical="12dp"
         android:layout_marginTop="24dp"
-        app:layout_constraintTop_toBottomOf="@id/btnCentroPagos"
+        app:layout_constraintTop_toBottomOf="@id/btnAsociarDispositivo"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 

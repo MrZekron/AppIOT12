@@ -53,6 +53,8 @@ public class UsuarioAdapter extends ArrayAdapter<Usuario> {
             holder.tvEstado = convertView.findViewById(R.id.tvEstadoCuenta);
             holder.tvDeuda = convertView.findViewById(R.id.tvDeuda);
             holder.tvAtraso = convertView.findViewById(R.id.tvTiempoAtraso);
+            holder.tvCuotas = convertView.findViewById(R.id.tvCuotas);
+            holder.tvDispositivos = convertView.findViewById(R.id.tvDispositivos);
             holder.btnBloquear = convertView.findViewById(R.id.btnBloquear);
             convertView.setTag(holder);
         } else {
@@ -77,8 +79,13 @@ public class UsuarioAdapter extends ArrayAdapter<Usuario> {
         holder.tvDeuda.setTextColor(ContextCompat.getColor(context, R.color.color_text_secondary));
         holder.tvAtraso.setText("Calculando…");
         holder.tvAtraso.setTextColor(ContextCompat.getColor(context, R.color.color_text_secondary));
+        holder.tvCuotas.setText("Calculando…");
+        holder.tvCuotas.setTextColor(ContextCompat.getColor(context, R.color.color_text_secondary));
+        holder.tvDispositivos.setText("Cargando…");
+        holder.tvDispositivos.setTextColor(ContextCompat.getColor(context, R.color.color_text_secondary));
 
         cargarResumenFinanciero(usuario.getId(), holder);
+        cargarConteoDispositivos(usuario.getId(), holder);
 
         holder.btnBloquear.setOnClickListener(v -> {
             if (blockListener != null) {
@@ -102,16 +109,21 @@ public class UsuarioAdapter extends ArrayAdapter<Usuario> {
                             holder.tvDeuda.setTextColor(ContextCompat.getColor(context, R.color.color_text_secondary));
                             holder.tvAtraso.setText("Atraso: 0 días");
                             holder.tvAtraso.setTextColor(ContextCompat.getColor(context, R.color.color_success));
+                            holder.tvCuotas.setText("Cuotas pendientes: 0");
+                            holder.tvCuotas.setTextColor(ContextCompat.getColor(context, R.color.color_success));
                             return;
                         }
 
                         int deuda = 0;
+                        int cuotasPendientes = 0;
                         long ultimaFecha = 0;
 
                         for (DataSnapshot snap : snapshot.getChildren()) {
                             Pago pago = snap.getValue(Pago.class);
                             if (pago == null) continue;
                             deuda += pago.getSaldoPendiente();
+                            int pendientes = pago.getCuotasTotales() - pago.getCuotasPagadas();
+                            if (pendientes > 0) cuotasPendientes += pendientes;
                             long fecha = obtenerFechaMovimiento(pago);
                             if (fecha > ultimaFecha) ultimaFecha = fecha;
                         }
@@ -137,6 +149,15 @@ public class UsuarioAdapter extends ArrayAdapter<Usuario> {
                         } else {
                             holder.tvAtraso.setTextColor(ContextCompat.getColor(context, R.color.color_error));
                         }
+
+                        holder.tvCuotas.setText("Cuotas pendientes: " + cuotasPendientes);
+                        if (cuotasPendientes == 0) {
+                            holder.tvCuotas.setTextColor(ContextCompat.getColor(context, R.color.color_success));
+                        } else if (cuotasPendientes <= 2) {
+                            holder.tvCuotas.setTextColor(ContextCompat.getColor(context, R.color.color_warning));
+                        } else {
+                            holder.tvCuotas.setTextColor(ContextCompat.getColor(context, R.color.color_error));
+                        }
                     }
 
                     @Override
@@ -145,6 +166,34 @@ public class UsuarioAdapter extends ArrayAdapter<Usuario> {
                         holder.tvDeuda.setTextColor(ContextCompat.getColor(context, R.color.color_error));
                         holder.tvAtraso.setText("Error");
                         holder.tvAtraso.setTextColor(ContextCompat.getColor(context, R.color.color_error));
+                        holder.tvCuotas.setText("Error");
+                        holder.tvCuotas.setTextColor(ContextCompat.getColor(context, R.color.color_error));
+                        holder.tvDispositivos.setText("Error");
+                        holder.tvDispositivos.setTextColor(ContextCompat.getColor(context, R.color.color_error));
+                    }
+                });
+    }
+
+    private void cargarConteoDispositivos(String userId, ViewHolder holder) {
+        FirebaseDatabase.getInstance()
+                .getReference("usuarios")
+                .child(userId)
+                .child("dispositivos")
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot snapshot) {
+                        int count = (int) snapshot.getChildrenCount();
+                        holder.tvDispositivos.setText("Dispositivos: " + count);
+                        if (count == 0) {
+                            holder.tvDispositivos.setTextColor(ContextCompat.getColor(context, R.color.color_text_secondary));
+                        } else {
+                            holder.tvDispositivos.setTextColor(ContextCompat.getColor(context, R.color.color_primary));
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError error) {
+                        holder.tvDispositivos.setText("Dispositivos: —");
                     }
                 });
     }
@@ -156,7 +205,7 @@ public class UsuarioAdapter extends ArrayAdapter<Usuario> {
     }
 
     static class ViewHolder {
-        TextView tvCorreo, tvEstado, tvDeuda, tvAtraso;
+        TextView tvCorreo, tvEstado, tvDeuda, tvAtraso, tvCuotas, tvDispositivos;
         Button btnBloquear;
     }
 }

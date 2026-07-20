@@ -164,7 +164,7 @@ public class GraficosAdmin extends BaseActivity {
                     dibujarBarChart(barChartComprasGlobal, comprasPorMes, "Dispositivos comprados", colorSecondary);
                 } else {
                     tvTituloComprasGlobal.setText("Compras de dispositivos por mes (ejemplo)");
-                    dibujarBarChart(barChartComprasGlobal, generarMesesDemo(new int[]{0, 1, 2, 1, 3, 1}), "Dispositivos comprados", COLOR_SECONDARY);
+                    dibujarBarChart(barChartComprasGlobal, generarMesesDemo(new int[]{0, 1, 2, 1, 3, 1}), "Dispositivos comprados", colorSecondary);
                 }
 
                 if (!comprasPorUid.isEmpty()) {
@@ -475,8 +475,8 @@ public class GraficosAdmin extends BaseActivity {
         }
 
         BarDataSet setIngresos = new BarDataSet(ingresosEntries, "Ingresos");
-        setIngresos.setColor(COLOR_PRIMARY);
-        setIngresos.setValueTextColor(COLOR_TEXT);
+        setIngresos.setColor(colorPrimary);
+        setIngresos.setValueTextColor(colorText);
         setIngresos.setValueTextSize(9f);
         setIngresos.setValueFormatter(new ValueFormatter() {
             @Override public String getFormattedValue(float v) {
@@ -486,7 +486,7 @@ public class GraficosAdmin extends BaseActivity {
 
         BarDataSet setCostos = new BarDataSet(costosEntries, "Costos");
         setCostos.setColor(COLOR_ORANGE);
-        setCostos.setValueTextColor(COLOR_TEXT);
+        setCostos.setValueTextColor(colorText);
         setCostos.setValueTextSize(9f);
         setCostos.setValueFormatter(setIngresos.getValueFormatter());
 
@@ -503,13 +503,13 @@ public class GraficosAdmin extends BaseActivity {
         xAxis.setGranularity(1f);
         xAxis.setLabelCount(etiquetas.size());
         xAxis.setLabelRotationAngle(-30f);
-        xAxis.setTextColor(COLOR_TEXT);
+        xAxis.setTextColor(colorText);
         xAxis.setDrawGridLines(false);
         xAxis.setCenterAxisLabels(true);
 
         YAxis yAxisLeft = barChartIngresosCostos.getAxisLeft();
         yAxisLeft.setAxisMinimum(0f);
-        yAxisLeft.setTextColor(COLOR_TEXT);
+        yAxisLeft.setTextColor(colorText);
         yAxisLeft.setValueFormatter(new ValueFormatter() {
             @Override public String getFormattedValue(float v) {
                 return v >= 1000 ? String.format("%.0fK", v / 1000) : String.valueOf((int) v);
@@ -520,7 +520,7 @@ public class GraficosAdmin extends BaseActivity {
         barChartIngresosCostos.setData(barData);
         barChartIngresosCostos.groupBars(0f, groupSpace, barSpace);
         barChartIngresosCostos.getDescription().setEnabled(false);
-        barChartIngresosCostos.getLegend().setTextColor(COLOR_TEXT);
+        barChartIngresosCostos.getLegend().setTextColor(colorText);
         barChartIngresosCostos.getLegend().setForm(Legend.LegendForm.SQUARE);
         barChartIngresosCostos.setBackgroundColor(Color.TRANSPARENT);
         barChartIngresosCostos.setFitBars(true);
@@ -538,7 +538,7 @@ public class GraficosAdmin extends BaseActivity {
 
         BarDataSet dataSet = new BarDataSet(entradas, "Utilidad Neta");
         dataSet.setColor(COLOR_GREEN);
-        dataSet.setValueTextColor(COLOR_TEXT);
+        dataSet.setValueTextColor(colorText);
         dataSet.setValueTextSize(10f);
         dataSet.setValueFormatter(new ValueFormatter() {
             @Override public String getFormattedValue(float v) {
@@ -555,12 +555,12 @@ public class GraficosAdmin extends BaseActivity {
         xAxis.setGranularity(1f);
         xAxis.setLabelCount(etiquetas.size());
         xAxis.setLabelRotationAngle(-30f);
-        xAxis.setTextColor(COLOR_TEXT);
+        xAxis.setTextColor(colorText);
         xAxis.setDrawGridLines(false);
 
         YAxis yAxisLeft = barChartUtilidad.getAxisLeft();
         yAxisLeft.setAxisMinimum(0f);
-        yAxisLeft.setTextColor(COLOR_TEXT);
+        yAxisLeft.setTextColor(colorText);
         yAxisLeft.setValueFormatter(new ValueFormatter() {
             @Override public String getFormattedValue(float v) {
                 return v >= 1000 ? String.format("%.0fK", v / 1000) : String.valueOf((int) v);
@@ -570,7 +570,7 @@ public class GraficosAdmin extends BaseActivity {
         barChartUtilidad.getAxisRight().setEnabled(false);
         barChartUtilidad.setData(barData);
         barChartUtilidad.getDescription().setEnabled(false);
-        barChartUtilidad.getLegend().setTextColor(COLOR_TEXT);
+        barChartUtilidad.getLegend().setTextColor(colorText);
         barChartUtilidad.setBackgroundColor(Color.TRANSPARENT);
         barChartUtilidad.setFitBars(true);
         barChartUtilidad.animateY(900);
@@ -587,7 +587,7 @@ public class GraficosAdmin extends BaseActivity {
 
         BarDataSet dataSet = new BarDataSet(entradas, "Dispositivos en mantencion");
         dataSet.setColor(COLOR_ORANGE);
-        dataSet.setValueTextColor(COLOR_TEXT);
+        dataSet.setValueTextColor(colorText);
         dataSet.setValueTextSize(11f);
         dataSet.setValueFormatter(new ValueFormatter() {
             @Override public String getFormattedValue(float v) { return String.valueOf((int) v); }
@@ -602,12 +602,12 @@ public class GraficosAdmin extends BaseActivity {
         xAxis.setGranularity(1f);
         xAxis.setLabelCount(etiquetas.size());
         xAxis.setLabelRotationAngle(-30f);
-        xAxis.setTextColor(COLOR_TEXT);
+        xAxis.setTextColor(colorText);
         xAxis.setDrawGridLines(false);
 
         YAxis yAxisLeft = barChartMantencion.getAxisLeft();
         yAxisLeft.setAxisMinimum(0f);
-        yAxisLeft.setTextColor(COLOR_TEXT);
+        yAxisLeft.setTextColor(colorText);
         yAxisLeft.setGranularity(1f);
         yAxisLeft.setValueFormatter(new ValueFormatter() {
             @Override public String getFormattedValue(float v) { return String.valueOf((int) v); }
@@ -616,7 +616,7 @@ public class GraficosAdmin extends BaseActivity {
         barChartMantencion.getAxisRight().setEnabled(false);
         barChartMantencion.setData(barData);
         barChartMantencion.getDescription().setEnabled(false);
-        barChartMantencion.getLegend().setTextColor(COLOR_TEXT);
+        barChartMantencion.getLegend().setTextColor(colorText);
         barChartMantencion.setBackgroundColor(Color.TRANSPARENT);
         barChartMantencion.setFitBars(true);
         barChartMantencion.animateY(900);

@@ -115,6 +115,10 @@ public class AsociarDispositivoATanque extends BaseActivity {
         finish();
     }
 
+    public void volverAlMenu(android.view.View view) {
+        finish();
+    }
+
     private void toast(String msg) {
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
     }

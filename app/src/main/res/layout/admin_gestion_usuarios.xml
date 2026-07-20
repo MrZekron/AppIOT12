@@ -49,8 +49,23 @@
         app:layout_constraintEnd_toEndOf="parent" />
 
     <!--
+        Botón para asignar un dispositivo a un usuario.
+        Se ubica debajo del botón filtrar.
+    -->
+    <com.google.android.material.button.MaterialButton
+        style="@style/Widget.AppIOT12.Button.Secondary"
+        android:id="@+id/btnAsignarDispositivo"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Asignar Dispositivo"
+        android:layout_marginTop="8dp"
+        app:layout_constraintTop_toBottomOf="@+id/btnFiltrarUsuarios"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!--
         Lista de usuarios.
-        Ocupa todo el espacio disponible entre el botón de filtrar
+        Ocupa todo el espacio disponible entre el botón de asignar
         y el botón volver.
     -->
     <ListView
@@ -64,7 +79,7 @@
         android:background="@drawable/bg_card"
         android:dividerHeight="8dp"
         android:padding="16dp"
-        app:layout_constraintTop_toBottomOf="@id/btnFiltrarUsuarios"
+        app:layout_constraintTop_toBottomOf="@id/btnAsignarDispositivo"
         app:layout_constraintBottom_toTopOf="@id/btnVolver"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
